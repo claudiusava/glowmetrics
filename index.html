@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Reseñas + KPIs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --gap: 16px;
+      --radius: 14px;
+      --shadow: 0 6px 18px rgba(0, 0, 0, .08);
+      --border: 1px solid rgba(0, 0, 0, .08);
+      --muted: #1f2937;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color: #111827;
+      background: #f8fafc;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* =========================
+   LAYOUT GENERAL
+   ========================= */
+
+    .wrap {
+      display: grid;
+      grid-template-rows: 1fr 1fr;
+      height: 100vh;
+    }
+
+    /* =========================
+   TOP: KPI + CONSEJOS
+   ========================= */
+
+    .top {
+      padding: 40px 0 32px;
+      border-bottom: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color .8s ease-in-out, color .3s ease;
+    }
+
+    /* Card grande (mismo concepto que antes, casi full-width) */
+    .kpi-card {
+      height: 105%;
+      width: 97%;
+      border-radius: var(--radius);
+      display: grid;
+      place-items: center;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255, 255, 255, .25);
+      background: rgba(255, 255, 255, .25);
+      backdrop-filter: blur(2px);
+    }
+
+    /* Distribución interna: KPI izquierda, consejo derecha */
+    .kpi-layout {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 200px;
+      width: 100%;
+    }
+
+    /* KPI IZQUIERDA */
+    .kpi-left {
+      flex: 0 0 40%;
+      text-align: center;
+    }
+
+    .kpi-title {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .kpi-value {
+      font-size: clamp(46px, 7vw, 80px);
+      line-height: 1;
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 4px;
+      transition: transform .25s ease;
+    }
+
+    .kpi-sub {
+      font-size: 14px;
+      color: #111827;
+      opacity: .92;
+    }
+
+    /* CONSEJOS DERECHA (MISMA CARD) */
+    .kpi-right {
+      flex: 2;
+      text-align: left;
+    }
+
+    .tip-title {
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: .03em;
+      text-transform: uppercase;
+      color: #ffffff;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .tip-text {
+      font-size: 18px;
+      color: #ffffff;
+      line-height: 1.6;
+      max-width: 660px;
+    }
+
+    /* =========================
+   BOTTOM: RESEÑAS + OBJETIVO
+   ========================= */
+
+    .bottom {
+      padding: var(--gap);
+      background: #f1f5f9;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .strip {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    /* Header reseñas: título + barra objetivo */
+    .header {
+      display: grid;
+      grid-template-columns: 1fr minmax(280px, 560px) 1fr;
+      align-items: end;
+      gap: 12px;
+      margin-bottom: var(--gap);
+      transition: box-shadow .25s ease, background-color .25s ease;
+      background: #f1f5f9;
+    }
+
+    .header.elevated {
+      box-shadow: 0 6px 12px rgba(0, 0, 0, .08);
+      background: #f8fafc;
+    }
+
+    .head-left {
+      align-self: start;
+    }
+
+    .head-center {
+      display: grid;
+      place-items: center;
+    }
+
+    .title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      color: #6b7280;
+      font-size: 13px;
+    }
+
+    /* Barra objetivo mensual */
+    .goalbar {
+      width: 100%;
+    }
+
+    .goal-track {
+      position: relative;
+      height: 14px;
+      border-radius: 999px;
+      background:
+        repeating-linear-gradient(90deg, rgba(0, 0, 0, .10) 0, rgba(0, 0, 0, .10) 1px, transparent 1px, transparent 25%),
+        linear-gradient(#eef2f7, #e5eaf1);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, .08);
+      overflow: hidden;
+    }
+
+    .goal-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background:
+        repeating-linear-gradient(45deg, rgba(255, 255, 255, .25) 0, rgba(255, 255, 255, .25) 8px, rgba(255, 255, 255, 0) 8px, rgba(255, 255, 255, 0) 16px),
+        linear-gradient(90deg, #60a5fa, #34d399 60%, #10b981);
+      transition: width .7s cubic-bezier(.22, .61, .36, 1), filter .3s ease;
+      filter: saturate(1.1);
+    }
+
+    .goal-fill.running {
+      animation: stripes 8s linear infinite;
+    }
+
+    @keyframes stripes {
+      from {
+        background-position: 0 0, 0 0;
+      }
+
+      to {
+        background-position: 200px 0, 0 0;
+      }
+    }
+
+    .goal-label {
+      margin-top: 6px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      font-size: 12px;
+      color: #374151;
+      font-weight: 600;
+    }
+
+    .goal-trophy {
+      margin-left: 4px;
+    }
+
+    .header.elevated .goal-track {
+      background: linear-gradient(#e9eef6, #e1e7f0);
+    }
+
+    /* Objetivo completado → dorado animado */
+    .goalbar.completed .goal-fill {
+      background: linear-gradient(90deg, #facc15, #f59e0b 40%, #fbbf24 80%);
+      filter: brightness(1.05) saturate(1.1);
+      animation: stripes 6s linear infinite, goldGlow 2.4s ease-in-out infinite alternate;
+    }
+
+    @keyframes goldGlow {
+      from {
+        filter: brightness(1) saturate(1.2);
+      }
+
+      to {
+        filter: brightness(1.35) saturate(1.6);
+      }
+    }
+
+    /* =========================
+   CARDS DE RESEÑAS
+   ========================= */
+
+    .cards {
+      display: flex;
+      flex-direction: column;
+      gap: var(--gap);
+      align-content: stretch;
+    }
+
+    .card {
+      background: #f7307d;
+      border: var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: flex-start;
+    }
+
+    .pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      background: #eef2ff;
+      color: #3730a3;
+      border: 1px solid #e0e7ff;
+    }
+
+    .stars {
+      letter-spacing: 1.5px;
+      font-size: 18px;
+      color: #fbbf24;
+      transform: translateY(1px);
+    }
+
+    .author {
+      font-weight: 600;
+    }
+
+    .text {
+      color: #111827;
+      font-size: 14px;
+      line-height: 1.35;
+      white-space: pre-wrap;
+    }
+
+    .meta {
+      color: #111827;
+      font-size: 12px;
+    }
+
+    .empty {
+      color: #6b7280;
+      text-align: center;
+      padding: 24px;
+      border: 2px dashed rgba(0, 0, 0, .08);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+
+    /* =========================
+   CONFETTI
+   ========================= */
+
+    .confetti-stage {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 99999;
+    }
+
+    .confetti-piece {
+      position: absolute;
+      width: 8px;
+      height: 12px;
+      border-radius: 2px;
+      opacity: .95;
+      will-change: transform, opacity;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div class="wrap">
+    <!-- TOP: KPI Airtable -->
+    <section id="top" class="top">
+      <div class="kpi-card">
+        <div class="kpi-layout">
+          <div class="kpi-left">
+            <div class="kpi-title">Leads citados (Airtable)</div>
+            <div id="kpiValue" class="kpi-value">-- %</div>
+            <div id="kpiSub" class="kpi-sub">Calculando…</div>
+          </div>
+          <div class="kpi-right">
+            <div class="tip-title">💡 CONSEJOS RÁPIDOS DE VENTAS:</div>
+            <div id="tipText" class="tip-text">Cargando consejo…</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+
+
+
+    <!-- BOTTOM: Reseñas -->
+    <section class="bottom">
+      <div class="header">
+        <!-- Izquierda: título + subtitle -->
+        <div class="head-left">
+          <div class="title">Últimas reseñas</div>
+          <div id="subtitle" class="subtitle">Cargando…</div>
+        </div>
+
+        <!-- Centro: progress bar mensual -->
+        <div class="head-center">
+          <div class="goalbar" aria-label="Progreso objetivo mensual">
+            <div class="goal-track">
+              <div id="goalFill" class="goal-fill"></div>
+            </div>
+            <div class="goal-label">
+              <span id="goalCount">0/20</span>
+              <span id="goalPct">0%</span>
+              <span id="goalTrophy" class="goal-trophy" style="display:none;">🏆 !OBJETIVO CONSEGUIDO! 🏆</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Derecha: hueco para centrar el medio -->
+        <div class="head-right"></div>
+      </div>
+
+      <div class="strip">
+        <div id="cards" class="cards"></div>
+        <div id="empty" class="empty" style="display:none;">No hay reseñas para mostrar.</div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    /* ====== MONITOR PETICIONES AIRTABLE ====== */
+let __airtableDailyCount = 0;
+
+// Reiniciar el contador automáticamente a medianoche
+function resetAirtableCounterAtMidnight() {
+  const now = new Date();
+  const msToMidnight =
+    new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 1) - now;
+
+  setTimeout(() => {
+    __airtableDailyCount = 0;
+    console.log("[Airtable Monitor] Contador reiniciado a medianoche.");
+    resetAirtableCounterAtMidnight();
+  }, msToMidnight);
+}
+
+resetAirtableCounterAtMidnight();
+
+  /* ======== RESEÑAS ======== */
+  const POLL_MS = 60000;
+  let state = { totalCount: 0, reviews: [] };
+
+  function stars(n) {
+    const v = Math.max(0, Math.min(5, Number(n) || 0));
+    return '★'.repeat(Math.round(v)) + '☆'.repeat(5 - Math.round(v));
+  }
+  function fmtDate(iso) {
+    try {
+      const d = new Date(iso);
+      return d.toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' });
+    } catch (e) {
+      return iso;
+    }
+  }
+  function escapeHtml(s) {
+    return String(s ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  function renderReviews() {
+    const cards = document.getElementById('cards');
+    const empty = document.getElementById('empty');
+    const subtitle = document.getElementById('subtitle');
+
+    subtitle.textContent = `Mostrando ${state.reviews.length} (de ${state.totalCount} en total)`;
+    cards.innerHTML = '';
+
+    if (!state.reviews.length) {
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+
+    for (const r of state.reviews) {
+      const textHtml =
+        r.text && r.text.trim()
+          ? `<div class="text">${escapeHtml(r.text)}</div>`
+          : '';
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.innerHTML = `
+        <div class="row">
+          <div class="pill">#${r.number}</div>
+          <div class="stars" aria-label="${r.rating} estrellas">${stars(r.rating)}</div>
+        </div>
+        <div class="author">${escapeHtml(r.author || 'Anónimo')}</div>
+        ${textHtml}
+        <div class="meta">${fmtDate(r.publishedAt)}</div>`;
+      cards.appendChild(el);
+    }
+  }
+
+  function loadInitial() {
+    google.script.run
+      .withSuccessHandler(res => {
+        state = res || { totalCount: 0, reviews: [] };
+        renderReviews();
+      })
+      .withFailureHandler(err => {
+        document.getElementById('subtitle').textContent = 'Error cargando datos';
+        console.error(err);
+      })
+      .initialize();
+  }
+
+  function checkUpdates() {
+    google.script.run
+      .withSuccessHandler(res => {
+        if (res && res.updated) {
+          state = { totalCount: res.totalCount, reviews: res.reviews || [] };
+          renderReviews();
+          fetchMonthlyGoal(); // refresca objetivo si entran nuevas reseñas
+        } else if (res) {
+          state.totalCount = res.totalCount;
+          if (
+            Array.isArray(res.reviews) &&
+            res.reviews.length !== state.reviews.length
+          ) {
+            state.reviews = res.reviews;
+            renderReviews();
+          }
+        }
+      })
+      .withFailureHandler(err =>
+        console.error('Fallo al comprobar actualizaciones', err)
+      )
+      .checkForUpdates();
+  }
+
+  /* ======== KPI AIRTABLE ======== */
+  const AIRTABLE_POLL_MS = 10 * 60 * 1000; // 10 minutos
+
+  function getBackgroundColor(value) {
+    if (value >= 40) return '#2ecc71';
+    if (value >= 38) return '#6ab04c';
+    if (value >= 36) return '#f1c40f';
+    if (value >= 34) return '#f39c12';
+    if (value >= 32) return '#e67e22';
+    if (value >= 30) return '#d35400';
+    return '#c0392b';
+  }
+
+  // Animación del número del KPI
+  let __lastPct = null;
+  let __goalCompletedPrev = false;
+  let __confettiTimer = null;
+  let __confettiMonthKey = null;
+
+  function renderAirtableKpi(stats) {
+    const { pct, total, citadas } = stats || { pct: 0, total: 0, citadas: 0 };
+    const top = document.getElementById('top');
+    const kpiValue = document.getElementById('kpiValue');
+    const kpiSub = document.getElementById('kpiSub');
+
+    top.style.backgroundColor = getBackgroundColor(pct);
+    kpiSub.textContent = `${citadas} citadas / ${total} leads`;
+
+    const start = typeof __lastPct === 'number' ? __lastPct : pct;
+    const end = pct;
+    const duration = 600;
+    const t0 = performance.now();
+    kpiValue.style.transform = 'scale(1.02)';
+    function step(now) {
+      const p = Math.min(1, (now - t0) / duration);
+      const eased = p < 0.5 ? 2 * p * p : -1 + (4 - 2 * p) * p;
+      const val = start + (end - start) * eased;
+      kpiValue.textContent = `${val.toFixed(2)}%`;
+      if (p < 1) {
+        requestAnimationFrame(step);
+      } else {
+        kpiValue.style.transform = 'scale(1)';
+        __lastPct = end;
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
+  function fetchAirtableKpi() {
+    google.script.run
+      .withSuccessHandler(renderAirtableKpi)
+      .withFailureHandler(err => console.error('Airtable KPI error', err))
+      .getAirtablePercentage();
+  }
+
+  // Versión “segura”: solo llama si la pestaña está visible
+function fetchAirtableKpiSafe() {
+  // Si la pestaña no está visible, no gastar llamada
+  if (document.hidden) return;
+
+  __airtableDailyCount++;
+
+  const now = new Date().toLocaleTimeString('es-ES');
+  console.log(
+    `%c[Airtable] Petición #${__airtableDailyCount} hoy · ${now}`,
+    "color: #0070f3; font-weight: 600;"
+  );
+
+  fetchAirtableKpi();
+}
+
+
+  /* ======== PROGRESS MENSUAL ======== */
+  function renderMonthlyGoal(data) {
+    const { count = 0, goal = 20, monthKey = null } = data || {};
+    const pct = Math.max(
+      0,
+      Math.min(100, Math.round((count / goal) * 100))
+    );
+
+    const bar = document.querySelector('.goalbar');
+    const fill = document.getElementById('goalFill');
+    const countEl = document.getElementById('goalCount');
+    const pctEl = document.getElementById('goalPct');
+    const trophy = document.getElementById('goalTrophy');
+    if (!bar || !fill) return;
+
+    // Cambio de mes → reset confeti
+    if (monthKey && __confettiMonthKey !== monthKey) {
+      __confettiMonthKey = monthKey;
+      __goalCompletedPrev = false;
+      stopConfettiLoop();
+    }
+
+    // Texto
+    if (countEl)
+      countEl.textContent = `🎯 Objetivo de reseñas mensual: ${count}/${goal}`;
+    if (pctEl) pctEl.textContent = `${pct}%`;
+
+    // Reinicio/animación de rayas
+    fill.classList.remove('running');
+    void fill.offsetWidth;
+    fill.classList.add('running');
+
+    const prev = typeof fill.__lastPct === 'number' ? fill.__lastPct : -1;
+    if (prev < 0) {
+      fill.style.width = `${pct}%`;
+    } else if (pct < prev) {
+      fill.style.transition = 'none';
+      fill.style.width = '0%';
+      requestAnimationFrame(() => {
+        fill.style.transition = '';
+        fill.style.width = `${pct}%`;
+      });
+    } else if (pct > prev) {
+      fill.style.width = `${pct}%`;
+    }
+    fill.__lastPct = pct;
+
+    // Estado completado
+    const done = count >= goal;
+    bar.classList.toggle('completed', done);
+    if (trophy) trophy.style.display = done ? 'inline' : 'none';
+
+    // Confeti
+    if (done && !__goalCompletedPrev) {
+      const header = document.querySelector('.bottom .header');
+      if (typeof launchConfetti === 'function')
+        launchConfetti(header || document.body, 72);
+      startConfettiLoop();
+    } else if (!done) {
+      stopConfettiLoop();
+    }
+    __goalCompletedPrev = done;
+  }
+
+  function fetchMonthlyGoal() {
+    google.script.run
+      .withSuccessHandler(renderMonthlyGoal)
+      .withFailureHandler(err => console.error('Monthly goal error', err))
+      .getMonthlyReviewCount();
+  }
+
+  function launchConfetti(overEl, count = 36) {
+    const rect = overEl.getBoundingClientRect();
+
+    const stage = document.createElement('div');
+    stage.className = 'confetti-stage';
+    document.body.appendChild(stage);
+
+    const colors = [
+      '#60a5fa',
+      '#34d399',
+      '#10b981',
+      '#f59e0b',
+      '#ef4444',
+      '#a78bfa',
+      '#f472b6'
+    ];
+
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement('span');
+      p.className = 'confetti-piece';
+      p.style.background =
+        colors[Math.floor(Math.random() * colors.length)];
+
+      const startX = rect.left + Math.random() * rect.width;
+      const startY = rect.top + rect.height / 2;
+
+      const drift = Math.random() * 160 - 80;
+      const fall = 140 + Math.random() * 120;
+      const rot = 180 + Math.random() * 360;
+      const dur = 900 + Math.random() * 500;
+      const t0 = performance.now();
+
+      p.style.left = '0px';
+      p.style.top = '0px';
+
+      function tick(now) {
+        const t = Math.min(1, (now - t0) / dur);
+        const e = 1 - Math.pow(1 - t, 3);
+        const x = startX + drift * e;
+        const y = startY + fall * e;
+        const r = rot * e;
+
+        p.style.transform = `translate(${x}px, ${y}px) rotate(${r}deg)`;
+        p.style.opacity = String(0.95 - t * 0.35);
+
+        if (t < 1) requestAnimationFrame(tick);
+      }
+
+      requestAnimationFrame(tick);
+      stage.appendChild(p);
+    }
+
+    setTimeout(() => stage.remove(), 1800);
+  }
+
+  function startConfettiLoop() {
+    if (__confettiTimer) return;
+    const header = document.querySelector('.bottom .header');
+
+    launchConfetti(header || document.body, 64);
+
+    __confettiTimer = setInterval(() => {
+      if (document.hidden) return;
+      launchConfetti(header || document.body, 24);
+    }, 2000);
+  }
+
+  function stopConfettiLoop() {
+    if (__confettiTimer) {
+      clearInterval(__confettiTimer);
+      __confettiTimer = null;
+    }
+  }
+
+  /* ======== Arranque ======== */
+  loadInitial();
+  setInterval(checkUpdates, POLL_MS);
+
+  // KPI Airtable: primera carga + refresco cada 10 minutos (solo si visible)
+  fetchAirtableKpiSafe();
+  setInterval(fetchAirtableKpiSafe, AIRTABLE_POLL_MS);
+
+  fetchMonthlyGoal();
+  setInterval(fetchMonthlyGoal, 60 * 60 * 1000); // cada hora
+
+  /* ======== CONSEJOS RÁPIDOS DE VENTAS ======== */
+  let salesTips = [];
+  let tipTimer = null;
+
+  function fetchSalesTips() {
+    google.script.run
+      .withSuccessHandler(tips => {
+        if (Array.isArray(tips) && tips.length) {
+          salesTips = tips;
+          showRandomTip();
+          if (tipTimer) clearInterval(tipTimer);
+          tipTimer = setInterval(showRandomTip, 60000); // cada 60s
+        } else {
+          document.getElementById('tipText').textContent =
+            'Sin consejos disponibles.';
+        }
+      })
+      .withFailureHandler(err => {
+        document.getElementById('tipText').textContent =
+          'Error cargando consejos.';
+        console.error(err);
+      })
+      .getSalesTips();
+  }
+
+  function showRandomTip() {
+    if (!salesTips.length) return;
+    const randomTip =
+      salesTips[Math.floor(Math.random() * salesTips.length)];
+    const el = document.getElementById('tipText');
+    el.style.opacity = 0;
+    setTimeout(() => {
+      el.textContent = randomTip;
+      el.style.opacity = 1;
+    }, 300);
+  }
+
+  // Llamamos una vez al inicio
+  fetchSalesTips();
+  </script>
+
+</body>
+
+</html>
