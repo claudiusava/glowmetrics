@@ -139,7 +139,7 @@ function initialize() {
 
       const stored = readWindow_() || [];
       if (stored.length >= INITIAL_WINDOW_SIZE && Number(totalCount) > 0) {
-        const payload = { totalCount: Number(totalCount) || 0, reviews: stored };
+        const payload = { totalCount: Number(totalCount) || 0, reviews: stored, newReviewsCount: getLastSyncNewCount_() };
         setLastGood_('initialize', payload);
         return payload;
       }
@@ -149,7 +149,8 @@ function initialize() {
       const result = scheduledSerpApiCheck();
       const payload = {
         totalCount: Number(result && result.totalCount) || 0,
-        reviews: (result && result.reviews) ? result.reviews : []
+        reviews: (result && result.reviews) ? result.reviews : [],
+        newReviewsCount: getLastSyncNewCount_()
       };
       setLastGood_('initialize', payload);
       return payload;
@@ -181,7 +182,8 @@ function checkForUpdates() {
       const payload = {
         updated: true,
         totalCount: Number(meta.totalCount) || 0,
-        reviews
+        reviews,
+        newReviewsCount: getLastSyncNewCount_()
       };
       setLastGood_('checkForUpdates', payload);
       return payload;
@@ -191,7 +193,8 @@ function checkForUpdates() {
       return getLastGood_('checkForUpdates', {
         updated: true,
         totalCount: 0,
-        reviews: []
+        reviews: [],
+        newReviewsCount: 0
       });
     }
   });

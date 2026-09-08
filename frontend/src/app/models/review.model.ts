@@ -12,6 +12,7 @@ export interface ReviewsResponse {
   totalCount: number;
   reviews: Review[];
   updated?: boolean;
+  newReviewsCount?: number;
 }
 
 export interface MonthlyGoal {

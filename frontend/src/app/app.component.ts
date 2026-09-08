@@ -22,15 +22,6 @@ const TIP_ROTATE_MS = 60_000;
 // filtro puesto a mano en la tabla. El cooldown real vive en el backend.
 const SECRET_REFRESH_CODE = 'airtable';
 
-// Las reseñas solo se sincronizan 1 vez al día (dailyReviewsJob, 00:00-01:00),
-// así que "reseñas de hoy" por calendario no tiene sentido: justo tras esa
-// sincronización, la mayoría de reseñas nuevas llevan fecha de AYER, y una
-// reseña real de hoy no aparecerá hasta la sincronización de mañana. Por eso
-// medimos "nuevas desde la última sincronización" comparando el total actual
-// contra el total anterior (persistido para que no parpadee entre pollings
-// ni se pierda al recargar la página).
-const REVIEWS_SYNC_STORAGE_KEY = 'glowmetrics_reviews_sync_v1';
-
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -129,7 +120,7 @@ export class AppComponent implements OnInit, OnDestroy {
         this.totalCount = res.totalCount;
         this.reviews = res.reviews;
         this.loadingReviews = false;
-        this.updateNewReviewsBadge(res.totalCount);
+        this.newReviewsCount = res.newReviewsCount || 0;
         this.loadMonthlyGoal();
       })
     );
@@ -141,7 +132,7 @@ export class AppComponent implements OnInit, OnDestroy {
       this.svc.checkForUpdates().subscribe(res => {
         if (!res) return;
         this.totalCount = res.totalCount;
-        this.updateNewReviewsBadge(res.totalCount);
+        this.newReviewsCount = res.newReviewsCount || 0;
         if (res.updated || res.reviews.length !== this.reviews.length) {
           this.reviews = res.reviews;
         }
@@ -157,7 +148,7 @@ export class AppComponent implements OnInit, OnDestroy {
       ).subscribe(res => {
         if (document.hidden || !res) return;
         this.totalCount = res.totalCount;
-        this.updateNewReviewsBadge(res.totalCount);
+        this.newReviewsCount = res.newReviewsCount || 0;
         if (res.updated || res.reviews.length !== this.reviews.length) {
           this.reviews = res.reviews;
           if (res.updated) this.loadMonthlyGoal();
@@ -199,28 +190,6 @@ export class AppComponent implements OnInit, OnDestroy {
   get reviewsSubtitle(): string {
     if (this.loadingReviews) return 'Cargando…';
     return `Mostrando ${this.reviews.length} (de ${this.totalCount} en total)`;
-  }
-
-  private updateNewReviewsBadge(totalCount: number): void {
-    if (!totalCount) return; // evita corromper el histórico con ceros de errores/fallbacks
-
-    let stored: { total: number; prevTotal: number | null } | null = null;
-    try {
-      const raw = localStorage.getItem(REVIEWS_SYNC_STORAGE_KEY);
-      if (raw) stored = JSON.parse(raw);
-    } catch { /* sin localStorage, sin badge */ }
-
-    if (!stored) {
-      stored = { total: totalCount, prevTotal: null };
-    } else if (totalCount !== stored.total) {
-      stored = { total: totalCount, prevTotal: stored.total };
-    }
-
-    this.newReviewsCount = stored.prevTotal != null ? Math.max(0, stored.total - stored.prevTotal) : 0;
-
-    try {
-      localStorage.setItem(REVIEWS_SYNC_STORAGE_KEY, JSON.stringify(stored));
-    } catch { /* ignorar */ }
   }
 
   private showRandomTip(): void {

@@ -46,6 +46,15 @@ function scheduledSerpApiCheck() {
         writeWindow_(renumbered);
         setMeta_({ placeUrl, totalCount: currentTotal });
 
+        // Guardamos cuántas trajo ESTE sync para el badge "+N nuevas" del
+        // frontend. Va en Script Properties (no en localStorage) para que
+        // todos los dispositivos/navegadores vean el mismo número, en vez
+        // de que cada pantalla calcule su propia versión según cuándo
+        // recargó por última vez.
+        const ps = PropertiesService.getScriptProperties();
+        ps.setProperty('LAST_SYNC_NEW_COUNT', String(currentTotal - previousTotal));
+        ps.setProperty('LAST_SYNC_AT', new Date().toISOString());
+
         const payload = { updated: true, totalCount: currentTotal, reviews: renumbered };
         setLastGood_('reviews_window', payload);
         return payload;
@@ -65,6 +74,14 @@ function scheduledSerpApiCheck() {
   });
 }
 
+
+/** Reseñas que trajo el último sync que realmente encontró novedades
+ * (0 si nunca hubo uno o si ya no queda registro). Compartido entre todos
+ * los clientes vía Script Properties. */
+function getLastSyncNewCount_() {
+  const count = Number(PropertiesService.getScriptProperties().getProperty('LAST_SYNC_NEW_COUNT') || 0);
+  return count > 0 ? count : 0;
+}
 
 /** =========================
  * UTILIDADES
