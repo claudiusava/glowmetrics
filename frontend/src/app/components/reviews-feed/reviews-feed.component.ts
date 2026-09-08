@@ -11,13 +11,7 @@ import { Review } from '../../models/review.model';
 })
 export class ReviewsFeedComponent {
   @Input() reviews: Review[] = [];
-  @Input() totalCount = 0;
   @Input() loading = true;
-
-  get subtitle(): string {
-    if (this.loading) return 'Cargando…';
-    return `Mostrando ${this.reviews.length} (de ${this.totalCount} en total)`;
-  }
 
   stars(n: number): string {
     const v = Math.max(0, Math.min(5, Number(n) || 0));

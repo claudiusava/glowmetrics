@@ -10,19 +10,19 @@
   align-items: center;
   justify-content: center;
   transition: background-color 0.8s ease-in-out;
-  padding: 0 32px;
+  padding: 26px;
 }
 
 .kpi-card {
-  width: 97%;
-  height: 90%;
-  border-radius: 14px;
+  width: 100%;
+  height: 100%;
+  border-radius: 22px;
   display: grid;
   place-items: center;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(2px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12), 0 1px 0 rgba(255, 255, 255, 0.4) inset;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(6px);
   padding: 0 40px;
 }
 
@@ -76,7 +76,12 @@
   margin-bottom: 6px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+}
+
+.tip-emoji {
+  font-size: 2.2em;
+  line-height: 1;
 }
 
 .tip-text {

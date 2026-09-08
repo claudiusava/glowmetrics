@@ -36,11 +36,18 @@
 .goal-label {
   margin-top: 6px;
   display: flex;
+  align-items: center;
   justify-content: center;
   gap: 10px;
   font-size: 12px;
+  line-height: 1;
   color: #374151;
   font-weight: 600;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+  }
 }
 
 .goal-trophy {

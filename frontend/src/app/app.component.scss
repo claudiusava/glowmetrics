@@ -13,7 +13,7 @@
 }
 
 .bottom {
-  padding: 16px;
+  padding: 20px 24px;
   background: #f1f5f9;
   display: flex;
   flex-direction: column;
@@ -28,10 +28,10 @@ app-reviews-feed {
 
 .header {
   display: grid;
-  grid-template-columns: 1fr minmax(280px, 560px) 1fr;
+  grid-template-columns: 1fr minmax(320px, 760px) 1fr;
   align-items: end;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
   background: #f1f5f9;
   transition: box-shadow .25s ease, background-color .25s ease;
 
@@ -41,10 +41,26 @@ app-reviews-feed {
   }
 }
 
-.head-left { align-self: start; }
-.head-center { display: grid; place-items: center; }
+.head-left { align-self: end; }
+.head-center {
+  display: grid;
+  place-items: center;
+
+  app-monthly-goal {
+    display: block;
+    width: 100%;
+  }
+}
 
 .title {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #0f172a;
+}
+
+.subtitle {
+  color: #6b7280;
+  font-size: 13px;
+  margin-top: 2px;
 }

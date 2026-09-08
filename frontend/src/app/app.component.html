@@ -7,6 +7,7 @@
     <div class="header" #bottomHeader>
       <div class="head-left">
         <div class="title">Últimas reseñas</div>
+        <div class="subtitle">{{ reviewsSubtitle }}</div>
       </div>
 
       <div class="head-center">
@@ -21,7 +22,6 @@
 
     <app-reviews-feed
       [reviews]="reviews"
-      [totalCount]="totalCount"
       [loading]="loadingReviews"
     ></app-reviews-feed>
   </section>
