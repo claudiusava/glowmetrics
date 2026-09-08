@@ -6,7 +6,10 @@
   <section class="bottom">
     <div class="header" #bottomHeader>
       <div class="head-left">
-        <div class="title">Últimas reseñas</div>
+        <div class="title-row">
+          <div class="title"><span class="live-dot"></span>Últimas reseñas</div>
+          <span class="badge-today" *ngIf="newReviewsCount > 0">🔥 +{{ newReviewsCount }} nuevas</span>
+        </div>
         <div class="subtitle">{{ reviewsSubtitle }}</div>
       </div>
 

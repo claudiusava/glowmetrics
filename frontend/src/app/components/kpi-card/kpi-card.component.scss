@@ -48,12 +48,43 @@
   margin-bottom: 6px;
 }
 
+.kpi-value-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
 .kpi-value {
   font-size: clamp(46px, 7vw, 80px);
   line-height: 1;
   font-weight: 800;
   letter-spacing: -1px;
   margin-bottom: 4px;
+}
+
+.kpi-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.4);
+  animation: trend-in 0.3s ease;
+
+  &.up { color: #047857; }
+  &.down { color: #b91c1c; }
+}
+
+.trend-arrow {
+  font-size: 11px;
+}
+
+@keyframes trend-in {
+  from { opacity: 0; transform: translateY(3px) scale(.9); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .kpi-sub {
@@ -80,8 +111,22 @@
 }
 
 .tip-emoji {
+  display: inline-block;
   font-size: 2.2em;
   line-height: 1;
+  animation: bulb-glow 2.6s ease-in-out infinite;
+  transform-origin: center 65%;
+}
+
+@keyframes bulb-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.2));
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.85));
+    transform: scale(1.08) rotate(-3deg);
+  }
 }
 
 .tip-text {

@@ -3,7 +3,13 @@
     <div class="kpi-layout">
       <div class="kpi-left">
         <div class="kpi-title">Leads citados (Airtable)</div>
-        <div class="kpi-value">{{ displayValue }}</div>
+        <div class="kpi-value-row">
+          <div class="kpi-value">{{ displayValue }}</div>
+          <div class="kpi-trend" *ngIf="trend" [class.up]="trend === 'up'" [class.down]="trend === 'down'">
+            <span class="trend-arrow">{{ trend === 'up' ? '▲' : '▼' }}</span>
+            <span class="trend-delta">{{ trendDeltaLabel }}</span>
+          </div>
+        </div>
         <div class="kpi-sub">{{ subText }}</div>
       </div>
       <div class="kpi-right">

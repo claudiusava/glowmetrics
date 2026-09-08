@@ -2,6 +2,11 @@ import { Component, Input, OnChanges, SimpleChanges, ElementRef, ViewChild } fro
 import { CommonModule } from '@angular/common';
 import { AirtableKpi } from '../../models/review.model';
 
+// Recuerda el último % conocido entre recargas de la página (localStorage)
+// para poder mostrar la flechita de tendencia desde el primer momento,
+// no solo tras el segundo refresco de la sesión actual.
+const TREND_STORAGE_KEY = 'glowmetrics_kpi_trend_v1';
+
 @Component({
   selector: 'app-kpi-card',
   standalone: true,
@@ -16,6 +21,8 @@ export class KpiCardComponent implements OnChanges {
   displayValue = '-- %';
   subText = 'Calculando…';
   bgColor = '#3fa66b';
+  trend: 'up' | 'down' | null = null;
+  trendDeltaLabel = '';
 
   private lastPct: number | null = null;
 
@@ -23,8 +30,29 @@ export class KpiCardComponent implements OnChanges {
     if (changes['kpi'] && this.kpi) {
       this.subText = `${this.kpi.citadas} citados de ${this.kpi.total} leads`;
       this.bgColor = this.getBackgroundColor(this.kpi.pct);
+      if (this.kpi.total > 0) this.updateTrend(this.kpi.pct);
       this.animateValue(this.lastPct ?? this.kpi.pct, this.kpi.pct, 600);
     }
+  }
+
+  private updateTrend(pct: number): void {
+    let stored: number | null = null;
+    try {
+      const raw = localStorage.getItem(TREND_STORAGE_KEY);
+      if (raw) stored = JSON.parse(raw).pct;
+    } catch { /* sin localStorage, simplemente no mostramos tendencia */ }
+
+    if (stored != null) {
+      const diff = pct - stored;
+      if (Math.abs(diff) >= 0.01) {
+        this.trend = diff > 0 ? 'up' : 'down';
+        this.trendDeltaLabel = `${diff > 0 ? '+' : ''}${diff.toFixed(2)}%`;
+      }
+    }
+
+    try {
+      localStorage.setItem(TREND_STORAGE_KEY, JSON.stringify({ pct }));
+    } catch { /* ignorar */ }
   }
 
   private getBackgroundColor(value: number): string {
