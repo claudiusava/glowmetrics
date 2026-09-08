@@ -41,4 +41,12 @@ export class GlowmetricsService {
       catchError(() => of({ pct: 32.15, total: 0, citadas: 0, stale: true, updatedAt: '' }))
     );
   }
+
+  // Refresco manual bajo demanda (código secreto). Cooldown real en el
+  // backend, así que un fallo aquí simplemente no actualiza nada.
+  refreshAirtableKpi(): Observable<AirtableKpi | null> {
+    return this.http.jsonp<AirtableKpi>(`${this.api}?route=refresh-airtable-kpi`, 'callback').pipe(
+      catchError(() => of(null))
+    );
+  }
 }

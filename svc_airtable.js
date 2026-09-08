@@ -125,6 +125,35 @@ function getAirtablePercentage(centerId) {
   return { pct: 32.15, total: 0, citadas: 0, stale: true, updatedAt: new Date().toISOString() };
 }
 
+/**
+ * Refresco manual bajo demanda (botón/atajo oculto en el frontend).
+ * Hace exactamente lo mismo que el trigger airtableKpiJob (limpia caché,
+ * vuelve a pedir a Airtable y guarda el snapshot), pero se puede lanzar
+ * en cualquier momento — útil si el trigger de las 13:00/19:00 coincidió
+ * con un filtro puesto a mano en la tabla de Airtable.
+ * Cooldown de 3 minutos compartido (da igual quién llame) para que,
+ * aunque alguien descubra la ruta, no se pueda machacar la cuota gratuita.
+ */
+function manualRefreshAirtableKpi() {
+  return withLock_(() => {
+    const centerId = 'ALCORCON';
+
+    if (!cooldownOk_('manual_airtable_refresh', 3 * 60 * 1000)) {
+      return Object.assign(getAirtablePercentage(centerId), { refreshed: false });
+    }
+
+    try {
+      CacheService.getScriptCache().remove('airtable_stats');
+      const stats = getAirtableStats();
+      saveAirtableSnapshot_(centerId, stats);
+    } catch (e) {
+      console.error('manualRefreshAirtableKpi ERROR:', e);
+    }
+
+    return Object.assign(getAirtablePercentage(centerId), { refreshed: true });
+  });
+}
+
 function saveAirtableSnapshot_(centerId, stats) {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   let sh = ss.getSheetByName(KPI_SHEET_NAME);

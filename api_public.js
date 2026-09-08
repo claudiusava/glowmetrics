@@ -7,11 +7,30 @@
  * - No consumen APIs externas.
  * - Evitan carreras entre usuarios/recargas.
  */
+// Contador de reentrada: dentro de UNA misma ejecución, varias funciones
+// públicas llaman a otras ya envueltas en withLock_ (p.ej. initialize()
+// llama a ensureSheets_() y readWindow_(), que también usan withLock_).
+// Como Apps Script ejecuta cada invocación en un solo hilo, un segundo
+// waitLock() dentro de la misma ejecución nunca se libera a sí mismo y
+// agota el timeout de 20s (interbloqueo). Esta variable vive solo durante
+// la ejecución actual (no se comparte entre invocaciones concurrentes),
+// así que solo tomamos el lock real la primera vez y reutilizamos el
+// permiso en las llamadas anidadas.
+let __lockDepth_ = 0;
+
 function withLock_(fn) {
+  if (__lockDepth_ > 0) {
+    return fn();
+  }
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
-  try { return fn(); }
-  finally { lock.releaseLock(); }
+  __lockDepth_++;
+  try {
+    return fn();
+  } finally {
+    __lockDepth_--;
+    lock.releaseLock();
+  }
 }
 
 function setLastGood_(key, value) {
@@ -76,7 +95,8 @@ function jsonRoute_(route, callback) {
     'updates': checkForUpdates,
     'monthly-goal': getMonthlyReviewCount,
     'sales-tips': getSalesTips,
-    'airtable-kpi': getAirtablePercentage
+    'airtable-kpi': getAirtablePercentage,
+    'refresh-airtable-kpi': manualRefreshAirtableKpi
   };
 
   const handler = handlers[route];

@@ -16,6 +16,12 @@ const POLL_MS = 60_000;
 const MONTHLY_GOAL_POLL_MS = 60 * 60 * 1_000; // cada hora
 const TIP_ROTATE_MS = 60_000;
 
+// Código secreto: se teclea en cualquier momento (la app no tiene campos de
+// texto, así que nadie lo escribe sin querer) para forzar un refresco real
+// de Airtable, útil si el trigger de las 13:00/19:00 coincidió con un
+// filtro puesto a mano en la tabla. El cooldown real vive en el backend.
+const SECRET_REFRESH_CODE = 'airtable';
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -33,9 +39,12 @@ export class AppComponent implements OnInit, OnDestroy {
   totalCount = 0;
   loadingReviews = true;
   currentTip = 'Cargando consejo…';
+  refreshToast: string | null = null;
 
   private tips: string[] = [];
   private tipTimer: ReturnType<typeof setInterval> | null = null;
+  private toastTimer: ReturnType<typeof setTimeout> | null = null;
+  private secretBuffer = '';
   private subs = new Subscription();
 
   constructor(
@@ -70,6 +79,38 @@ export class AppComponent implements OnInit, OnDestroy {
       this.loadAirtableKpi();
       this.loadSalesTips();
     }
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onKeydown(ev: KeyboardEvent): void {
+    if (ev.key.length !== 1 || !/[a-z]/i.test(ev.key)) return;
+    this.secretBuffer = (this.secretBuffer + ev.key.toLowerCase()).slice(-SECRET_REFRESH_CODE.length);
+    if (this.secretBuffer === SECRET_REFRESH_CODE) {
+      this.secretBuffer = '';
+      this.triggerManualAirtableRefresh();
+    }
+  }
+
+  private triggerManualAirtableRefresh(): void {
+    this.showRefreshToast('Actualizando Airtable…', 8000);
+    this.subs.add(
+      this.svc.refreshAirtableKpi().subscribe(res => {
+        if (!res) {
+          this.showRefreshToast('Error al actualizar Airtable');
+          return;
+        }
+        this.kpi = res;
+        this.showRefreshToast(
+          res.refreshed ? 'Airtable actualizado ✓' : 'Ya se actualizó hace poco, espera unos minutos'
+        );
+      })
+    );
+  }
+
+  private showRefreshToast(msg: string, durationMs = 2500): void {
+    this.refreshToast = msg;
+    if (this.toastTimer) clearTimeout(this.toastTimer);
+    this.toastTimer = setTimeout(() => (this.refreshToast = null), durationMs);
   }
 
   private loadInitial(): void {

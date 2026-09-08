@@ -26,4 +26,5 @@ export interface AirtableKpi {
   citadas: number;
   stale: boolean;
   updatedAt: string;
+  refreshed?: boolean;
 }

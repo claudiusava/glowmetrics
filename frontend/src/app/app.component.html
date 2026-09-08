@@ -25,4 +25,6 @@
       [loading]="loadingReviews"
     ></app-reviews-feed>
   </section>
+
+  <div class="refresh-toast" *ngIf="refreshToast">{{ refreshToast }}</div>
 </div>
