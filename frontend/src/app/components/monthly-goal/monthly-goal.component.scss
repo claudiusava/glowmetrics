@@ -1,0 +1,59 @@
+.goalbar {
+  width: 100%;
+}
+
+.goal-track {
+  position: relative;
+  height: 14px;
+  border-radius: 999px;
+  background:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.10) 0, rgba(0,0,0,.10) 1px, transparent 1px, transparent 25%),
+    linear-gradient(#eef2f7, #e5eaf1);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,.08);
+  overflow: hidden;
+}
+
+.goal-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: inherit;
+  background:
+    repeating-linear-gradient(45deg, rgba(255,255,255,.25) 0, rgba(255,255,255,.25) 8px, rgba(255,255,255,0) 8px, rgba(255,255,255,0) 16px),
+    linear-gradient(90deg, #60a5fa, #34d399 60%, #10b981);
+  transition: width .7s cubic-bezier(.22,.61,.36,1), filter .3s ease;
+  filter: saturate(1.1);
+
+  &.running {
+    animation: stripes 8s linear infinite;
+  }
+}
+
+@keyframes stripes {
+  from { background-position: 0 0, 0 0; }
+  to   { background-position: 200px 0, 0 0; }
+}
+
+.goal-label {
+  margin-top: 6px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  font-size: 12px;
+  color: #374151;
+  font-weight: 600;
+}
+
+.goal-trophy {
+  margin-left: 4px;
+}
+
+// Objetivo completado: barra dorada
+.goalbar.completed .goal-fill {
+  background: linear-gradient(90deg, #facc15, #f59e0b 40%, #fbbf24 80%);
+  animation: stripes 6s linear infinite, goldGlow 2.4s ease-in-out infinite alternate;
+}
+
+@keyframes goldGlow {
+  from { filter: brightness(1) saturate(1.2); }
+  to   { filter: brightness(1.35) saturate(1.6); }
+}

@@ -1,0 +1,83 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.subtitle {
+  color: #6b7280;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.strip {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card {
+  background: #f7307d;
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.08);
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+  width: 100%;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pill {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: #eef2ff;
+  color: #3730a3;
+  border: 1px solid #e0e7ff;
+}
+
+.stars {
+  letter-spacing: 1.5px;
+  font-size: 18px;
+  color: #fbbf24;
+  transform: translateY(1px);
+}
+
+.author {
+  font-weight: 600;
+}
+
+.text {
+  color: #111827;
+  font-size: 14px;
+  line-height: 1.35;
+  white-space: pre-wrap;
+}
+
+.meta {
+  color: #111827;
+  font-size: 12px;
+}
+
+.empty {
+  color: #6b7280;
+  text-align: center;
+  padding: 24px;
+  border: 2px dashed rgba(0,0,0,.08);
+  border-radius: 14px;
+  background: #fff;
+}

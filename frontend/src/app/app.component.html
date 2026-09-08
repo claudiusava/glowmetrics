@@ -1,0 +1,28 @@
+<div class="wrap">
+  <!-- KPI superior -->
+  <app-kpi-card [kpi]="kpi" [tip]="currentTip"></app-kpi-card>
+
+  <!-- Sección inferior -->
+  <section class="bottom">
+    <div class="header" #bottomHeader>
+      <div class="head-left">
+        <div class="title">Últimas reseñas</div>
+      </div>
+
+      <div class="head-center">
+        <app-monthly-goal
+          [data]="monthlyGoal"
+          (goalCompleted)="onGoalCompleted()"
+        ></app-monthly-goal>
+      </div>
+
+      <div class="head-right"></div>
+    </div>
+
+    <app-reviews-feed
+      [reviews]="reviews"
+      [totalCount]="totalCount"
+      [loading]="loadingReviews"
+    ></app-reviews-feed>
+  </section>
+</div>

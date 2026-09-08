@@ -1,0 +1,88 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.top {
+  height: 100%;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.8s ease-in-out;
+  padding: 0 32px;
+}
+
+.kpi-card {
+  width: 97%;
+  height: 90%;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(2px);
+  padding: 0 40px;
+}
+
+.kpi-layout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(40px, 8vw, 200px);
+  width: 100%;
+}
+
+.kpi-left {
+  flex: 0 0 40%;
+  text-align: center;
+}
+
+.kpi-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #1f2937;
+  margin-bottom: 6px;
+}
+
+.kpi-value {
+  font-size: clamp(46px, 7vw, 80px);
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -1px;
+  margin-bottom: 4px;
+}
+
+.kpi-sub {
+  font-size: 14px;
+  color: #111827;
+  opacity: 0.92;
+}
+
+.kpi-right {
+  flex: 2;
+  text-align: left;
+}
+
+.tip-title {
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #ffffff;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tip-text {
+  font-size: 18px;
+  color: #ffffff;
+  line-height: 1.6;
+  max-width: 660px;
+  transition: opacity 0.3s ease;
+}

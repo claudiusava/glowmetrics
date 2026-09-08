@@ -1,0 +1,21 @@
+<div class="subtitle">{{ subtitle }}</div>
+
+<div class="strip">
+  <ng-container *ngIf="reviews.length > 0; else emptyTpl">
+    <div class="cards">
+      <div class="card" *ngFor="let r of reviews">
+        <div class="row">
+          <div class="pill">#{{ r.number }}</div>
+          <div class="stars" [attr.aria-label]="r.rating + ' estrellas'">{{ stars(r.rating) }}</div>
+        </div>
+        <div class="author">{{ r.author || 'Anónimo' }}</div>
+        <div class="text" *ngIf="r.text?.trim()">{{ r.text }}</div>
+        <div class="meta">{{ fmtDate(r.publishedAt) }}</div>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template #emptyTpl>
+    <div class="empty" *ngIf="!loading">No hay reseñas para mostrar.</div>
+  </ng-template>
+</div>

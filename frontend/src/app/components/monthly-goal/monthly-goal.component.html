@@ -1,0 +1,13 @@
+<div class="goalbar" [class.completed]="isCompleted">
+  <div class="goal-track">
+    <div
+      class="goal-fill running"
+      [style.width.%]="fillPct"
+    ></div>
+  </div>
+  <div class="goal-label">
+    <span>{{ countLabel }}</span>
+    <span>{{ pctLabel }}</span>
+    <span *ngIf="isCompleted" class="goal-trophy">🏆 !OBJETIVO CONSEGUIDO! 🏆</span>
+  </div>
+</div>
