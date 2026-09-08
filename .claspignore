@@ -1,0 +1,12 @@
+**/**
+!appsscript.json
+!api_public.js
+!cfg_config.js
+!index.html
+!jobs_scheduler.js
+!logic_reviews.js
+!svc_airtable.js
+!svc_reviews_external.js
+!svc_sheets.js
+!triggers.js
+!triggers_airtable.js

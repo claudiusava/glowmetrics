@@ -1,40 +1,70 @@
 /** =========================
- * LÓGICA PROGRAMADA (TRIGGERS)
+ * LÓGICA RESEÑAS (ESTABILIZADA)
+ * =========================
+ * Cambios:
+ * - Lock para evitar carreras (initialize/forceRebuild/manual calls)
+ * - “last-good” para que el front no se rompa si SerpApi/Sheets falla
+ * - Guardas placeUrl/totalCount de forma consistente
+ * - Dedupe más robusto y numeración estable
+ */
+
+/** Helpers de estabilidad (withLock_, setLastGood_, getLastGood_) definidos
+ * una sola vez en api_public.js para evitar duplicados entre archivos. */
+
+/** =========================
+ * “JOB” (antes trigger). Ahora: función segura, se puede llamar manualmente.
  * ========================= */
-
-// Esta función es la que se ejecuta 5 veces al día vía trigger.
-// Aquí SÍ se llama SerpApi si hace falta.
 function scheduledSerpApiCheck() {
-  ensureSheets_();
+  return withLock_(() => {
+    ensureSheets_();
 
-  const meta = getMeta_();
-  const previousTotal = Number(meta.totalCount || 0);
-  const placeUrl = meta.placeUrl || PLACE_URL;
+    try {
+      const meta = getMeta_() || {};
+      const previousTotal = Number(meta.totalCount || 0);
+      const placeUrl = meta.placeUrl || (typeof PLACE_URL !== 'undefined' ? PLACE_URL : '');
 
-  const currentTotal = getSerpApiTotalReviews_();
-  if (currentTotal == null) {
-    console.error('scheduledSerpApiCheck: no se pudo obtener total de SerpApi.');
-    return { updated: false, totalCount: previousTotal, reviews: readWindow_() };
-  }
+      // 1 sola llamada (total + últimas reseñas)
+      const bundle = fetchLatestReviewsAndTotalFromSerpApi_(INITIAL_WINDOW_SIZE);
+      const currentTotalRaw = bundle.total;
 
-  if (currentTotal > previousTotal) {
-    const diff = currentTotal - previousTotal;
-    const toFetch = Math.min(diff, INITIAL_WINDOW_SIZE);
+      if (currentTotalRaw == null) {
+        console.error('scheduledSerpApiCheck: no se pudo obtener total desde SerpApi (bundle).');
+        const payload = { updated: false, totalCount: previousTotal, reviews: readWindow_() || [] };
+        setLastGood_('reviews_window', payload);
+        return payload;
+      }
 
-    const newOnes = fetchReviewsFromSerpApi_(toFetch);
-    const windowBefore = readWindow_();
-    const merged = dedupeById_([...newOnes, ...windowBefore]).slice(0, INITIAL_WINDOW_SIZE);
-    const renumbered = assignNumbers_(merged, currentTotal);
+      // No bajar nunca el total guardado por anomalías temporales
+      const currentTotal = Math.max(previousTotal, Number(currentTotalRaw) || 0);
 
-    writeWindow_(renumbered);
-    setMeta_({ placeUrl, totalCount: currentTotal });
+      // Detectar si hay nuevas (por total)
+      if (currentTotal > previousTotal) {
+        const windowBefore = readWindow_() || [];
+        const merged = dedupeById_([...(bundle.reviews || []), ...windowBefore]).slice(0, INITIAL_WINDOW_SIZE);
+        const renumbered = assignNumbers_(merged, currentTotal);
 
-    return { updated: true, totalCount: currentTotal, reviews: renumbered };
-  }
+        writeWindow_(renumbered);
+        setMeta_({ placeUrl, totalCount: currentTotal });
 
-  // Sin cambios
-  return { updated: false, totalCount: currentTotal, reviews: readWindow_() };
+        const payload = { updated: true, totalCount: currentTotal, reviews: renumbered };
+        setLastGood_('reviews_window', payload);
+        return payload;
+      }
+
+      // Sin cambios: aún así actualizamos total (por si antes estaba mal) y devolvemos ventana actual
+      setMeta_({ placeUrl, totalCount: currentTotal });
+
+      const payload = { updated: false, totalCount: currentTotal, reviews: readWindow_() || [] };
+      setLastGood_('reviews_window', payload);
+      return payload;
+
+    } catch (e) {
+      console.error('scheduledSerpApiCheck ERROR:', e);
+      return getLastGood_('reviews_window', { updated: false, totalCount: 0, reviews: [] });
+    }
+  });
 }
+
 
 /** =========================
  * UTILIDADES
@@ -56,17 +86,41 @@ function appendQuery_(url, params) {
   return url + (hasQ ? '&' : '?') + q;
 }
 
-function assignNumbers_(reviewsAscByTime, currentTotal) {
-  return reviewsAscByTime.map((r, i) => ({ ...r, number: currentTotal - i }));
+/**
+ * Numeración estable:
+ * - En tu UI se renderiza en el orden del array (primera card arriba).
+ * - Si el array va “nuevas primero”, entonces:
+ *   i=0 -> #currentTotal
+ *   i=1 -> #currentTotal-1
+ */
+function assignNumbers_(reviewsNewestFirst, currentTotal) {
+  return (reviewsNewestFirst || []).map((r, i) => ({
+    ...r,
+    number: (Number(currentTotal) || 0) - i
+  }));
 }
 
+/**
+ * Dedupe robusto:
+ * - Preferimos reviewId si existe.
+ * - Si no, usamos combinación estable: author|publishedAt|rating|text
+ */
 function dedupeById_(arr) {
   const seen = new Set();
   const out = [];
-  for (const x of arr) {
-    const id = x.reviewId || JSON.stringify(x);
-    if (!seen.has(id)) {
-      seen.add(id);
+
+  for (const x of (arr || [])) {
+    const key = x && x.reviewId
+      ? String(x.reviewId)
+      : [
+          x && x.author ? String(x.author) : '',
+          x && x.publishedAt ? String(x.publishedAt) : '',
+          x && x.rating != null ? String(x.rating) : '',
+          x && x.text ? String(x.text) : ''
+        ].join('|');
+
+    if (!seen.has(key)) {
+      seen.add(key);
       out.push(x);
     }
   }

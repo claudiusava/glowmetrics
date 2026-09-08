@@ -1,15 +1,20 @@
 /*************************
- * CONFIGURACIÓN GENERAL
- *************************/
+ * CONFIGURACIÓN GENERAL (ESTABILIZADA)
+ *************************
+ * Cambios:
+ * - Congela la configuración en objetos inmutables para evitar mutaciones accidentales.
+ * - Centraliza límites/timeouts (sin triggers).
+ * - Mantiene exactamente tus constantes y valores.
+ */
 
 // Airtable
-const AIRTABLE = {
+const AIRTABLE = Object.freeze({
   BASE_ID: 'appkC8oRh7XtpKEVN',
   TABLE_ID: 'tblVS5CHe2Vjb5HRv',
   VIEW_ID: 'viw43MlTmyROPwIXD', // vista
   FIELD_NAME: 'Field 5',        // campo que contiene "CITADA"
   CACHE_SECS: 900
-};
+});
 
 // Google Sheets / negocio
 const SPREADSHEET_ID = '1o-z4-0XLKpmV_houX06G4DgAeImNWHkgoHPJBXxFZbQ';
@@ -23,3 +28,11 @@ const MONTHLY_GOAL = 20;
 // Guarda SERPAPI_KEY en Script Properties (igual que AIRTABLE_PAT)
 const SERPAPI_BASE_URL = 'https://serpapi.com/search.json';
 const SERPAPI_DAILY_LIMIT = 20; // máximo llamadas/día (seguro)
+
+// Estabilidad / red (si tus otros archivos lo usan)
+const NET = Object.freeze({
+  URLFETCH_TIMEOUT_MS: 20000,
+  URLFETCH_TRIES: 3,
+  COOLDOWN_CHECK_MS: 3000,
+  COOLDOWN_INIT_MS: 15000
+});
