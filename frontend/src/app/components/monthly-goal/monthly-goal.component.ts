@@ -33,7 +33,7 @@ export class MonthlyGoalComponent implements OnChanges {
 
     const pct = Math.max(0, Math.min(100, Math.round((count / goal) * 100)));
     this.fillPct = pct;
-    this.countLabel = `🎯 Objetivo de reseñas mensual: ${count}/${goal}`;
+    this.countLabel = `Objetivo de reseñas mensual: ${count}/${goal}`;
     this.pctLabel = `${pct}%`;
     this.isCompleted = count >= goal;
 
