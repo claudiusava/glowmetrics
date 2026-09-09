@@ -9,11 +9,13 @@ import { GlowmetricsService } from './services/glowmetrics.service';
 import { ConfettiService } from './services/confetti.service';
 import { KpiCardComponent } from './components/kpi-card/kpi-card.component';
 import { MonthlyGoalComponent } from './components/monthly-goal/monthly-goal.component';
+import { MonthlyHistoryComponent } from './components/monthly-history/monthly-history.component';
 import { ReviewsFeedComponent } from './components/reviews-feed/reviews-feed.component';
-import { Review, MonthlyGoal, AirtableKpi } from './models/review.model';
+import { Review, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry } from './models/review.model';
 
 const POLL_MS = 60_000;
 const MONTHLY_GOAL_POLL_MS = 60 * 60 * 1_000; // cada hora
+const MONTHLY_HISTORY_POLL_MS = 60 * 60 * 1_000; // cada hora
 const TIP_ROTATE_MS = 60_000;
 
 // Código secreto: se teclea en cualquier momento (la app no tiene campos de
@@ -25,7 +27,7 @@ const SECRET_REFRESH_CODE = 'airtable';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, KpiCardComponent, MonthlyGoalComponent, ReviewsFeedComponent],
+  imports: [CommonModule, KpiCardComponent, MonthlyGoalComponent, MonthlyHistoryComponent, ReviewsFeedComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
@@ -41,6 +43,7 @@ export class AppComponent implements OnInit, OnDestroy {
   currentTip = 'Cargando consejo…';
   refreshToast: string | null = null;
   newReviewsCount = 0;
+  monthlyHistory: MonthlyHistoryEntry[] = [];
 
   private tips: string[] = [];
   private tipTimer: ReturnType<typeof setInterval> | null = null;
@@ -58,11 +61,15 @@ export class AppComponent implements OnInit, OnDestroy {
     this.startPolling();
     this.loadAirtableKpi();
     this.loadMonthlyGoal();
+    this.loadMonthlyHistory();
     this.loadSalesTips();
 
     // Monthly goal cada hora
     this.subs.add(
       interval(MONTHLY_GOAL_POLL_MS).subscribe(() => this.loadMonthlyGoal())
+    );
+    this.subs.add(
+      interval(MONTHLY_HISTORY_POLL_MS).subscribe(() => this.loadMonthlyHistory())
     );
   }
 
@@ -77,6 +84,7 @@ export class AppComponent implements OnInit, OnDestroy {
     if (!document.hidden) {
       this.checkUpdates();
       this.loadMonthlyGoal();
+      this.loadMonthlyHistory();
       this.loadAirtableKpi();
       this.loadSalesTips();
     }
@@ -166,6 +174,12 @@ export class AppComponent implements OnInit, OnDestroy {
   private loadMonthlyGoal(): void {
     this.subs.add(
       this.svc.getMonthlyGoal().subscribe(res => this.monthlyGoal = res)
+    );
+  }
+
+  private loadMonthlyHistory(): void {
+    this.subs.add(
+      this.svc.getMonthlyHistory().subscribe(res => this.monthlyHistory = res)
     );
   }
 

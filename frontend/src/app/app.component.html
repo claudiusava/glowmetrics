@@ -20,7 +20,12 @@
         ></app-monthly-goal>
       </div>
 
-      <div class="head-right"></div>
+      <div class="head-right">
+        <app-monthly-history
+          [history]="monthlyHistory"
+          [current]="monthlyGoal"
+        ></app-monthly-history>
+      </div>
     </div>
 
     <app-reviews-feed

@@ -96,7 +96,8 @@ function jsonRoute_(route, callback) {
     'monthly-goal': getMonthlyReviewCount,
     'sales-tips': getSalesTips,
     'airtable-kpi': getAirtablePercentage,
-    'refresh-airtable-kpi': manualRefreshAirtableKpi
+    'refresh-airtable-kpi': manualRefreshAirtableKpi,
+    'monthly-history': getMonthlyHistory
   };
 
   const handler = handlers[route];
@@ -203,52 +204,53 @@ function checkForUpdates() {
 /** =========================
  * OBJETIVO MENSUAL
  * ========================= */
+// count sale de MONTH_COUNTS (fecha real de cada reseña, ver logic_reviews.js),
+// no de un total "fotografiado" al primer acceso del mes — eso se equivocaba
+// si nadie cargaba la web justo al empezar el mes.
 function getMonthlyReviewCount() {
   return withLock_(() => {
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = now.getMonth();
-    const monthKey = `${y}-${String(m + 1).padStart(2, '0')}`;
-
-    // Cache primero (rápido)
-    const cache = CacheService.getScriptCache();
-    const cacheKey = 'monthly_count_' + monthKey;
-    const cached = cache.get(cacheKey);
-    if (cached) {
-      try {
-        const parsed = JSON.parse(cached);
-        if (parsed && typeof parsed.count === 'number') return parsed;
-      } catch (e) { }
-    }
+    const monthKey = monthKeyOf_(new Date());
 
     try {
-      const meta = getMeta_() || {};
-      const totalNow = Number(meta.totalCount) || 0;
-
-      // Guardamos el total al inicio del mes
-      const ps = PropertiesService.getScriptProperties();
-      const key = 'MONTH_START_' + monthKey;
-
-      let startTotal = Number(ps.getProperty(key) || 0);
-
-      if (!startTotal) {
-        startTotal = totalNow;
-        ps.setProperty(key, String(startTotal));
-      }
-
-      const count = Math.max(0, totalNow - startTotal);
+      const counts = getMonthCounts_();
+      const count = Number(counts[monthKey]) || 0;
 
       const payload = { count, goal: MONTHLY_GOAL, monthKey };
-      cache.put(cacheKey, JSON.stringify(payload), 600);
       setLastGood_('monthly_' + monthKey, payload);
       return payload;
 
     } catch (e) {
       console.error('getMonthlyReviewCount ERROR:', e);
-      const fallback = getLastGood_('monthly_' + monthKey, { count: 0, goal: MONTHLY_GOAL, monthKey });
-      // Intentamos cachear también el fallback para estabilizar el front
-      try { cache.put(cacheKey, JSON.stringify(fallback), 300); } catch (err) { }
-      return fallback;
+      return getLastGood_('monthly_' + monthKey, { count: 0, goal: MONTHLY_GOAL, monthKey });
+    }
+  });
+}
+
+/** =========================
+ * HISTÓRICO DE OBJETIVOS (12 MESES)
+ * ========================= */
+// Últimos 11 meses CERRADOS (todo lo que hay en MONTH_COUNTS salvo el mes
+// en curso, que ya se muestra aparte con getMonthlyReviewCount).
+function getMonthlyHistory() {
+  return withLock_(() => {
+    try {
+      const counts = getMonthCounts_();
+      const currentKey = monthKeyOf_(new Date());
+
+      const history = Object.keys(counts)
+        .filter(mk => mk !== currentKey)
+        .sort()
+        .slice(-11)
+        .map(mk => {
+          const count = Number(counts[mk]) || 0;
+          return { monthKey: mk, count, met: count >= MONTHLY_GOAL };
+        });
+
+      setLastGood_('monthly_history', history);
+      return history;
+    } catch (e) {
+      console.error('getMonthlyHistory ERROR:', e);
+      return getLastGood_('monthly_history', []);
     }
   });
 }

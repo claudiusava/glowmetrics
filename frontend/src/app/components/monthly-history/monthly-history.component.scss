@@ -1,0 +1,46 @@
+.history-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.history-label {
+  font-size: 11px;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.history-row {
+  display: flex;
+  gap: 3px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: #e5e7eb;
+  transition: transform 0.15s ease;
+
+  &:hover {
+    transform: scale(1.35);
+  }
+
+  &.met {
+    background: #10b981;
+  }
+
+  &.missed {
+    background: #f87171;
+  }
+
+  &.pending {
+    background: transparent;
+    border: 1.5px solid #cbd5e1;
+  }
+
+  &.nodata {
+    background: #f1f5f9;
+  }
+}

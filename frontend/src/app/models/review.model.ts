@@ -29,3 +29,9 @@ export interface AirtableKpi {
   updatedAt: string;
   refreshed?: boolean;
 }
+
+export interface MonthlyHistoryEntry {
+  monthKey: string;
+  count: number | null;
+  met: boolean | null;
+}

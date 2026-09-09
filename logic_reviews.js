@@ -51,9 +51,17 @@ function scheduledSerpApiCheck() {
         // todos los dispositivos/navegadores vean el mismo número, en vez
         // de que cada pantalla calcule su propia versión según cuándo
         // recargó por última vez.
+        const newCount = currentTotal - previousTotal;
         const ps = PropertiesService.getScriptProperties();
-        ps.setProperty('LAST_SYNC_NEW_COUNT', String(currentTotal - previousTotal));
+        ps.setProperty('LAST_SYNC_NEW_COUNT', String(newCount));
         ps.setProperty('LAST_SYNC_AT', new Date().toISOString());
+
+        // Conteo mensual por fecha REAL de cada reseña nueva (no por "total
+        // fotografiado al primer clic del mes", que se equivocaba si nadie
+        // cargaba la web justo al empezar el mes). bundle.reviews viene
+        // ordenado de más nueva a más antigua, así que las primeras
+        // `newCount` son exactamente las que se acaban de añadir.
+        recordReviewsInMonthCounts_((bundle.reviews || []).slice(0, newCount));
 
         const payload = { updated: true, totalCount: currentTotal, reviews: renumbered };
         setLastGood_('reviews_window', payload);
@@ -81,6 +89,47 @@ function scheduledSerpApiCheck() {
 function getLastSyncNewCount_() {
   const count = Number(PropertiesService.getScriptProperties().getProperty('LAST_SYNC_NEW_COUNT') || 0);
   return count > 0 ? count : 0;
+}
+
+/** =========================
+ * CONTEO MENSUAL POR FECHA REAL (MONTH_COUNTS)
+ * =========================
+ * Mapa { "YYYY-MM": nº reseñas } construido a partir de la fecha real de
+ * publicación de cada reseña, actualizado en el momento del sync — no
+ * depende de cuándo carga la web ningún cliente. Es la única fuente de
+ * verdad tanto para el objetivo del mes en curso como para el histórico
+ * de 12 meses.
+ */
+function getMonthCounts_() {
+  try {
+    const raw = PropertiesService.getScriptProperties().getProperty('MONTH_COUNTS');
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    console.error('getMonthCounts_ parse ERROR:', e);
+    return {};
+  }
+}
+
+function saveMonthCounts_(counts) {
+  // Recorta a los últimos 15 meses para no crecer sin límite.
+  const keys = Object.keys(counts).sort();
+  if (keys.length > 15) {
+    keys.slice(0, keys.length - 15).forEach(k => delete counts[k]);
+  }
+  PropertiesService.getScriptProperties().setProperty('MONTH_COUNTS', JSON.stringify(counts));
+}
+
+function recordReviewsInMonthCounts_(reviews) {
+  if (!reviews || !reviews.length) return;
+  const counts = getMonthCounts_();
+  for (const r of reviews) {
+    if (!r || !r.publishedAt) continue;
+    const d = new Date(r.publishedAt);
+    if (isNaN(d.getTime())) continue;
+    const mk = monthKeyOf_(d);
+    counts[mk] = (Number(counts[mk]) || 0) + 1;
+  }
+  saveMonthCounts_(counts);
 }
 
 /** =========================

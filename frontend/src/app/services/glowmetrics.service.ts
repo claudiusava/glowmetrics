@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, of } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { ReviewsResponse, MonthlyGoal, AirtableKpi } from '../models/review.model';
+import { ReviewsResponse, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry } from '../models/review.model';
 
 // Apps Script (ContentService) no manda cabeceras CORS, así que consumimos
 // su API vía JSONP en vez de XHR/fetch normal.
@@ -47,6 +47,12 @@ export class GlowmetricsService {
   refreshAirtableKpi(): Observable<AirtableKpi | null> {
     return this.http.jsonp<AirtableKpi>(`${this.api}?route=refresh-airtable-kpi`, 'callback').pipe(
       catchError(() => of(null))
+    );
+  }
+
+  getMonthlyHistory(): Observable<MonthlyHistoryEntry[]> {
+    return this.http.jsonp<MonthlyHistoryEntry[]>(`${this.api}?route=monthly-history`, 'callback').pipe(
+      catchError(() => of([]))
     );
   }
 }

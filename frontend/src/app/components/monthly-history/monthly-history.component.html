@@ -1,0 +1,14 @@
+<div class="history-wrap" *ngIf="squares.length">
+  <div class="history-label">🎯 12 meses</div>
+  <div class="history-row">
+    <span
+      *ngFor="let sq of squares"
+      class="dot"
+      [class.met]="sq.state === 'met'"
+      [class.missed]="sq.state === 'missed'"
+      [class.pending]="sq.state === 'pending'"
+      [class.nodata]="sq.state === 'nodata'"
+      [title]="sq.tooltip"
+    ></span>
+  </div>
+</div>
