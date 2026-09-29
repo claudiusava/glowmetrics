@@ -12,6 +12,14 @@
 /** withLock_ definido una sola vez en api_public.js para evitar duplicados. */
 
 function ensureSheets_() {
+  // Se llama en cada checkForUpdates()/initialize() (cada 60s por cliente),
+  // pero la estructura de las hojas casi nunca cambia. Cachear el "ya
+  // comprobado" evita hasta 8 llamadas a Sheets por poll (y el tiempo que
+  // eso mantiene el lock ocupado) — se repite de verdad como mucho 1 vez
+  // a la hora.
+  const cache = CacheService.getScriptCache();
+  if (cache.get('sheets_ensured')) return;
+
   return withLock_(() => {
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
 
@@ -48,6 +56,8 @@ function ensureSheets_() {
       }
       if (needs) reviews.getRange(1, 1, 1, 7).setValues([expected]);
     }
+
+    cache.put('sheets_ensured', '1', 3600);
   });
 }
 

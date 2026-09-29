@@ -6,39 +6,44 @@ import { ReviewsResponse, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry } from '
 
 // Apps Script (ContentService) no manda cabeceras CORS, así que consumimos
 // su API vía JSONP en vez de XHR/fetch normal.
+//
+// Todos los métodos devuelven `null` cuando la petición falla (en vez de un
+// objeto "en cero" como antes) para que el componente pueda distinguir un
+// fallo transitorio de un dato real y conservar el último dato bueno en
+// pantalla en vez de sobrescribirlo con ceros falsos.
 @Injectable({ providedIn: 'root' })
 export class GlowmetricsService {
   private api = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
-  initialize(): Observable<ReviewsResponse> {
+  initialize(): Observable<ReviewsResponse | null> {
     return this.http.jsonp<ReviewsResponse>(`${this.api}?route=initialize`, 'callback').pipe(
-      catchError(() => of({ totalCount: 0, reviews: [] }))
+      catchError(() => of(null))
     );
   }
 
-  checkForUpdates(): Observable<ReviewsResponse> {
+  checkForUpdates(): Observable<ReviewsResponse | null> {
     return this.http.jsonp<ReviewsResponse>(`${this.api}?route=updates`, 'callback').pipe(
-      catchError(() => of({ totalCount: 0, reviews: [], updated: false }))
+      catchError(() => of(null))
     );
   }
 
-  getMonthlyGoal(): Observable<MonthlyGoal> {
+  getMonthlyGoal(): Observable<MonthlyGoal | null> {
     return this.http.jsonp<MonthlyGoal>(`${this.api}?route=monthly-goal`, 'callback').pipe(
-      catchError(() => of({ count: 0, goal: 20, monthKey: '' }))
+      catchError(() => of(null))
     );
   }
 
-  getSalesTips(): Observable<string[]> {
+  getSalesTips(): Observable<string[] | null> {
     return this.http.jsonp<string[]>(`${this.api}?route=sales-tips`, 'callback').pipe(
-      catchError(() => of([]))
+      catchError(() => of(null))
     );
   }
 
-  getAirtableKpi(): Observable<AirtableKpi> {
+  getAirtableKpi(): Observable<AirtableKpi | null> {
     return this.http.jsonp<AirtableKpi>(`${this.api}?route=airtable-kpi`, 'callback').pipe(
-      catchError(() => of({ pct: 32.15, total: 0, citadas: 0, stale: true, updatedAt: '' }))
+      catchError(() => of(null))
     );
   }
 
@@ -50,9 +55,9 @@ export class GlowmetricsService {
     );
   }
 
-  getMonthlyHistory(): Observable<MonthlyHistoryEntry[]> {
+  getMonthlyHistory(): Observable<MonthlyHistoryEntry[] | null> {
     return this.http.jsonp<MonthlyHistoryEntry[]>(`${this.api}?route=monthly-history`, 'callback').pipe(
-      catchError(() => of([]))
+      catchError(() => of(null))
     );
   }
 }

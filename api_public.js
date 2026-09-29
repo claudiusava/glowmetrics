@@ -23,7 +23,11 @@ function withLock_(fn) {
     return fn();
   }
   const lock = LockService.getScriptLock();
-  lock.waitLock(20000);
+  // 8s en vez de 20s: si hay contención real (varias peticiones a la vez),
+  // preferimos que la que se queda atascada falle rápido — el frontend
+  // conserva el último dato bueno en pantalla sin más — a que bloquee la
+  // cola entera hasta 20s.
+  lock.waitLock(8000);
   __lockDepth_++;
   try {
     return fn();
@@ -207,23 +211,28 @@ function checkForUpdates() {
 // count sale de MONTH_COUNTS (fecha real de cada reseña, ver logic_reviews.js),
 // no de un total "fotografiado" al primer acceso del mes — eso se equivocaba
 // si nadie cargaba la web justo al empezar el mes.
+//
+// Sin withLock_ a propósito: es una simple lectura de una única propiedad
+// (MONTH_COUNTS), atómica de por sí a nivel de PropertiesService — no hay
+// nada que proteger aquí. Antes compartía el lock de todo el proyecto con
+// checkForUpdates/initialize/etc., y 5 peticiones a la vez (típico al
+// volver de otra pestaña) podían hacer que alguna esperase más de 20s y
+// fallase sin necesidad.
 function getMonthlyReviewCount() {
-  return withLock_(() => {
-    const monthKey = monthKeyOf_(new Date());
+  const monthKey = monthKeyOf_(new Date());
 
-    try {
-      const counts = getMonthCounts_();
-      const count = Number(counts[monthKey]) || 0;
+  try {
+    const counts = getMonthCounts_();
+    const count = Number(counts[monthKey]) || 0;
 
-      const payload = { count, goal: MONTHLY_GOAL, monthKey };
-      setLastGood_('monthly_' + monthKey, payload);
-      return payload;
+    const payload = { count, goal: MONTHLY_GOAL, monthKey };
+    setLastGood_('monthly_' + monthKey, payload);
+    return payload;
 
-    } catch (e) {
-      console.error('getMonthlyReviewCount ERROR:', e);
-      return getLastGood_('monthly_' + monthKey, { count: 0, goal: MONTHLY_GOAL, monthKey });
-    }
-  });
+  } catch (e) {
+    console.error('getMonthlyReviewCount ERROR:', e);
+    return getLastGood_('monthly_' + monthKey, { count: 0, goal: MONTHLY_GOAL, monthKey });
+  }
 }
 
 /** =========================
@@ -231,49 +240,48 @@ function getMonthlyReviewCount() {
  * ========================= */
 // Últimos 11 meses CERRADOS (todo lo que hay en MONTH_COUNTS salvo el mes
 // en curso, que ya se muestra aparte con getMonthlyReviewCount).
+// Sin withLock_: mismo motivo que getMonthlyReviewCount.
 function getMonthlyHistory() {
-  return withLock_(() => {
-    try {
-      const counts = getMonthCounts_();
-      const currentKey = monthKeyOf_(new Date());
+  try {
+    const counts = getMonthCounts_();
+    const currentKey = monthKeyOf_(new Date());
 
-      const history = Object.keys(counts)
-        .filter(mk => mk !== currentKey)
-        .sort()
-        .slice(-11)
-        .map(mk => {
-          const count = Number(counts[mk]) || 0;
-          return { monthKey: mk, count, met: count >= MONTHLY_GOAL };
-        });
+    const history = Object.keys(counts)
+      .filter(mk => mk !== currentKey)
+      .sort()
+      .slice(-11)
+      .map(mk => {
+        const count = Number(counts[mk]) || 0;
+        return { monthKey: mk, count, met: count >= MONTHLY_GOAL };
+      });
 
-      setLastGood_('monthly_history', history);
-      return history;
-    } catch (e) {
-      console.error('getMonthlyHistory ERROR:', e);
-      return getLastGood_('monthly_history', []);
-    }
-  });
+    setLastGood_('monthly_history', history);
+    return history;
+  } catch (e) {
+    console.error('getMonthlyHistory ERROR:', e);
+    return getLastGood_('monthly_history', []);
+  }
 }
 
 /** =========================
  * CONSEJOS DE VENTAS
  * ========================= */
+// Sin withLock_: hoja estática ("Hoja 3") que nadie escribe automáticamente,
+// sin riesgo real de conflicto con otros procesos.
 function getSalesTips() {
-  return withLock_(() => {
-    try {
-      const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-      const sh = ss.getSheetByName('Hoja 3');
-      if (!sh) return [];
+  try {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sh = ss.getSheetByName('Hoja 3');
+    if (!sh) return [];
 
-      const values = sh.getRange('A1:A').getValues().flat();
-      const tips = values.filter(v => typeof v === 'string' && v.trim().length > 0);
+    const values = sh.getRange('A1:A').getValues().flat();
+    const tips = values.filter(v => typeof v === 'string' && v.trim().length > 0);
 
-      setLastGood_('sales_tips', tips);
-      return tips;
+    setLastGood_('sales_tips', tips);
+    return tips;
 
-    } catch (e) {
-      console.error('getSalesTips ERROR:', e);
-      return getLastGood_('sales_tips', []);
-    }
-  });
+  } catch (e) {
+    console.error('getSalesTips ERROR:', e);
+    return getLastGood_('sales_tips', []);
+  }
 }

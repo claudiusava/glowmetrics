@@ -81,13 +81,14 @@ export class AppComponent implements OnInit, OnDestroy {
 
   @HostListener('document:visibilitychange')
   onVisibilityChange(): void {
-    if (!document.hidden) {
-      this.checkUpdates();
-      this.loadMonthlyGoal();
-      this.loadMonthlyHistory();
-      this.loadAirtableKpi();
-      this.loadSalesTips();
-    }
+    if (document.hidden) return;
+    // Escalonadas para no golpear el mismo lock del backend con 5
+    // peticiones a la vez justo al recuperar el foco de la pestaña.
+    this.checkUpdates();
+    setTimeout(() => this.loadMonthlyGoal(), 150);
+    setTimeout(() => this.loadMonthlyHistory(), 300);
+    setTimeout(() => this.loadAirtableKpi(), 450);
+    setTimeout(() => this.loadSalesTips(), 600);
   }
 
   @HostListener('document:keydown', ['$event'])
@@ -125,6 +126,11 @@ export class AppComponent implements OnInit, OnDestroy {
   private loadInitial(): void {
     this.subs.add(
       this.svc.initialize().subscribe(res => {
+        if (!res) {
+          // Primer arranque fallido: reintenta en vez de quedarse en blanco.
+          setTimeout(() => this.loadInitial(), 5000);
+          return;
+        }
         this.totalCount = res.totalCount;
         this.reviews = res.reviews;
         this.loadingReviews = false;
@@ -167,19 +173,20 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private loadAirtableKpi(): void {
     this.subs.add(
-      this.svc.getAirtableKpi().subscribe(res => this.kpi = res)
+      // Si falla, no pisamos el KPI ya mostrado con el placeholder de fallo.
+      this.svc.getAirtableKpi().subscribe(res => { if (res) this.kpi = res; })
     );
   }
 
   private loadMonthlyGoal(): void {
     this.subs.add(
-      this.svc.getMonthlyGoal().subscribe(res => this.monthlyGoal = res)
+      this.svc.getMonthlyGoal().subscribe(res => { if (res) this.monthlyGoal = res; })
     );
   }
 
   private loadMonthlyHistory(): void {
     this.subs.add(
-      this.svc.getMonthlyHistory().subscribe(res => this.monthlyHistory = res)
+      this.svc.getMonthlyHistory().subscribe(res => { if (res) this.monthlyHistory = res; })
     );
   }
 
@@ -187,6 +194,7 @@ export class AppComponent implements OnInit, OnDestroy {
     if (document.hidden) return;
     this.subs.add(
       this.svc.getSalesTips().subscribe(tips => {
+        if (!tips) return; // fallo transitorio: no tocamos el consejo actual
         if (tips.length) {
           this.tips = tips;
           this.showRandomTip();
