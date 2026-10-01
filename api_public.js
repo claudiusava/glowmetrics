@@ -78,7 +78,7 @@ function doGet(e) {
   const route = e && e.parameter && e.parameter.route;
   if (route) {
     const callback = e.parameter.callback;
-    return jsonRoute_(route, callback);
+    return jsonRoute_(route, callback, e.parameter);
   }
 
   const template = HtmlService.createTemplateFromFile('index');
@@ -93,7 +93,8 @@ function doGet(e) {
 /** =========================
  * API JSON (frontend Angular externo)
  * ========================= */
-function jsonRoute_(route, callback) {
+function jsonRoute_(route, callback, params) {
+  params = params || {};
   const handlers = {
     'initialize': initialize,
     'updates': checkForUpdates,
@@ -101,7 +102,11 @@ function jsonRoute_(route, callback) {
     'sales-tips': getSalesTips,
     'airtable-kpi': getAirtablePercentage,
     'refresh-airtable-kpi': manualRefreshAirtableKpi,
-    'monthly-history': getMonthlyHistory
+    'monthly-history': getMonthlyHistory,
+    'notes-list': getNotes,
+    'notes-add': () => addNote_(params.author, params.text, params.clientId),
+    'notes-edit': () => editNote_(params.id, params.text),
+    'notes-delete': () => deleteNote_(params.id)
   };
 
   const handler = handlers[route];

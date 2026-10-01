@@ -1,0 +1,51 @@
+<div class="backdrop" *ngIf="open" (click)="close()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">📌 Cuaderno de notas</div>
+      <button class="close-btn" (click)="close()" aria-label="Cerrar">✕</button>
+    </div>
+
+    <div class="composer">
+      <div class="composer-main">
+        <textarea
+          [(ngModel)]="draft"
+          placeholder="Escribe un recordatorio para el equipo…"
+          rows="2"
+          [disabled]="adding"
+        ></textarea>
+        <button class="add-btn" (click)="submit()" [disabled]="!draft.trim() || adding">
+          <span class="spinner" *ngIf="adding"></span>{{ adding ? 'Guardando…' : (addError ? 'Reintentar' : 'Añadir') }}
+        </button>
+      </div>
+      <div class="edit-error" *ngIf="addError">{{ addError }}</div>
+    </div>
+
+    <div class="notes-list">
+      <div class="empty" *ngIf="!notes.length">No hay notas todavía. ¡Escribe la primera!</div>
+
+      <div class="note" *ngFor="let n of notes">
+        <ng-container *ngIf="editingId === n.id; else viewMode">
+          <textarea class="edit-textarea" [(ngModel)]="editDraft" [rows]="editRows" [disabled]="editing"></textarea>
+          <div class="edit-error" *ngIf="editError">{{ editError }}</div>
+          <div class="note-footer">
+            <button class="edit-cancel" (click)="cancelEdit()" [disabled]="editing">Cancelar</button>
+            <button class="edit-save" (click)="saveEdit()" [disabled]="!editDraft.trim() || editing">
+              <span class="spinner" *ngIf="editing"></span>{{ editing ? 'Guardando…' : (editError ? 'Reintentar' : 'Guardar') }}
+            </button>
+          </div>
+        </ng-container>
+
+        <ng-template #viewMode>
+          <div class="note-text">{{ n.text }}</div>
+          <div class="note-footer">
+            <span class="note-date">{{ fmtDate(n.createdAt) }}</span>
+            <span class="note-actions">
+              <button class="note-edit" (click)="startEdit(n)" [disabled]="editing" aria-label="Editar nota">✎</button>
+              <button class="note-delete" (click)="remove(n.id)" [disabled]="deleting" aria-label="Borrar nota">✕</button>
+            </span>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</div>

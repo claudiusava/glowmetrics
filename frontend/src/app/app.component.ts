@@ -10,13 +10,22 @@ import { ConfettiService } from './services/confetti.service';
 import { KpiCardComponent } from './components/kpi-card/kpi-card.component';
 import { MonthlyGoalComponent } from './components/monthly-goal/monthly-goal.component';
 import { MonthlyHistoryComponent } from './components/monthly-history/monthly-history.component';
+import { NotesBoardComponent } from './components/notes-board/notes-board.component';
 import { ReviewsFeedComponent } from './components/reviews-feed/reviews-feed.component';
-import { Review, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry } from './models/review.model';
+import { Review, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry, Note } from './models/review.model';
 
 const POLL_MS = 60_000;
 const MONTHLY_GOAL_POLL_MS = 60 * 60 * 1_000; // cada hora
 const MONTHLY_HISTORY_POLL_MS = 60 * 60 * 1_000; // cada hora
+const NOTES_POLL_MS = 60_000;
 const TIP_ROTATE_MS = 60_000;
+
+// El cuaderno es compartido sin autor (varias personas usan el mismo
+// ordenador del centro). Guardamos en este navegador el id de la última
+// nota vista para saber si hay algo nuevo desde la última vez — es un
+// aviso "para mí, en este dispositivo", no un dato que deba coincidir
+// entre pantallas.
+const NOTES_SEEN_KEY = 'glowmetrics_notes_seen_v1';
 
 // Código secreto: se teclea en cualquier momento (la app no tiene campos de
 // texto, así que nadie lo escribe sin querer) para forzar un refresco real
@@ -27,7 +36,7 @@ const SECRET_REFRESH_CODE = 'airtable';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, KpiCardComponent, MonthlyGoalComponent, MonthlyHistoryComponent, ReviewsFeedComponent],
+  imports: [CommonModule, KpiCardComponent, MonthlyGoalComponent, MonthlyHistoryComponent, NotesBoardComponent, ReviewsFeedComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
@@ -44,6 +53,35 @@ export class AppComponent implements OnInit, OnDestroy {
   refreshToast: string | null = null;
   newReviewsCount = 0;
   monthlyHistory: MonthlyHistoryEntry[] = [];
+  notes: Note[] = [];
+  notesModalOpen = false;
+  hasUnreadNotes = false;
+  addingNote = false;
+  deletingNote = false;
+  editingNote = false;
+  editNoteError: string | null = null;
+  addNoteError: string | null = null;
+
+  // Varias fuentes piden notas a la vez (sondeo, abrir el modal, volver de
+  // otra pestaña, y las propias respuestas de añadir/borrar/editar). Si dos
+  // peticiones se cruzan y la más lenta llega DESPUÉS de una más reciente,
+  // pisaba el resultado bueno con uno viejo (una nota recién añadida podía
+  // "desaparecer" unos segundos). Este contador asegura que solo se aplica
+  // la respuesta de la petición más reciente, gane quien gane la carrera.
+  private notesSeq = 0;
+
+  // Justo después de escribir (añadir/editar/borrar), el sondeo automático
+  // de notas puede lanzar su propia lectura mientras esa escritura aún no
+  // ha terminado de confirmarse en el backend (las rutas de notas no usan
+  // lock compartido, a propósito, para no ralentizar el resto de la app).
+  // Si esa lectura "vieja" resuelve después de la respuesta de la propia
+  // escritura, gana la carrera por dispatch-order y pisa el resultado bueno
+  // con uno desactualizado — se autocorregía en el siguiente sondeo, pero
+  // tardaba hasta 60s. Pausamos el sondeo pasivo un rato tras cada escritura
+  // para no competir contra ella (las lecturas explícitas, como abrir el
+  // cuaderno, no se ven afectadas).
+  private lastNotesWriteAt = 0;
+  private readonly NOTES_WRITE_COOLDOWN_MS = 5000;
 
   private tips: string[] = [];
   private tipTimer: ReturnType<typeof setInterval> | null = null;
@@ -63,6 +101,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadMonthlyGoal();
     this.loadMonthlyHistory();
     this.loadSalesTips();
+    this.loadNotes();
 
     // Monthly goal cada hora
     this.subs.add(
@@ -70,6 +109,9 @@ export class AppComponent implements OnInit, OnDestroy {
     );
     this.subs.add(
       interval(MONTHLY_HISTORY_POLL_MS).subscribe(() => this.loadMonthlyHistory())
+    );
+    this.subs.add(
+      interval(NOTES_POLL_MS).subscribe(() => { if (!document.hidden) this.pollNotesIfIdle(); })
     );
   }
 
@@ -89,6 +131,12 @@ export class AppComponent implements OnInit, OnDestroy {
     setTimeout(() => this.loadMonthlyHistory(), 300);
     setTimeout(() => this.loadAirtableKpi(), 450);
     setTimeout(() => this.loadSalesTips(), 600);
+    setTimeout(() => this.pollNotesIfIdle(), 750);
+  }
+
+  private pollNotesIfIdle(): void {
+    if (Date.now() - this.lastNotesWriteAt < this.NOTES_WRITE_COOLDOWN_MS) return;
+    this.loadNotes();
   }
 
   @HostListener('document:keydown', ['$event'])
@@ -187,6 +235,107 @@ export class AppComponent implements OnInit, OnDestroy {
   private loadMonthlyHistory(): void {
     this.subs.add(
       this.svc.getMonthlyHistory().subscribe(res => { if (res) this.monthlyHistory = res; })
+    );
+  }
+
+  private loadNotes(): void {
+    const seq = ++this.notesSeq;
+    this.subs.add(
+      this.svc.getNotes().subscribe(res => {
+        if (!res || seq !== this.notesSeq) return; // superada por otra más reciente
+        this.notes = res;
+        this.refreshUnreadFlag();
+      })
+    );
+  }
+
+  private refreshUnreadFlag(): void {
+    const latestId = this.notes.length ? this.notes[0].id : null;
+    let seen: string | null = null;
+    try { seen = localStorage.getItem(NOTES_SEEN_KEY); } catch { /* ignorar */ }
+    this.hasUnreadNotes = !!latestId && latestId !== seen;
+  }
+
+  private markNotesAsSeen(): void {
+    const latestId = this.notes.length ? this.notes[0].id : '';
+    try { localStorage.setItem(NOTES_SEEN_KEY, latestId); } catch { /* ignorar */ }
+    this.hasUnreadNotes = false;
+  }
+
+  toggleNotesModal(): void {
+    this.notesModalOpen = !this.notesModalOpen;
+    if (this.notesModalOpen) {
+      this.markNotesAsSeen();
+      this.loadNotes();
+    }
+  }
+
+  closeNotesModal(): void {
+    this.notesModalOpen = false;
+  }
+
+  onAddNote(draft: { text: string; clientId: string }): void {
+    // No dejamos que se lance una segunda petición mientras la primera
+    // sigue en el aire (evita más carreras de las que ya cubre notesSeq).
+    if (this.addingNote) return;
+    this.addingNote = true;
+    this.addNoteError = null;
+    const seq = ++this.notesSeq;
+    this.subs.add(
+      this.svc.addNote(draft.text, draft.clientId).subscribe(res => {
+        this.addingNote = false;
+        if (res && res.notes && seq === this.notesSeq) {
+          this.notes = res.notes;
+          this.lastNotesWriteAt = Date.now();
+          this.markNotesAsSeen(); // lo acabamos de escribir, no es "sin leer"
+          if (res.error) this.addNoteError = res.error;
+        } else {
+          // Sin respuesta válida: no sabemos si llegó a guardarse, así que
+          // no perdemos el texto — "Reintentar" reenvía el mismo clientId,
+          // que el backend deduplica si el intento anterior sí se guardó.
+          this.addNoteError = 'No se pudo confirmar el guardado. Inténtalo de nuevo.';
+        }
+      })
+    );
+  }
+
+  onEditNote(edit: { id: string; text: string }): void {
+    if (this.editingNote) return;
+    this.editingNote = true;
+    this.editNoteError = null;
+    const seq = ++this.notesSeq;
+    this.subs.add(
+      this.svc.editNote(edit.id, edit.text).subscribe(res => {
+        this.editingNote = false;
+        if (res && res.notes && seq === this.notesSeq) {
+          this.notes = res.notes;
+          this.lastNotesWriteAt = Date.now();
+          this.markNotesAsSeen();
+          if (res.error) this.editNoteError = res.error;
+        } else {
+          // Sin respuesta válida (timeout, red, o una escritura más
+          // reciente ganó la carrera): no sabemos si se guardó, así que no
+          // tocamos this.notes y dejamos el texto editado listo para
+          // reintentar en vez de darlo por perdido en silencio.
+          this.editNoteError = 'No se pudo confirmar el guardado. Inténtalo de nuevo.';
+        }
+      })
+    );
+  }
+
+  onDeleteNote(id: string): void {
+    if (this.deletingNote) return;
+    this.deletingNote = true;
+    const seq = ++this.notesSeq;
+    this.subs.add(
+      this.svc.deleteNote(id).subscribe(res => {
+        this.deletingNote = false;
+        if (res && res.notes && seq === this.notesSeq) {
+          this.notes = res.notes;
+          this.lastNotesWriteAt = Date.now();
+          this.markNotesAsSeen();
+        }
+      })
     );
   }
 

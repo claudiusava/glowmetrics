@@ -35,4 +35,27 @@
   </section>
 
   <div class="refresh-toast" *ngIf="refreshToast">{{ refreshToast }}</div>
+
+  <button
+    class="notes-pin"
+    [class.has-unread]="hasUnreadNotes"
+    (click)="toggleNotesModal()"
+    title="Cuaderno de notas"
+    aria-label="Abrir cuaderno de notas"
+  >📌</button>
+
+  <app-notes-board
+    [open]="notesModalOpen"
+    [notes]="notes"
+    [adding]="addingNote"
+    [deleting]="deletingNote"
+    [editing]="editingNote"
+    [editError]="editNoteError"
+    [addError]="addNoteError"
+    (closeRequested)="closeNotesModal()"
+    (addNote)="onAddNote($event)"
+    (deleteNote)="onDeleteNote($event)"
+    (editNote)="onEditNote($event)"
+    (editSessionEnded)="editNoteError = null"
+  ></app-notes-board>
 </div>

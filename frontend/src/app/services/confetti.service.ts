@@ -1,10 +1,28 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
+
+// Duración total del "modo celebración" en bucle tras cumplir el objetivo
+// del mes. Antes se quedaba lanzando confeti cada 2s de forma indefinida
+// mientras el objetivo siguiera cumplido (podían ser semanas) — con una
+// ráfaga inicial ya es suficiente fiesta; el resto del mes no hace falta
+// seguir animando nada de fondo.
+const CONFETTI_LOOP_MS = 20_000;
 
 @Injectable({ providedIn: 'root' })
 export class ConfettiService {
   private timer: ReturnType<typeof setInterval> | null = null;
+  private stopTimer: ReturnType<typeof setTimeout> | null = null;
+
+  constructor(private zone: NgZone) {}
 
   launch(overEl: HTMLElement, count = 36): void {
+    // Todo el trabajo de requestAnimationFrame ocurre fuera de la zona de
+    // Angular: si no, zone.js dispara una detección de cambios completa de
+    // toda la app en CADA frame de CADA partícula (hasta ~60 veces/seg por
+    // partícula), que es carísimo y no aporta nada visualmente.
+    this.zone.runOutsideAngular(() => this.launchOutsideZone(overEl, count));
+  }
+
+  private launchOutsideZone(overEl: HTMLElement, count = 36): void {
     const rect = overEl.getBoundingClientRect();
     const stage = document.createElement('div');
     stage.style.cssText = 'position:fixed;left:0;top:0;width:100vw;height:100vh;pointer-events:none;z-index:99999;';
@@ -44,13 +62,25 @@ export class ConfettiService {
   startLoop(overEl: HTMLElement): void {
     if (this.timer) return;
     this.launch(overEl, 64);
-    this.timer = setInterval(() => this.launch(overEl, 24), 2000);
+
+    // El propio setInterval también fuera de la zona: si no, cada tick
+    // (cada 2s) sí dispararía una detección de cambios completa aunque el
+    // trabajo real de las partículas ya esté fuera.
+    this.zone.runOutsideAngular(() => {
+      this.timer = setInterval(() => this.launchOutsideZone(overEl, 24), 2000);
+    });
+
+    this.stopTimer = setTimeout(() => this.stopLoop(), CONFETTI_LOOP_MS);
   }
 
   stopLoop(): void {
     if (this.timer) {
       clearInterval(this.timer);
       this.timer = null;
+    }
+    if (this.stopTimer) {
+      clearTimeout(this.stopTimer);
+      this.stopTimer = null;
     }
   }
 }

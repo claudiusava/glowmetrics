@@ -35,3 +35,16 @@ export interface MonthlyHistoryEntry {
   count: number | null;
   met: boolean | null;
 }
+
+export interface Note {
+  id: string;
+  author: string;
+  text: string;
+  createdAt: string;
+}
+
+export interface AddNoteResult {
+  ok?: boolean;
+  error?: string;
+  notes: Note[];
+}

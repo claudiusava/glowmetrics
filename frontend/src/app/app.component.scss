@@ -125,3 +125,43 @@ app-reviews-feed {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+.notes-pin {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 20;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  font-size: 22px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: scale(1.08);
+  }
+
+  // Aviso de nota nueva: la propia chincheta crece y brilla, en vez de
+  // un puntito aparte — más fácil de ver de un vistazo desde lejos.
+  &.has-unread {
+    animation: pin-attention 1.3s ease-in-out infinite;
+  }
+}
+
+@keyframes pin-attention {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  }
+  50% {
+    transform: scale(1.25);
+    box-shadow: 0 6px 24px rgba(245, 158, 11, 0.8), 0 0 0 8px rgba(245, 158, 11, 0.18);
+  }
+}
