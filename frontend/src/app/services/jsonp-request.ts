@@ -13,18 +13,30 @@ const LATE_RESPONSE_GRACE_MS = 3 * 60_000;
 
 let counter = 0;
 
+// Zone.js (de Angular) no envuelve la función global que llama el script
+// JSONP al ejecutarse: sin esto, la respuesta se procesa FUERA de la zona de
+// Angular, los datos llegan al componente pero la vista no se repinta hasta
+// que otra cosa dispara la detección de cambios (un temporizador, el sondeo
+// del minuto, mover el ratón). Por eso la respuesta se re-entra en la zona en
+// la que se pidió.
+declare const Zone: { current: { run<R>(fn: () => R): R } } | undefined;
+
 export function jsonpRequest<T>(url: string): Observable<T> {
   return new Observable<T>(subscriber => {
     const name = `gm_jsonp_${Date.now().toString(36)}_${counter++}`;
     const win = window as unknown as Record<string, unknown>;
     const script = document.createElement('script');
+    const zone = typeof Zone !== 'undefined' ? Zone.current : null;
     let settled = false;
 
     win[name] = (data: T) => {
-      if (settled) return;
-      settled = true;
-      subscriber.next(data);
-      subscriber.complete();
+      const deliver = () => {
+        if (settled) return;
+        settled = true;
+        subscriber.next(data);
+        subscriber.complete();
+      };
+      if (zone) zone.run(deliver); else deliver();
     };
 
     const fail = (message: string) => {
