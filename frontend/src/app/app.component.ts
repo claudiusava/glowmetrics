@@ -219,7 +219,17 @@ export class AppComponent implements OnInit, OnDestroy {
     return JSON.stringify(a) === JSON.stringify(b);
   }
 
+  // Pantalla de carga de index.html (solo existe en una primera visita sin
+  // datos guardados): se desvanece con la primera respuesta que traiga datos.
+  private dismissSplash(): void {
+    const el = document.getElementById('splash');
+    if (!el || el.classList.contains('splash-hide')) return;
+    el.classList.add('splash-hide');
+    setTimeout(() => el.remove(), 600);
+  }
+
   private applyReviews(totalCount: number, reviews: Review[], newReviewsCount: number): void {
+    this.dismissSplash();
     this.totalCount = totalCount;
     this.newReviewsCount = newReviewsCount || 0;
     if (!this.sameJson(reviews, this.reviews)) this.reviews = reviews;
@@ -228,21 +238,25 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   private applyKpi(kpi: AirtableKpi): void {
+    this.dismissSplash();
     if (!this.sameJson(kpi, this.kpi)) this.kpi = kpi;
     this.cache.set('kpi', kpi);
   }
 
   private applyGoal(goal: MonthlyGoal): void {
+    this.dismissSplash();
     if (!this.sameJson(goal, this.monthlyGoal)) this.monthlyGoal = goal;
     this.cache.set('goal', goal);
   }
 
   private applyHistory(history: MonthlyHistoryEntry[]): void {
+    this.dismissSplash();
     if (!this.sameJson(history, this.monthlyHistory)) this.monthlyHistory = history;
     this.cache.set('history', history);
   }
 
   private applyTips(tips: string[]): void {
+    this.dismissSplash();
     // Si ya se muestra uno (copia guardada), no lo cambiamos de golpe.
     const alreadyShowing = this.tips.length > 0;
     this.tips = tips;

@@ -4,6 +4,8 @@ import { Injectable } from '@angular/core';
 // algo al instante al abrir la web mientras Apps Script (que puede tardar
 // decenas de segundos en frío) contesta con lo nuevo. Si cambia la forma de
 // los datos, subir la versión del prefijo para descartar copias antiguas.
+// OJO: index.html lee `${PREFIX}reviews` para decidir si muestra la pantalla de
+// carga; si cambia el prefijo hay que cambiarlo también allí.
 const PREFIX = 'glowmetrics_snap_v1_';
 
 @Injectable({ providedIn: 'root' })

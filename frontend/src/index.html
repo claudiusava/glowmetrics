@@ -35,9 +35,70 @@
       height: 100vh;
       overflow: hidden;
     }
+
+    /* Pantalla de carga: solo se ve cuando no hay datos guardados (ver el script
+       de abajo). Mismo degradado que el icono de la pestaña, con la estrella y un
+       destello de luz recorriendo su contorno. Todo en CSS, sin JavaScript. */
+    #splash {
+      position: fixed;
+      inset: 0;
+      z-index: 2147483000;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #f7307d 0%, #e0a24f 100%);
+      transition: opacity 0.5s ease;
+    }
+    #splash.splash-hide { opacity: 0; pointer-events: none; }
+    #splash svg {
+      width: min(38vmin, 320px);
+      height: auto;
+      overflow: visible;
+      filter: drop-shadow(0 10px 28px rgba(0, 0, 0, 0.18));
+      animation: splash-breathe 2.6s ease-in-out infinite;
+    }
+    .splash-star { fill: #ffffff; }
+    .splash-beam { fill: none; stroke-linejoin: round; stroke-linecap: round; }
+    .splash-tail {
+      stroke: rgba(255, 226, 122, 0.65);
+      stroke-width: 2.2;
+      stroke-dasharray: 26 74;
+      animation: splash-run 2.4s linear infinite;
+    }
+    .splash-head {
+      stroke: #fff4b8;
+      stroke-width: 2.8;
+      stroke-dasharray: 7 93;
+      filter: drop-shadow(0 0 3px #ffd54a) drop-shadow(0 0 7px rgba(255, 255, 255, 0.9));
+      animation: splash-run-head 2.4s linear infinite;
+    }
+    @keyframes splash-run { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -100; } }
+    @keyframes splash-run-head { from { stroke-dashoffset: -19; } to { stroke-dashoffset: -119; } }
+    @keyframes splash-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+    @media (prefers-reduced-motion: reduce) {
+      #splash svg, .splash-tail, .splash-head { animation: none; }
+      .splash-tail { stroke-dasharray: none; }
+      .splash-head { display: none; }
+    }
   </style>
 </head>
 <body>
+  <div id="splash" role="status" aria-label="Cargando GlowMetrics">
+    <svg viewBox="8 7.3 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path class="splash-star" d="M32 13 L36.7 25.8 L50.5 27.3 L39.9 36.1 L43.3 49.6 L32 42 L20.7 49.6 L24.1 36.1 L13.5 27.3 L27.3 25.8 Z"/>
+      <path class="splash-beam splash-tail" pathLength="100" d="M32 13 L36.7 25.8 L50.5 27.3 L39.9 36.1 L43.3 49.6 L32 42 L20.7 49.6 L24.1 36.1 L13.5 27.3 L27.3 25.8 Z"/>
+      <path class="splash-beam splash-head" pathLength="100" d="M32 13 L36.7 25.8 L50.5 27.3 L39.9 36.1 L43.3 49.6 L32 42 L20.7 49.6 L24.1 36.1 L13.5 27.3 L27.3 25.8 Z"/>
+    </svg>
+  </div>
+  <script>
+    // Con una copia guardada de las reseñas (misma clave que snapshot-cache.service.ts)
+    // la web pinta datos al instante y la pantalla de carga no hace falta: se quita
+    // antes del primer pintado. Sin copia (primera visita) se queda hasta que llegue
+    // la primera respuesta con datos; entonces la app la desvanece.
+    try {
+      var snap = JSON.parse(localStorage.getItem('glowmetrics_snap_v1_reviews'));
+      if (snap && snap.reviews && snap.reviews.length) document.getElementById('splash').remove();
+    } catch (e) { /* sin localStorage: se queda la pantalla de carga */ }
+  </script>
   <app-root></app-root>
 </body>
 </html>
