@@ -89,12 +89,24 @@ function scheduledSerpApiCheck() {
 }
 
 
-/** Reseñas que trajo el último sync que realmente encontró novedades
- * (0 si nunca hubo uno o si ya no queda registro). Compartido entre todos
- * los clientes vía Script Properties. */
+/** Cuánto dura el aviso "🔥 +N" desde la sincronización que trajo la novedad. */
+const NEW_REVIEWS_BADGE_TTL_MS = 24 * 60 * 60 * 1000;
+
+/** Reseñas que trajo el último sync que realmente encontró novedades, SOLO
+ * durante las 24 h siguientes a ese sync (0 si nunca hubo uno, si ya caducó o
+ * si no hay fecha registrada). Antes el aviso se quedaba para siempre hasta
+ * que otro sync trajera algo, y días después seguía diciendo "+1" mientras no
+ * había nada nuevo. Compartido entre todos los clientes vía Script Properties. */
 function getLastSyncNewCount_() {
-  const count = Number(PropertiesService.getScriptProperties().getProperty('LAST_SYNC_NEW_COUNT') || 0);
-  return count > 0 ? count : 0;
+  const ps = PropertiesService.getScriptProperties();
+  const count = Number(ps.getProperty('LAST_SYNC_NEW_COUNT') || 0);
+  if (!(count > 0)) return 0;
+
+  const at = Date.parse(ps.getProperty('LAST_SYNC_AT') || '');
+  if (isNaN(at)) return 0;
+  if (Date.now() - at > NEW_REVIEWS_BADGE_TTL_MS) return 0;
+
+  return count;
 }
 
 /** =========================
