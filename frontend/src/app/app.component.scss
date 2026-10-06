@@ -197,13 +197,31 @@ app-reviews-feed {
   .head-center app-monthly-goal { width: auto; }
   .head-right { display: none; }
 
-  .title-row {
+  // Título + aviso "🔥 +1" + contador "20 de 880" en la MISMA línea; si no
+  // caben (pantallas muy estrechas) el contador baja debajo, sin partir el título.
+  .head-left {
+    align-self: center;
+    min-width: 0;
+    display: flex;
     flex-wrap: wrap;
-    gap: 4px 8px;
+    align-items: center;
+    gap: 2px 8px;
   }
 
-  .title { font-size: 17px; }
-  .subtitle { font-size: 12px; }
+  .title-row {
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    gap: 6px;
+  }
+
+  .title { font-size: 16px; }
+  .subtitle { font-size: 12px; margin-top: 0; white-space: nowrap; }
+
+  @media (max-width: 380px) {
+    .title { font-size: 15px; }
+    .subtitle { font-size: 11px; }
+    .badge-today { font-size: 11px; padding: 2px 8px; }
+  }
 
   .notes-pin {
     top: 10px;

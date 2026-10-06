@@ -99,21 +99,23 @@
 
 @include bp.compact {
   // Pantalla pequeña: reseñas como burbujas de chat (como WhatsApp), con el
-  // texto completo, a ancho de contenido y con una esquina "de cola".
+  // texto completo y con una esquina "de cola".
   .strip {
     padding-right: 0;
     padding-bottom: calc(14px + env(safe-area-inset-bottom));
     -webkit-overflow-scrolling: touch;
   }
 
+  // Todas las burbujas con el MISMO ancho (el de la lista); solo varía el alto
+  // según el texto.
   .cards {
     gap: 8px;
-    align-items: flex-start;
+    align-items: stretch;
   }
 
   .card {
-    width: auto;
-    max-width: 94%;
+    width: 100%;
+    max-width: none;
     padding: 8px 12px 6px;
     gap: 3px;
     border-radius: 4px 16px 16px 16px;

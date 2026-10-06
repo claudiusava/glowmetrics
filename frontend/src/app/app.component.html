@@ -8,7 +8,12 @@
       <div class="head-left">
         <div class="title-row">
           <div class="title"><span class="live-dot"></span>Últimas reseñas</div>
-          <span class="badge-today" *ngIf="newReviewsCount > 0">🔥 +{{ newReviewsCount }} nuevas</span>
+          <span
+            class="badge-today"
+            *ngIf="newReviewsCount > 0"
+            [attr.title]="newReviewsCount === 1 ? '1 reseña nueva' : newReviewsCount + ' reseñas nuevas'"
+            [attr.aria-label]="newReviewsCount === 1 ? '1 reseña nueva' : newReviewsCount + ' reseñas nuevas'"
+          >🔥 +{{ newReviewsCount }}</span>
         </div>
         <div class="subtitle">{{ reviewsSubtitle }}</div>
       </div>

@@ -129,6 +129,16 @@
     white-space: nowrap;
   }
 
+  // En el móvil solo "🎯 0/20": la palabra "reseñas" no deja sitio para que
+  // título, aviso y contador quepan en la misma línea. Se añade en tablets.
+  .goal-words { display: none; }
+  .goal-compact { padding: 6px 10px; }
+
+  @media (min-width: 600px) {
+    .goal-words { display: inline; }
+    .goal-compact { padding: 6px 12px; }
+  }
+
   // Objetivo conseguido: la pastilla se vuelve dorada (y el trofeo rebota).
   .goalbar.completed .goal-compact {
     background: #fef3c7;

@@ -613,7 +613,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   get reviewsSubtitle(): string {
     if (this.loadingReviews) return 'Cargando…';
-    return `Mostrando ${this.reviews.length} (de ${this.totalCount} en total)`;
+    return `${this.reviews.length} de ${this.totalCount}`;
   }
 
   private showRandomTip(): void {
