@@ -1,3 +1,5 @@
+@use '../../../styles/breakpoints' as bp;
+
 :host {
   display: flex;
   flex-direction: column;
@@ -93,4 +95,52 @@
   border: 2px dashed rgba(0,0,0,.08);
   border-radius: 14px;
   background: #fff;
+}
+
+@include bp.compact {
+  // Pantalla pequeña: reseñas como burbujas de chat (como WhatsApp), con el
+  // texto completo, a ancho de contenido y con una esquina "de cola".
+  .strip {
+    padding-right: 0;
+    padding-bottom: calc(14px + env(safe-area-inset-bottom));
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .cards {
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .card {
+    width: auto;
+    max-width: 94%;
+    padding: 8px 12px 6px;
+    gap: 3px;
+    border-radius: 4px 16px 16px 16px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+
+    // Sin "levantar" la tarjeta al tocar: en pantallas táctiles el hover se queda pegado.
+    &:hover {
+      transform: none;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+    }
+  }
+
+  .row { gap: 6px; }
+  .pill { padding: 2px 8px; font-size: 11px; }
+  .stars { font-size: 15px; letter-spacing: 1px; }
+  .author { font-size: 14px; }
+
+  .text {
+    font-size: 15px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+
+  // La hora, abajo a la derecha, como en un chat.
+  .meta {
+    font-size: 11px;
+    opacity: 0.75;
+    text-align: right;
+  }
 }

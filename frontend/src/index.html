@@ -36,6 +36,12 @@
       overflow: hidden;
     }
 
+    /* Modo compacto (misma condición que src/styles/_breakpoints.scss): 100dvh es la
+       altura visible real; en el iPhone 100vh incluye la barra de Safari. */
+    @media (max-width: 900px), (max-height: 520px) {
+      body { height: 100vh; height: 100dvh; }
+    }
+
     /* Pantalla de carga: solo se ve cuando no hay datos guardados (ver el script
        de abajo). Mismo degradado que el icono de la pestaña, con la estrella y un
        destello de luz recorriendo su contorno. Todo en CSS, sin JavaScript. */

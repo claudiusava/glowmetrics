@@ -1,0 +1,12 @@
+// Modo compacto: móviles, tablets en vertical y ventanas muy bajas, donde el
+// diseño de escritorio (tarjeta superior con consejos, cabecera de 3 columnas
+// con barra de objetivo e histórico) no cabe. TODO el diseño para pantallas
+// pequeñas va dentro de este mixin: fuera de él el escritorio no cambia.
+//
+// Si se toca la condición, cambiar también el @media equivalente de
+// src/index.html (la altura del <body> con 100dvh).
+@mixin compact {
+  @media (max-width: 900px), (max-height: 520px) {
+    @content;
+  }
+}

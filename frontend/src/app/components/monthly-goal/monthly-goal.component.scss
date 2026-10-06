@@ -1,3 +1,5 @@
+@use '../../../styles/breakpoints' as bp;
+
 .goalbar {
   width: 100%;
   position: relative;
@@ -97,4 +99,42 @@
 @keyframes goldGlow {
   from { filter: brightness(1) saturate(1.2); }
   to   { filter: brightness(1.35) saturate(1.6); }
+}
+
+// Fuera del modo compacto la etiqueta corta no existe visualmente.
+.goal-compact { display: none; }
+
+@include bp.compact {
+  // En pantallas pequeñas la barra, el pomo y la etiqueta larga no caben:
+  // se sustituyen por una pastilla con "5/20 reseñas".
+  .goal-track,
+  .goal-knob,
+  .goal-label { display: none; }
+
+  .goalbar { width: auto; }
+
+  .goal-compact {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+    font-size: 13px;
+    line-height: 1;
+    font-weight: 700;
+    color: #374151;
+    white-space: nowrap;
+  }
+
+  // Objetivo conseguido: la pastilla se vuelve dorada (y el trofeo rebota).
+  .goalbar.completed .goal-compact {
+    background: #fef3c7;
+    border-color: #fbbf24;
+    color: #92400e;
+
+    .goal-emoji { animation: trophy-bounce 1.6s ease-in-out infinite; }
+  }
 }

@@ -1,3 +1,5 @@
+@use '../styles/breakpoints' as bp;
+
 * { box-sizing: border-box; }
 
 :host {
@@ -163,5 +165,51 @@ app-reviews-feed {
   50% {
     transform: scale(1.25);
     box-shadow: 0 6px 24px rgba(245, 158, 11, 0.8), 0 0 0 8px rgba(245, 158, 11, 0.18);
+  }
+}
+
+@include bp.compact {
+  // 100dvh = altura visible real (en el iPhone 100vh incluye la barra de
+  // Safari y se comía el final de la lista). La fila de arriba se ajusta a su
+  // contenido y la lista de reseñas ocupa el resto, en vez de 50/50.
+  :host {
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  .wrap {
+    height: 100vh;
+    height: 100dvh;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .bottom { padding: 12px 12px 0; }
+
+  // Cabecera en 2 columnas: título/contador a la izquierda y el objetivo
+  // (pastilla "5/20 reseñas") a la derecha. El histórico de 12 meses no cabe.
+  .header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .head-center app-monthly-goal { width: auto; }
+  .head-right { display: none; }
+
+  .title-row {
+    flex-wrap: wrap;
+    gap: 4px 8px;
+  }
+
+  .title { font-size: 17px; }
+  .subtitle { font-size: 12px; }
+
+  .notes-pin {
+    top: 10px;
+    right: 10px;
+    width: 44px;
+    height: 44px;
+    font-size: 20px;
   }
 }

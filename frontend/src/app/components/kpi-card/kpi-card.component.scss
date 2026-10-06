@@ -1,3 +1,5 @@
+@use '../../../styles/breakpoints' as bp;
+
 :host {
   display: block;
   height: 100%;
@@ -135,4 +137,51 @@
   line-height: 1.6;
   max-width: 660px;
   transition: opacity 0.3s ease;
+}
+
+@include bp.compact {
+  // Pantalla pequeña: solo el porcentaje de leads (con su título y detalle).
+  // El consejo de ventas no cabe y se oculta; la chincheta sigue arriba a la derecha.
+  :host { height: auto; }
+
+  .top {
+    height: auto;
+    padding: 12px 12px 10px;
+  }
+
+  .kpi-card {
+    height: auto;
+    padding: 14px 16px 12px;
+    border-radius: 18px;
+  }
+
+  .kpi-layout {
+    justify-content: center;
+    gap: 0;
+  }
+
+  .kpi-left { flex: 0 1 auto; }
+  .kpi-right { display: none; }
+
+  .kpi-title {
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+
+  .kpi-value { font-size: clamp(44px, 15vw, 64px); }
+
+  .kpi-trend {
+    font-size: 12px;
+    padding: 3px 8px;
+  }
+
+  .kpi-sub { font-size: 12px; }
+
+  // Móvil en horizontal: la altura es muy poca, todo más bajo.
+  @media (max-height: 520px) {
+    .top { padding: 8px 12px 6px; }
+    .kpi-card { padding: 8px 16px; }
+    .kpi-value { font-size: 40px; }
+  }
 }
