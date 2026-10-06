@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, finalize, of, shareReplay, timeout } from 'rxjs';
+import { hedgedRequest } from './hedged-request';
+import { jsonpRequest } from './jsonp-request';
 import { environment } from '../../environments/environment';
 import { ReviewsResponse, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry, Note, AddNoteResult, BootstrapResponse } from '../models/review.model';
 
@@ -23,6 +24,7 @@ import { ReviewsResponse, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry, Note, A
 // preguntar, empeorando justo la saturación que causaba la espera.
 const READ_TIMEOUT_MS = 60_000;
 const WRITE_TIMEOUT_MS = 45_000;
+const HEDGE_AT_MS = [6_000, 14_000];
 
 @Injectable({ providedIn: 'root' })
 export class GlowmetricsService {
@@ -33,15 +35,19 @@ export class GlowmetricsService {
   // inicial), comparte esa respuesta en vez de lanzar otra al servidor.
   private inflight = new Map<string, Observable<unknown>>();
 
-  constructor(private http: HttpClient) {}
-
-  private read<T>(route: string): Observable<T | null> {
+  // `hedge`: si no hay respuesta a los 6 s (y de nuevo a los 14 s) se lanza
+  // otra petición igual en paralelo y gana la primera que llegue. Apps Script
+  // tiene picos de 8-70 s que no dependen del código; cada petición cae en uno
+  // de forma independiente. Solo para lecturas inofensivas de repetir.
+  private read<T>(route: string, hedge = true): Observable<T | null> {
     const existing = this.inflight.get(route);
     if (existing) return existing as Observable<T | null>;
 
-    const request$ = this.http.jsonp<T>(`${this.api}?route=${route}`, 'callback').pipe(
-      timeout(READ_TIMEOUT_MS),
-      catchError(() => of(null)),
+    const url = `${this.api}?route=${route}`;
+    const request$ = hedgedRequest<T>(() => jsonpRequest<T>(url), {
+      hedgeAtMs: hedge ? HEDGE_AT_MS : [],
+      timeoutMs: READ_TIMEOUT_MS,
+    }).pipe(
       // Solo se retira a sí misma: otra petición más nueva de la misma ruta
       // (p. ej. tras guardar una nota) puede haber ocupado ya su sitio.
       finalize(() => { if (this.inflight.get(route) === request$) this.inflight.delete(route); }),
@@ -52,7 +58,7 @@ export class GlowmetricsService {
   }
 
   private write<T>(url: string): Observable<T | null> {
-    return this.http.jsonp<T>(url, 'callback').pipe(
+    return jsonpRequest<T>(url).pipe(
       timeout(WRITE_TIMEOUT_MS),
       catchError(() => of(null))
     );
@@ -63,8 +69,10 @@ export class GlowmetricsService {
     return this.read<BootstrapResponse>('bootstrap');
   }
 
+  // Sin carrera: en una primera carga initialize puede llegar a SerpApi y no
+  // queremos que dos copias de la petición se solapen.
   initialize(): Observable<ReviewsResponse | null> {
-    return this.read<ReviewsResponse>('initialize');
+    return this.read<ReviewsResponse>('initialize', false);
   }
 
   checkForUpdates(): Observable<ReviewsResponse | null> {
