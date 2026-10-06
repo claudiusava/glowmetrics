@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, catchError, of, timeout } from 'rxjs';
+import { Observable, catchError, finalize, of, shareReplay, timeout } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ReviewsResponse, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry, Note, AddNoteResult } from '../models/review.model';
 
@@ -16,95 +16,105 @@ import { ReviewsResponse, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry, Note, A
 // petición se queda colgada para siempre (nunca resuelve ni falla). Por
 // eso todas las llamadas llevan un timeout explícito — si no, un fallo de
 // red silencioso podía dejar botones bloqueados en "Guardando…" sin fin.
-const REQUEST_TIMEOUT_MS = 15000;
+//
+// Las lecturas esperan mucho más que las escrituras: Apps Script en frío o
+// con varias peticiones a la vez tarda a menudo 20-50 s, y con un timeout de
+// 15 s la app tiraba una respuesta que acababa llegando bien y volvía a
+// preguntar, empeorando justo la saturación que causaba la espera.
+const READ_TIMEOUT_MS = 60_000;
+const WRITE_TIMEOUT_MS = 45_000;
 
 @Injectable({ providedIn: 'root' })
 export class GlowmetricsService {
   private api = environment.apiUrl;
 
+  // Lecturas en curso por ruta: si alguien pide lo mismo mientras la primera
+  // petición sigue en el aire (sondeo + volver de otra pestaña + carga
+  // inicial), comparte esa respuesta en vez de lanzar otra al servidor.
+  private inflight = new Map<string, Observable<unknown>>();
+
   constructor(private http: HttpClient) {}
 
-  initialize(): Observable<ReviewsResponse | null> {
-    return this.http.jsonp<ReviewsResponse>(`${this.api}?route=initialize`, 'callback').pipe(
-      timeout(REQUEST_TIMEOUT_MS),
+  private read<T>(route: string): Observable<T | null> {
+    const existing = this.inflight.get(route);
+    if (existing) return existing as Observable<T | null>;
+
+    const request$ = this.http.jsonp<T>(`${this.api}?route=${route}`, 'callback').pipe(
+      timeout(READ_TIMEOUT_MS),
+      catchError(() => of(null)),
+      // Solo se retira a sí misma: otra petición más nueva de la misma ruta
+      // (p. ej. tras guardar una nota) puede haber ocupado ya su sitio.
+      finalize(() => { if (this.inflight.get(route) === request$) this.inflight.delete(route); }),
+      shareReplay({ bufferSize: 1, refCount: false })
+    );
+    this.inflight.set(route, request$);
+    return request$;
+  }
+
+  private write<T>(url: string): Observable<T | null> {
+    return this.http.jsonp<T>(url, 'callback').pipe(
+      timeout(WRITE_TIMEOUT_MS),
       catchError(() => of(null))
     );
+  }
+
+  initialize(): Observable<ReviewsResponse | null> {
+    return this.read<ReviewsResponse>('initialize');
   }
 
   checkForUpdates(): Observable<ReviewsResponse | null> {
-    return this.http.jsonp<ReviewsResponse>(`${this.api}?route=updates`, 'callback').pipe(
-      timeout(REQUEST_TIMEOUT_MS),
-      catchError(() => of(null))
-    );
+    return this.read<ReviewsResponse>('updates');
   }
 
   getMonthlyGoal(): Observable<MonthlyGoal | null> {
-    return this.http.jsonp<MonthlyGoal>(`${this.api}?route=monthly-goal`, 'callback').pipe(
-      timeout(REQUEST_TIMEOUT_MS),
-      catchError(() => of(null))
-    );
+    return this.read<MonthlyGoal>('monthly-goal');
   }
 
   getSalesTips(): Observable<string[] | null> {
-    return this.http.jsonp<string[]>(`${this.api}?route=sales-tips`, 'callback').pipe(
-      timeout(REQUEST_TIMEOUT_MS),
-      catchError(() => of(null))
-    );
+    return this.read<string[]>('sales-tips');
   }
 
   getAirtableKpi(): Observable<AirtableKpi | null> {
-    return this.http.jsonp<AirtableKpi>(`${this.api}?route=airtable-kpi`, 'callback').pipe(
-      timeout(REQUEST_TIMEOUT_MS),
-      catchError(() => of(null))
-    );
+    return this.read<AirtableKpi>('airtable-kpi');
   }
 
   // Refresco manual bajo demanda (código secreto). Cooldown real en el
   // backend, así que un fallo aquí simplemente no actualiza nada.
   refreshAirtableKpi(): Observable<AirtableKpi | null> {
-    return this.http.jsonp<AirtableKpi>(`${this.api}?route=refresh-airtable-kpi`, 'callback').pipe(
-      timeout(REQUEST_TIMEOUT_MS),
-      catchError(() => of(null))
-    );
+    return this.write<AirtableKpi>(`${this.api}?route=refresh-airtable-kpi`);
   }
 
   getMonthlyHistory(): Observable<MonthlyHistoryEntry[] | null> {
-    return this.http.jsonp<MonthlyHistoryEntry[]>(`${this.api}?route=monthly-history`, 'callback').pipe(
-      timeout(REQUEST_TIMEOUT_MS),
-      catchError(() => of(null))
-    );
+    return this.read<MonthlyHistoryEntry[]>('monthly-history');
   }
 
   // Cuaderno de notas compartido: sin autor (varias personas comparten el
   // mismo ordenador en el centro, pedir nombre no tiene sentido aquí).
   getNotes(): Observable<Note[] | null> {
-    return this.http.jsonp<Note[]>(`${this.api}?route=notes-list`, 'callback').pipe(
-      timeout(REQUEST_TIMEOUT_MS),
-      catchError(() => of(null))
-    );
+    return this.read<Note[]>('notes-list');
+  }
+
+  // Tras una escritura de notas, una lectura de notas que ya estuviera en
+  // el aire se pidió ANTES del cambio y podría traer la lista vieja: la
+  // soltamos para que la siguiente lectura sea una petición nueva.
+  private writeNote<T>(url: string): Observable<T | null> {
+    this.inflight.delete('notes-list');
+    return this.write<T>(url);
   }
 
   addNote(text: string, clientId: string): Observable<AddNoteResult | null> {
-    const url = `${this.api}?route=notes-add&text=${encodeURIComponent(text)}&clientId=${encodeURIComponent(clientId)}`;
-    return this.http.jsonp<AddNoteResult>(url, 'callback').pipe(
-      timeout(REQUEST_TIMEOUT_MS),
-      catchError(() => of(null))
+    return this.writeNote<AddNoteResult>(
+      `${this.api}?route=notes-add&text=${encodeURIComponent(text)}&clientId=${encodeURIComponent(clientId)}`
     );
   }
 
   deleteNote(id: string): Observable<AddNoteResult | null> {
-    const url = `${this.api}?route=notes-delete&id=${encodeURIComponent(id)}`;
-    return this.http.jsonp<AddNoteResult>(url, 'callback').pipe(
-      timeout(REQUEST_TIMEOUT_MS),
-      catchError(() => of(null))
-    );
+    return this.writeNote<AddNoteResult>(`${this.api}?route=notes-delete&id=${encodeURIComponent(id)}`);
   }
 
   editNote(id: string, text: string): Observable<AddNoteResult | null> {
-    const url = `${this.api}?route=notes-edit&id=${encodeURIComponent(id)}&text=${encodeURIComponent(text)}`;
-    return this.http.jsonp<AddNoteResult>(url, 'callback').pipe(
-      timeout(REQUEST_TIMEOUT_MS),
-      catchError(() => of(null))
+    return this.writeNote<AddNoteResult>(
+      `${this.api}?route=notes-edit&id=${encodeURIComponent(id)}&text=${encodeURIComponent(text)}`
     );
   }
 }
