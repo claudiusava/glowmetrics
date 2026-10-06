@@ -15,6 +15,25 @@ export interface ReviewsResponse {
   newReviewsCount?: number;
 }
 
+// Respuesta de la ruta `bootstrap`: lo que necesita la pantalla al abrir, en
+// una sola petición. Cada parte llega null si falló en el servidor (el resto
+// sigue siendo válido). `error` aparece si el backend no conoce la ruta.
+export interface ReviewsBundle {
+  ready: boolean;
+  totalCount: number;
+  reviews: Review[];
+  newReviewsCount: number;
+}
+
+export interface BootstrapResponse {
+  reviews: ReviewsBundle | null;
+  kpi: AirtableKpi | null;
+  goal: MonthlyGoal | null;
+  history: MonthlyHistoryEntry[] | null;
+  tips: string[] | null;
+  error?: string;
+}
+
 export interface MonthlyGoal {
   count: number;
   goal: number;

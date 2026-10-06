@@ -13,7 +13,7 @@ import { MonthlyGoalComponent } from './components/monthly-goal/monthly-goal.com
 import { MonthlyHistoryComponent } from './components/monthly-history/monthly-history.component';
 import { NotesBoardComponent } from './components/notes-board/notes-board.component';
 import { ReviewsFeedComponent } from './components/reviews-feed/reviews-feed.component';
-import { Review, ReviewsResponse, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry, Note } from './models/review.model';
+import { Review, ReviewsResponse, BootstrapResponse, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry, Note } from './models/review.model';
 
 // Esperas entre reintentos tras un fallo REAL (error o timeout de 60 s), cada
 // vez más largas: reintentar deprisa solo satura más a un backend que ya va
@@ -108,6 +108,10 @@ export class AppComponent implements OnInit, OnDestroy {
   private retryAttempts = new Map<string, number>();
   private retryTimers = new Set<ReturnType<typeof setTimeout>>();
 
+  // Si el backend no conoce la ruta `bootstrap` (versión antigua) volvemos a
+  // pedir cada dato por separado, como antes.
+  private bootstrapSupported = true;
+
   constructor(
     private svc: GlowmetricsService,
     private confetti: ConfettiService,
@@ -156,12 +160,99 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   private loadEverything(): void {
+    this.loadBootstrap(true);
+    this.loadNotes();
+  }
+
+  // Reseñas, KPI, objetivo, histórico y consejos en UNA petición. Con
+  // `isStartup` también se permite caer a initialize() si aún no hay una
+  // ventana de reseñas completa guardada (la primera carga de una instalación
+  // nueva); en el resto de refrescos eso no se hace nunca.
+  private loadBootstrap(isStartup = false): void {
+    if (!this.bootstrapSupported) {
+      this.loadAllSeparately();
+      return;
+    }
+    this.subs.add(
+      this.svc.bootstrap().subscribe(res => {
+        if (!res) {
+          this.retryLater('bootstrap', () => this.loadBootstrap(isStartup), INITIAL_RETRY_DELAYS_MS);
+          return;
+        }
+        if (res.error) {
+          this.bootstrapSupported = false;
+          this.loadAllSeparately();
+          return;
+        }
+        this.retryDone('bootstrap');
+        this.applyBootstrap(res, isStartup);
+      })
+    );
+  }
+
+  private loadAllSeparately(): void {
     this.loadInitial();
     this.loadAirtableKpi();
     this.loadMonthlyGoal();
     this.loadMonthlyHistory();
     this.loadSalesTips();
-    this.loadNotes();
+  }
+
+  private applyBootstrap(res: BootstrapResponse, isStartup: boolean): void {
+    if (res.reviews && res.reviews.ready) {
+      this.applyReviews(res.reviews.totalCount, res.reviews.reviews, res.reviews.newReviewsCount);
+    } else if (res.reviews && isStartup) {
+      this.loadInitial();
+    } else if (!res.reviews) {
+      this.retryLater('bootstrap', () => this.loadBootstrap(isStartup));
+    }
+    if (res.kpi) this.applyKpi(res.kpi);
+    if (res.goal) this.applyGoal(res.goal);
+    if (res.history) this.applyHistory(res.history);
+    if (res.tips && res.tips.length) this.applyTips(res.tips);
+  }
+
+  // Los apply* solo reasignan cuando el dato cambió de verdad: antes cada
+  // sondeo traía un array "nuevo" idéntico y Angular reconstruía las 20
+  // tarjetas cada minuto.
+  private sameJson(a: unknown, b: unknown): boolean {
+    return JSON.stringify(a) === JSON.stringify(b);
+  }
+
+  private applyReviews(totalCount: number, reviews: Review[], newReviewsCount: number): void {
+    this.totalCount = totalCount;
+    this.newReviewsCount = newReviewsCount || 0;
+    if (!this.sameJson(reviews, this.reviews)) this.reviews = reviews;
+    this.loadingReviews = false;
+    this.persistReviews();
+  }
+
+  private applyKpi(kpi: AirtableKpi): void {
+    if (!this.sameJson(kpi, this.kpi)) this.kpi = kpi;
+    this.cache.set('kpi', kpi);
+  }
+
+  private applyGoal(goal: MonthlyGoal): void {
+    if (!this.sameJson(goal, this.monthlyGoal)) this.monthlyGoal = goal;
+    this.cache.set('goal', goal);
+  }
+
+  private applyHistory(history: MonthlyHistoryEntry[]): void {
+    if (!this.sameJson(history, this.monthlyHistory)) this.monthlyHistory = history;
+    this.cache.set('history', history);
+  }
+
+  private applyTips(tips: string[]): void {
+    // Si ya se muestra uno (copia guardada), no lo cambiamos de golpe.
+    const alreadyShowing = this.tips.length > 0;
+    this.tips = tips;
+    this.cache.set('tips', tips);
+    if (!alreadyShowing) this.showRandomTip();
+    if (!this.tipTimer) {
+      this.tipTimer = setInterval(() => {
+        if (!document.hidden) this.showRandomTip();
+      }, TIP_ROTATE_MS);
+    }
   }
 
   private restoreFromCache(): void {
@@ -218,13 +309,19 @@ export class AppComponent implements OnInit, OnDestroy {
   onVisibilityChange(): void {
     if (document.hidden) return;
     this.retryAttempts.clear();
-    // Escalonadas para no golpear el mismo lock del backend con 5
-    // peticiones a la vez justo al recuperar el foco de la pestaña.
-    this.checkUpdates();
-    setTimeout(() => this.loadMonthlyGoal(), 150);
-    setTimeout(() => this.loadMonthlyHistory(), 300);
-    setTimeout(() => this.loadAirtableKpi(), 450);
-    setTimeout(() => this.loadSalesTips(), 600);
+
+    if (this.bootstrapSupported) {
+      // Una sola petición para todo (antes 5 a la vez al recuperar el foco).
+      this.loadBootstrap();
+    } else {
+      // Escalonadas para no golpear el mismo lock del backend con 5
+      // peticiones a la vez justo al recuperar el foco de la pestaña.
+      this.checkUpdates();
+      setTimeout(() => this.loadMonthlyGoal(), 150);
+      setTimeout(() => this.loadMonthlyHistory(), 300);
+      setTimeout(() => this.loadAirtableKpi(), 450);
+      setTimeout(() => this.loadSalesTips(), 600);
+    }
     setTimeout(() => this.pollNotesIfIdle(), 750);
   }
 
@@ -275,11 +372,7 @@ export class AppComponent implements OnInit, OnDestroy {
           return;
         }
         this.retryDone('initialize');
-        this.totalCount = res.totalCount;
-        this.reviews = res.reviews;
-        this.loadingReviews = false;
-        this.newReviewsCount = res.newReviewsCount || 0;
-        this.persistReviews();
+        this.applyReviews(res.totalCount, res.reviews, res.newReviewsCount || 0);
         this.loadMonthlyGoal();
       })
     );
@@ -290,32 +383,26 @@ export class AppComponent implements OnInit, OnDestroy {
     this.subs.add(
       this.svc.checkForUpdates().subscribe(res => {
         if (!res) return;
-        this.totalCount = res.totalCount;
-        this.newReviewsCount = res.newReviewsCount || 0;
-        if (res.updated || res.reviews.length !== this.reviews.length) {
-          this.reviews = res.reviews;
-          this.loadingReviews = false;
-          this.persistReviews();
-        }
-        if (res.updated) this.loadMonthlyGoal();
+        const totalChanged = res.totalCount !== this.totalCount;
+        this.applyReviews(res.totalCount, res.reviews, res.newReviewsCount || 0);
+        if (totalChanged) this.loadMonthlyGoal();
       })
     );
   }
 
+  // Sondeo de reseñas cada minuto. El servidor responde siempre
+  // `updated: true`, así que antes cada sondeo disparaba además una petición
+  // del objetivo mensual (2 peticiones por minuto y cliente). Ahora el
+  // objetivo solo se vuelve a pedir si el total de reseñas cambió.
   private startPolling(): void {
     this.subs.add(
       interval(POLL_MS).pipe(
         switchMap(() => this.svc.checkForUpdates())
       ).subscribe(res => {
         if (document.hidden || !res) return;
-        this.totalCount = res.totalCount;
-        this.newReviewsCount = res.newReviewsCount || 0;
-        if (res.updated || res.reviews.length !== this.reviews.length) {
-          this.reviews = res.reviews;
-          this.loadingReviews = false;
-          this.persistReviews();
-          if (res.updated) this.loadMonthlyGoal();
-        }
+        const totalChanged = res.totalCount !== this.totalCount;
+        this.applyReviews(res.totalCount, res.reviews, res.newReviewsCount || 0);
+        if (totalChanged) this.loadMonthlyGoal();
       })
     );
   }
@@ -329,8 +416,7 @@ export class AppComponent implements OnInit, OnDestroy {
           return;
         }
         this.retryDone('kpi');
-        this.kpi = res;
-        this.cache.set('kpi', res);
+        this.applyKpi(res);
       })
     );
   }
@@ -343,8 +429,7 @@ export class AppComponent implements OnInit, OnDestroy {
           return;
         }
         this.retryDone('goal');
-        this.monthlyGoal = res;
-        this.cache.set('goal', res);
+        this.applyGoal(res);
       })
     );
   }
@@ -357,8 +442,7 @@ export class AppComponent implements OnInit, OnDestroy {
           return;
         }
         this.retryDone('history');
-        this.monthlyHistory = res;
-        this.cache.set('history', res);
+        this.applyHistory(res);
       })
     );
   }
@@ -475,15 +559,7 @@ export class AppComponent implements OnInit, OnDestroy {
         }
         this.retryDone('tips');
         if (tips.length) {
-          // Si ya se muestra uno (copia guardada), no lo cambiamos de golpe.
-          const alreadyShowing = this.tips.length > 0;
-          this.tips = tips;
-          this.cache.set('tips', tips);
-          if (!alreadyShowing) this.showRandomTip();
-          if (this.tipTimer) clearInterval(this.tipTimer);
-          this.tipTimer = setInterval(() => {
-            if (!document.hidden) this.showRandomTip();
-          }, TIP_ROTATE_MS);
+          this.applyTips(tips);
         } else {
           this.currentTip = 'Sin consejos disponibles.';
         }

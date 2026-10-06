@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, finalize, of, shareReplay, timeout } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { ReviewsResponse, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry, Note, AddNoteResult } from '../models/review.model';
+import { ReviewsResponse, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry, Note, AddNoteResult, BootstrapResponse } from '../models/review.model';
 
 // Apps Script (ContentService) no manda cabeceras CORS, así que consumimos
 // su API vía JSONP en vez de XHR/fetch normal.
@@ -56,6 +56,11 @@ export class GlowmetricsService {
       timeout(WRITE_TIMEOUT_MS),
       catchError(() => of(null))
     );
+  }
+
+  // Todo lo que necesita la pantalla al abrir en UNA petición (antes 5-6).
+  bootstrap(): Observable<BootstrapResponse | null> {
+    return this.read<BootstrapResponse>('bootstrap');
   }
 
   initialize(): Observable<ReviewsResponse | null> {
