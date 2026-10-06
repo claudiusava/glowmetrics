@@ -112,10 +112,15 @@ const DEFAULT_CENTER_ID = 'ALCORCON';
 function getAirtablePercentage(centerId) {
   centerId = 'ALCORCON';
 
+  // Solo lee la hoja del snapshot (nunca llama a Airtable): se cachea.
+  var cachedKpi = readCacheGet_('kpi');
+  if (cachedKpi && typeof cachedKpi.pct === 'number') return cachedKpi;
+
   try {
     var snap = readAirtableSnapshot_(centerId);
     if (snap) {
       snap.stale = true;
+      readCachePut_('kpi', snap);
       return snap;
     }
   } catch (e) {
@@ -184,6 +189,8 @@ function saveAirtableSnapshot_(centerId, stats) {
     Number(stats.citadas || 0),
     new Date()
   ]]);
+
+  invalidateReadCaches_(); // el KPI cacheado ya no vale
 }
 
 function parseNum_(v) {

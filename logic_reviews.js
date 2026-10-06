@@ -63,6 +63,12 @@ function scheduledSerpApiCheck() {
         // `newCount` son exactamente las que se acaban de añadir.
         recordReviewsInMonthCounts_((bundle.reviews || []).slice(0, newCount));
 
+        // Las propiedades de arriba (badge, conteo mensual) se escriben
+        // DESPUÉS de writeWindow_/setMeta_, que ya vaciaron la caché: la
+        // vaciamos otra vez para que ninguna lectura intermedia deje una
+        // copia con el badge viejo.
+        invalidateReadCaches_();
+
         const payload = { updated: true, totalCount: currentTotal, reviews: renumbered };
         setLastGood_('reviews_window', payload);
         return payload;
@@ -117,6 +123,7 @@ function saveMonthCounts_(counts) {
     keys.slice(0, keys.length - 15).forEach(k => delete counts[k]);
   }
   PropertiesService.getScriptProperties().setProperty('MONTH_COUNTS', JSON.stringify(counts));
+  invalidateReadCaches_(); // objetivo mensual e histórico cacheados ya no valen
 }
 
 function recordReviewsInMonthCounts_(reviews) {

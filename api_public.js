@@ -103,6 +103,7 @@ function jsonRoute_(route, callback, params) {
     'airtable-kpi': getAirtablePercentage,
     'refresh-airtable-kpi': manualRefreshAirtableKpi,
     'monthly-history': getMonthlyHistory,
+    'bootstrap': getBootstrap,
     'notes-list': getNotes,
     'notes-add': () => addNote_(params.author, params.text, params.clientId),
     'notes-edit': () => editNote_(params.id, params.text),
@@ -134,6 +135,16 @@ function jsonRoute_(route, callback, params) {
 // Si hay datos, solo devuelve lo que hay en Sheets.
 // Estabilizado: lock + last-good + control de fallos.
 function initialize() {
+  // Copia fresca en caché: se responde sin lock ni lectura de hojas.
+  const cachedBundle = readCacheGet_('reviews');
+  if (cachedBundle && cachedBundle.ready) {
+    return {
+      totalCount: cachedBundle.totalCount,
+      reviews: cachedBundle.reviews,
+      newReviewsCount: cachedBundle.newReviewsCount
+    };
+  }
+
   return withLock_(() => {
     ensureSheets_();
 
@@ -151,6 +162,7 @@ function initialize() {
       if (stored.length >= INITIAL_WINDOW_SIZE && Number(totalCount) > 0) {
         const payload = { totalCount: Number(totalCount) || 0, reviews: stored, newReviewsCount: getLastSyncNewCount_() };
         setLastGood_('initialize', payload);
+        putReviewsCache_(payload.totalCount, payload.reviews, payload.newReviewsCount);
         return payload;
       }
 
@@ -177,6 +189,18 @@ function initialize() {
  * CHECK PARA EL FRONT (SOLO LECTURA)
  * ========================= */
 function checkForUpdates() {
+  // Copia fresca en caché: se responde sin lock, sin leer hojas y sin las
+  // escrituras de cooldown/last-good (el sondeo de cada cliente cada minuto).
+  const cachedBundle = readCacheGet_('reviews');
+  if (cachedBundle && cachedBundle.ready) {
+    return {
+      updated: true,
+      totalCount: cachedBundle.totalCount,
+      reviews: cachedBundle.reviews,
+      newReviewsCount: cachedBundle.newReviewsCount
+    };
+  }
+
   return withLock_(() => {
     ensureSheets_();
 
@@ -196,6 +220,7 @@ function checkForUpdates() {
         newReviewsCount: getLastSyncNewCount_()
       };
       setLastGood_('checkForUpdates', payload);
+      putReviewsCache_(payload.totalCount, payload.reviews, payload.newReviewsCount);
       return payload;
 
     } catch (e) {
@@ -226,12 +251,17 @@ function checkForUpdates() {
 function getMonthlyReviewCount() {
   const monthKey = monthKeyOf_(new Date());
 
+  // La copia lleva su mes: si cambia el mes, deja de valer al instante.
+  const cachedGoal = readCacheGet_('goal');
+  if (cachedGoal && cachedGoal.monthKey === monthKey) return cachedGoal;
+
   try {
     const counts = getMonthCounts_();
     const count = Number(counts[monthKey]) || 0;
 
     const payload = { count, goal: MONTHLY_GOAL, monthKey };
     setLastGood_('monthly_' + monthKey, payload);
+    readCachePut_('goal', payload);
     return payload;
 
   } catch (e) {
@@ -247,9 +277,16 @@ function getMonthlyReviewCount() {
 // en curso, que ya se muestra aparte con getMonthlyReviewCount).
 // Sin withLock_: mismo motivo que getMonthlyReviewCount.
 function getMonthlyHistory() {
+  const currentKey = monthKeyOf_(new Date());
+
+  // El histórico excluye el mes en curso, así que también depende del mes.
+  const cachedHistory = readCacheGet_('history');
+  if (cachedHistory && cachedHistory.monthKey === currentKey && Array.isArray(cachedHistory.history)) {
+    return cachedHistory.history;
+  }
+
   try {
     const counts = getMonthCounts_();
-    const currentKey = monthKeyOf_(new Date());
 
     const history = Object.keys(counts)
       .filter(mk => mk !== currentKey)
@@ -261,6 +298,7 @@ function getMonthlyHistory() {
       });
 
     setLastGood_('monthly_history', history);
+    readCachePut_('history', { monthKey: currentKey, history });
     return history;
   } catch (e) {
     console.error('getMonthlyHistory ERROR:', e);
@@ -274,6 +312,9 @@ function getMonthlyHistory() {
 // Sin withLock_: hoja estática ("Hoja 3") que nadie escribe automáticamente,
 // sin riesgo real de conflicto con otros procesos.
 function getSalesTips() {
+  const cachedTips = readCacheGet_('tips');
+  if (Array.isArray(cachedTips) && cachedTips.length) return cachedTips;
+
   try {
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     const sh = ss.getSheetByName('Hoja 3');
@@ -283,6 +324,7 @@ function getSalesTips() {
     const tips = values.filter(v => typeof v === 'string' && v.trim().length > 0);
 
     setLastGood_('sales_tips', tips);
+    if (tips.length) readCachePut_('tips', tips);
     return tips;
 
   } catch (e) {

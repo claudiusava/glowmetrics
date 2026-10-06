@@ -89,6 +89,8 @@ function setMeta_(obj) {
 
     if (placeUrl !== undefined) sh.getRange('A2').setValue(String(placeUrl || ''));
     if (totalCount !== undefined) sh.getRange('B2').setValue(Number(totalCount || 0));
+
+    invalidateReadCaches_(); // el total cacheado ya no vale
   });
 }
 
@@ -115,6 +117,8 @@ function writeWindow_(rows) {
     if (data.length > 0) {
       sh.getRange(2, 1, data.length, 7).setValues(data);
     }
+
+    invalidateReadCaches_(); // la ventana cacheada ya no vale
   });
 }
 
