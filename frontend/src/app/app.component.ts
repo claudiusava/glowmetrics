@@ -125,6 +125,8 @@ export class AppComponent implements OnInit, OnDestroy {
     // el navegador mantiene la pestaña "cargando" (llegó a 116 s con el
     // backend lento).
     this.restoreFromCache();
+    // Sin pantalla de carga (había datos guardados) no hay nada que esperar.
+    if (!document.getElementById('splash')) this.splashPending.clear();
     this.afterPageLoad(() => this.loadEverything());
     this.startPolling();
 
@@ -199,17 +201,30 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   private applyBootstrap(res: BootstrapResponse, isStartup: boolean): void {
+    // Cada parte puede llegar null si falló en el servidor (p. ej. una espera
+    // de lock agotada): lo que sí llegó se aplica, y si falta algo se vuelve a
+    // pedir (sin rendirse mientras la pantalla de carga siga puesta).
+    let incomplete = false;
+
     if (res.reviews && res.reviews.ready) {
       this.applyReviews(res.reviews.totalCount, res.reviews.reviews, res.reviews.newReviewsCount);
     } else if (res.reviews && isStartup) {
       this.loadInitial();
-    } else if (!res.reviews) {
-      this.retryLater('bootstrap', () => this.loadBootstrap(isStartup));
+    } else {
+      incomplete = true;
     }
-    if (res.kpi) this.applyKpi(res.kpi);
-    if (res.goal) this.applyGoal(res.goal);
-    if (res.history) this.applyHistory(res.history);
+
+    if (res.kpi) this.applyKpi(res.kpi); else incomplete = true;
+    if (res.goal) this.applyGoal(res.goal); else incomplete = true;
+    if (res.history) this.applyHistory(res.history); else incomplete = true;
+
     if (res.tips && res.tips.length) this.applyTips(res.tips);
+    else if (res.tips) this.markLoaded('tips'); // lista vacía: no hay consejos que esperar
+    else incomplete = true;
+
+    if (incomplete) {
+      this.retryLater('bootstrap', () => this.loadBootstrap(isStartup), INITIAL_RETRY_DELAYS_MS);
+    }
   }
 
   // Los apply* solo reasignan cuando el dato cambió de verdad: antes cada
@@ -220,16 +235,26 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   // Pantalla de carga de index.html (solo existe en una primera visita sin
-  // datos guardados): se desvanece con la primera respuesta que traiga datos.
-  private dismissSplash(): void {
+  // datos guardados). Se queda hasta que HAYAN LLEGADO todos los datos que
+  // pinta la pantalla (reseñas, KPI, objetivo, histórico y consejos): quitarla
+  // con la primera respuesta dejaba ver el panel a medias con "Cargando…".
+  private splashPending = new Set<string>(['reviews', 'kpi', 'goal', 'history', 'tips']);
+
+  private markLoaded(part: string): void {
+    this.splashPending.delete(part);
+    if (this.splashPending.size > 0) return;
     const el = document.getElementById('splash');
     if (!el || el.classList.contains('splash-hide')) return;
-    el.classList.add('splash-hide');
-    setTimeout(() => el.remove(), 600);
+    // Dos fotogramas de espera: Angular ya ha pintado los datos recién
+    // llegados y el fundido no deja entrever el panel a medias.
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      el.classList.add('splash-hide');
+      setTimeout(() => el.remove(), 600);
+    }));
   }
 
   private applyReviews(totalCount: number, reviews: Review[], newReviewsCount: number): void {
-    this.dismissSplash();
+    this.markLoaded('reviews');
     this.totalCount = totalCount;
     this.newReviewsCount = newReviewsCount || 0;
     if (!this.sameJson(reviews, this.reviews)) this.reviews = reviews;
@@ -238,25 +263,25 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   private applyKpi(kpi: AirtableKpi): void {
-    this.dismissSplash();
+    this.markLoaded('kpi');
     if (!this.sameJson(kpi, this.kpi)) this.kpi = kpi;
     this.cache.set('kpi', kpi);
   }
 
   private applyGoal(goal: MonthlyGoal): void {
-    this.dismissSplash();
+    this.markLoaded('goal');
     if (!this.sameJson(goal, this.monthlyGoal)) this.monthlyGoal = goal;
     this.cache.set('goal', goal);
   }
 
   private applyHistory(history: MonthlyHistoryEntry[]): void {
-    this.dismissSplash();
+    this.markLoaded('history');
     if (!this.sameJson(history, this.monthlyHistory)) this.monthlyHistory = history;
     this.cache.set('history', history);
   }
 
   private applyTips(tips: string[]): void {
-    this.dismissSplash();
+    this.markLoaded('tips');
     // Si ya se muestra uno (copia guardada), no lo cambiamos de golpe.
     const alreadyShowing = this.tips.length > 0;
     this.tips = tips;
@@ -306,12 +331,16 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private retryLater(key: string, fn: () => void, delays: number[] = RETRY_DELAYS_MS): void {
     const attempt = this.retryAttempts.get(key) ?? 0;
-    if (attempt >= delays.length) return;
+    // Con la pantalla de carga puesta no se deja de insistir (sin tope): se
+    // sigue reintentando con la espera más larga hasta que lleguen los datos.
+    const keepTrying = this.splashPending.size > 0;
+    if (attempt >= delays.length && !keepTrying) return;
     this.retryAttempts.set(key, attempt + 1);
+    const wait = delays[Math.min(attempt, delays.length - 1)];
     const timer = setTimeout(() => {
       this.retryTimers.delete(timer);
       if (!document.hidden) fn();
-    }, delays[attempt]);
+    }, wait);
     this.retryTimers.add(timer);
   }
 
@@ -576,6 +605,7 @@ export class AppComponent implements OnInit, OnDestroy {
           this.applyTips(tips);
         } else {
           this.currentTip = 'Sin consejos disponibles.';
+          this.markLoaded('tips');
         }
       })
     );
