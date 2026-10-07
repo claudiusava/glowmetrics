@@ -1,10 +1,18 @@
 <div class="backdrop" *ngIf="open" (click)="close()">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <div class="modal-title">📌 Cuaderno de notas</div>
+      <div class="tabs" role="tablist">
+        <button type="button" class="tab" role="tab" [class.on]="tab === 'espera'" [attr.aria-selected]="tab === 'espera'" (click)="selectTab('espera')">⏳ Lista de espera</button>
+        <button type="button" class="tab" role="tab" [class.on]="tab === 'notas'" [attr.aria-selected]="tab === 'notas'" (click)="selectTab('notas')">
+          📌 Notas<span class="tab-dot" *ngIf="hasUnread && tab !== 'notas'" aria-label="Notas nuevas"></span>
+        </button>
+      </div>
       <button class="close-btn" (click)="close()" aria-label="Cerrar">✕</button>
     </div>
 
+    <app-waitlist-board *ngIf="tab === 'espera'" (formOpenChange)="waitFormOpen = $event"></app-waitlist-board>
+
+    <ng-container *ngIf="tab === 'notas'">
     <div class="composer">
       <div class="composer-main">
         <textarea
@@ -47,5 +55,6 @@
         </ng-template>
       </div>
     </div>
+    </ng-container>
   </div>
 </div>

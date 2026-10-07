@@ -517,9 +517,14 @@ export class AppComponent implements OnInit, OnDestroy {
   toggleNotesModal(): void {
     this.notesModalOpen = !this.notesModalOpen;
     if (this.notesModalOpen) {
-      this.markNotesAsSeen();
+      // Las notas se dan por leídas cuando se ve su pestaña (onNotesViewed), no
+      // solo por abrir la chincheta: el modal abre en la lista de espera.
       this.loadNotes();
     }
+  }
+
+  onNotesViewed(): void {
+    this.markNotesAsSeen();
   }
 
   closeNotesModal(): void {

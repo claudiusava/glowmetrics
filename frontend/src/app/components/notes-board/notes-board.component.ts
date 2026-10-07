@@ -2,11 +2,12 @@ import { Component, EventEmitter, Input, Output, HostListener, OnChanges, Simple
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Note } from '../../models/review.model';
+import { WaitlistBoardComponent } from '../waitlist-board/waitlist-board.component';
 
 @Component({
   selector: 'app-notes-board',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, WaitlistBoardComponent],
   templateUrl: './notes-board.component.html',
   styleUrls: ['./notes-board.component.scss'],
 })
@@ -18,12 +19,19 @@ export class NotesBoardComponent implements OnChanges {
   @Input() editing = false;
   @Input() editError: string | null = null;
   @Input() addError: string | null = null;
+  // Hay notas sin leer en este dispositivo: el modal se abre directamente en "Notas".
+  @Input() hasUnread = false;
 
+  // Se emite cuando se muestra la pestaña de notas (las da por leídas).
+  @Output() notesViewed = new EventEmitter<void>();
   @Output() closeRequested = new EventEmitter<void>();
   @Output() addNote = new EventEmitter<{ text: string; clientId: string }>();
   @Output() deleteNote = new EventEmitter<string>();
   @Output() editNote = new EventEmitter<{ id: string; text: string }>();
   @Output() editSessionEnded = new EventEmitter<void>();
+
+  tab: 'espera' | 'notas' = 'espera';
+  waitFormOpen = false; // la lista de espera tiene un formulario abierto (Escape lo cierra a él, no al modal)
 
   draft = '';
   editingId: string | null = null;
@@ -33,7 +41,21 @@ export class NotesBoardComponent implements OnChanges {
   private savingAdd = false;
   private addRequestId: string | null = null;
 
+  selectTab(t: 'espera' | 'notas'): void {
+    this.tab = t;
+    this.waitFormOpen = false;
+    if (t === 'notas') this.notesViewed.emit();
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
+    // Al abrir el modal: en la lista de espera, salvo que haya notas sin leer.
+    if (changes['open'] && this.open) {
+      this.tab = this.hasUnread ? 'notas' : 'espera';
+      this.waitFormOpen = false;
+      // En un microtask: emitir durante la detección de cambios modificaría el padre ya comprobado.
+      if (this.tab === 'notas') Promise.resolve().then(() => this.notesViewed.emit());
+    }
+
     // 'editing'/'adding' pasan a false cuando el backend responde. Solo
     // entonces sabemos si el guardado fue bien o mal: si fue bien, cerramos
     // el modo edición o vaciamos el composer; si falló, dejamos el texto
@@ -64,6 +86,7 @@ export class NotesBoardComponent implements OnChanges {
   @HostListener('document:keydown.escape')
   onEscape(): void {
     if (!this.open) return;
+    if (this.tab === 'espera' && this.waitFormOpen) return;
     if (this.editingId) {
       this.cancelEdit();
       return;

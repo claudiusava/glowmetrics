@@ -67,3 +67,28 @@ export interface AddNoteResult {
   error?: string;
   notes: Note[];
 }
+
+// Lista de espera de clientas (ver svc_waitlist.js).
+export type WaitStatus = 'pending' | 'noanswer' | 'booked';
+
+export interface WaitItem {
+  id: string;
+  name: string;
+  zones: string;
+  // Días de lunes a viernes: letras L M X J V (X = miércoles); vacío = cualquiera.
+  days: string;
+  // Franja: M = mañana, T = tarde; vacío = cualquiera.
+  parts: string;
+  detail: string;
+  status: WaitStatus;
+  attempts: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WaitlistResult {
+  ok?: boolean;
+  error?: string;
+  id?: string;
+  items: WaitItem[];
+}

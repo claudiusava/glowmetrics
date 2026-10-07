@@ -3,7 +3,7 @@ import { Observable, catchError, finalize, of, shareReplay, timeout } from 'rxjs
 import { hedgedRequest } from './hedged-request';
 import { jsonpRequest } from './jsonp-request';
 import { environment } from '../../environments/environment';
-import { ReviewsResponse, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry, Note, AddNoteResult, BootstrapResponse } from '../models/review.model';
+import { ReviewsResponse, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry, Note, AddNoteResult, BootstrapResponse, WaitItem, WaitlistResult } from '../models/review.model';
 
 // Apps Script (ContentService) no manda cabeceras CORS, así que consumimos
 // su API vía JSONP en vez de XHR/fetch normal.
@@ -123,6 +123,38 @@ export class GlowmetricsService {
 
   deleteNote(id: string): Observable<AddNoteResult | null> {
     return this.writeNote<AddNoteResult>(`${this.api}?route=notes-delete&id=${encodeURIComponent(id)}`);
+  }
+
+  // ---- Lista de espera de clientas ----
+  // Mismas reglas que las notas: se lee con respaldo (carrera) y, tras
+  // escribir, se descarta la lectura compartida en curso (se pidió antes del
+  // cambio y podría traer la lista vieja).
+  getWaitlist(): Observable<WaitItem[] | null> {
+    return this.read<WaitItem[]>('waitlist-list');
+  }
+
+  private writeWait<T>(url: string): Observable<T | null> {
+    this.inflight.delete('waitlist-list');
+    return this.write<T>(url);
+  }
+
+  addWaitItem(item: { name: string; zones: string; days: string; parts: string; detail: string }, clientId: string): Observable<WaitlistResult | null> {
+    const q = (k: string, v: string) => `&${k}=${encodeURIComponent(v)}`;
+    return this.writeWait<WaitlistResult>(
+      `${this.api}?route=waitlist-add` + q('name', item.name) + q('zones', item.zones) + q('days', item.days) +
+      q('parts', item.parts) + q('detail', item.detail) + q('clientId', clientId)
+    );
+  }
+
+  // Solo se envían los campos que cambian.
+  updateWaitItem(id: string, patch: Partial<Pick<WaitItem, 'name' | 'zones' | 'days' | 'parts' | 'detail' | 'status'>>): Observable<WaitlistResult | null> {
+    let url = `${this.api}?route=waitlist-update&id=${encodeURIComponent(id)}`;
+    for (const [k, v] of Object.entries(patch)) url += `&${k}=${encodeURIComponent(String(v ?? ''))}`;
+    return this.writeWait<WaitlistResult>(url);
+  }
+
+  deleteWaitItem(id: string): Observable<WaitlistResult | null> {
+    return this.writeWait<WaitlistResult>(`${this.api}?route=waitlist-delete&id=${encodeURIComponent(id)}`);
   }
 
   editNote(id: string, text: string): Observable<AddNoteResult | null> {

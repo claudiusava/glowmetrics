@@ -107,7 +107,11 @@ function jsonRoute_(route, callback, params) {
     'notes-list': getNotes,
     'notes-add': () => addNote_(params.author, params.text, params.clientId),
     'notes-edit': () => editNote_(params.id, params.text),
-    'notes-delete': () => deleteNote_(params.id)
+    'notes-delete': () => deleteNote_(params.id),
+    'waitlist-list': getWaitlist,
+    'waitlist-add': () => addWaitItem_(params, params.clientId),
+    'waitlist-update': () => updateWaitItem_(params.id, params),
+    'waitlist-delete': () => deleteWaitItem_(params.id)
   };
 
   const handler = handlers[route];

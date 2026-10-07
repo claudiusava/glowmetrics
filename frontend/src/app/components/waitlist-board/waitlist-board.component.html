@@ -1,0 +1,163 @@
+<div class="scroll">
+  <!-- Barra fija: ¿ha quedado un hueco? + añadir -->
+  <div class="topbar">
+    <div class="gap">
+      <div class="gap-title">¿Ha quedado un hueco?</div>
+      <div class="chips" role="group" aria-label="Día del hueco">
+        <button
+          *ngFor="let d of days"
+          type="button"
+          class="chip day"
+          [class.on]="gapDay === d.k"
+          [attr.aria-pressed]="gapDay === d.k"
+          [attr.aria-label]="d.full"
+          [title]="d.full"
+          (click)="toggleGapDay(d.k)"
+        >{{ d.k }}</button>
+        <span class="sep"></span>
+        <button type="button" class="chip" [class.on]="gapPart === 'M'" [attr.aria-pressed]="gapPart === 'M'" (click)="toggleGapPart('M')">☀️ Mañana</button>
+        <button type="button" class="chip" [class.on]="gapPart === 'T'" [attr.aria-pressed]="gapPart === 'T'" (click)="toggleGapPart('T')">🌙 Tarde</button>
+        <button type="button" class="link" *ngIf="gapActive" (click)="clearGap()">Quitar</button>
+      </div>
+      <div class="gap-hint" *ngIf="gapActive">
+        <strong>{{ matchCount }}</strong> {{ matchCount === 1 ? 'encaja' : 'encajan' }} · van primero
+      </div>
+    </div>
+
+    <div class="addbar">
+      <span class="count">{{ active.length }} en espera</span>
+      <button type="button" class="primary" *ngIf="!formOpen" (click)="openAdd()">＋ Añadir</button>
+    </div>
+  </div>
+
+  <!-- Formulario de alta / edición -->
+  <form class="form" *ngIf="formOpen" (ngSubmit)="submit()">
+    <div class="form-title">{{ editingId ? 'Editar' : 'Añadir a la lista de espera' }}</div>
+
+    <label class="field">
+      <span>Nombre</span>
+      <input name="name" [(ngModel)]="form.name" maxlength="80" autocomplete="off" placeholder="Nombre de la clienta" [disabled]="saving" />
+    </label>
+
+    <label class="field">
+      <span>Zonas</span>
+      <input name="zones" [(ngModel)]="form.zones" maxlength="200" autocomplete="off" placeholder="Ej. piernas, axilas, cejas" [disabled]="saving" />
+    </label>
+
+    <div class="field">
+      <span>Días que le vienen bien <em>(sin marcar = cualquiera)</em></span>
+      <div class="chips">
+        <button
+          *ngFor="let d of days"
+          type="button"
+          class="chip day"
+          [class.on]="form.days.includes(d.k)"
+          [attr.aria-pressed]="form.days.includes(d.k)"
+          [attr.aria-label]="d.full"
+          [title]="d.full"
+          [disabled]="saving"
+          (click)="toggleFormDay(d.k)"
+        >{{ d.k }}</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <span>Franja <em>(sin marcar = cualquiera)</em></span>
+      <div class="chips">
+        <button type="button" class="chip" [class.on]="form.parts.includes('M')" [attr.aria-pressed]="form.parts.includes('M')" [disabled]="saving" (click)="toggleFormPart('M')">☀️ Mañana</button>
+        <button type="button" class="chip" [class.on]="form.parts.includes('T')" [attr.aria-pressed]="form.parts.includes('T')" [disabled]="saving" (click)="toggleFormPart('T')">🌙 Tarde</button>
+      </div>
+    </div>
+
+    <label class="field">
+      <span>Concretar <em>(opcional)</em></span>
+      <input name="detail" [(ngModel)]="form.detail" maxlength="120" autocomplete="off" placeholder="Ej. antes de las 12, desde las 18" [disabled]="saving" />
+    </label>
+
+    <div class="err" *ngIf="formError">{{ formError }}</div>
+
+    <div class="form-actions">
+      <button type="button" class="ghost" (click)="closeForm()" [disabled]="saving">Cancelar</button>
+      <button type="submit" class="primary" [disabled]="!form.name.trim() || saving">
+        <span class="spinner" *ngIf="saving"></span>{{ saving ? 'Guardando…' : (formError ? 'Reintentar' : (editingId ? 'Guardar' : 'Añadir')) }}
+      </button>
+    </div>
+  </form>
+
+  <!-- Lista -->
+  <div class="list">
+    <div class="empty" *ngIf="loading && !loadFailed">Cargando…</div>
+    <div class="empty" *ngIf="loading && loadFailed">No se pudo cargar. Reintentando…</div>
+    <div class="empty" *ngIf="!loading && !active.length">
+      Nadie en la lista de espera.<br />Cuando no haya hueco, pulsa <strong>＋ Añadir</strong>.
+    </div>
+
+    <div
+      class="card"
+      *ngFor="let it of active; trackBy: trackId"
+      [id]="'wl-' + it.id"
+      [class.dim]="gapActive && !matches(it)"
+      [class.flash]="justAddedId === it.id"
+      [class.busy]="busy.has(it.id)"
+    >
+      <div class="card-top">
+        <div class="name">{{ it.name }}</div>
+        <div class="ago" [class.old]="isOld(it)" [title]="'Apuntada: ' + fmt(it.createdAt)">{{ ago(it) }}</div>
+      </div>
+
+      <div class="zones" *ngIf="it.zones">{{ it.zones }}</div>
+
+      <div class="avail">
+        <ng-container *ngIf="it.days; else anyDay">
+          <span class="dtag" *ngFor="let d of dayList(it)" [title]="dayFull(d)">{{ d }}</span>
+        </ng-container>
+        <ng-template #anyDay><span class="any">{{ it.parts ? 'Cualquier día' : 'Cualquier día y hora' }}</span></ng-template>
+
+        <span class="ptag" *ngIf="it.parts.includes('M')">☀️ Mañana</span>
+        <span class="ptag" *ngIf="it.parts.includes('T')">🌙 Tarde</span>
+        <span class="any" *ngIf="!it.parts && it.days">Cualquier hora</span>
+
+        <span class="detail" *ngIf="it.detail">· {{ it.detail }}</span>
+      </div>
+
+      <div class="tried" *ngIf="it.status === 'noanswer'">
+        📞 Sin respuesta<span *ngIf="it.attempts > 1"> ×{{ it.attempts }}</span>
+      </div>
+
+      <div class="actions" *ngIf="confirmDeleteId !== it.id; else confirmTpl">
+        <button type="button" class="act" (click)="setStatus(it, 'noanswer')" [disabled]="busy.has(it.id)">📞 Sin respuesta</button>
+        <button type="button" class="act ok" (click)="setStatus(it, 'booked', { undoable: true })" [disabled]="busy.has(it.id)">✅ Citada</button>
+        <span class="spacer"></span>
+        <button type="button" class="icon" (click)="openEdit(it)" aria-label="Editar" title="Editar">✎</button>
+        <button type="button" class="icon danger" (click)="askDelete(it)" aria-label="Borrar" title="Borrar">✕</button>
+      </div>
+      <ng-template #confirmTpl>
+        <div class="actions confirm">
+          <span>¿Borrar a {{ it.name }}?</span>
+          <span class="spacer"></span>
+          <button type="button" class="act" (click)="askDelete(it)">No</button>
+          <button type="button" class="act danger" (click)="confirmDelete(it)">Sí, borrar</button>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- Citadas -->
+    <div class="booked" *ngIf="booked.length">
+      <button type="button" class="link toggle" (click)="showBooked = !showBooked" [attr.aria-expanded]="showBooked">
+        {{ showBooked ? '▾' : '▸' }} Citadas ({{ booked.length }})
+      </button>
+      <div class="booked-list" *ngIf="showBooked">
+        <div class="booked-row" *ngFor="let it of booked; trackBy: trackId">
+          <div class="booked-name"><strong>{{ it.name }}</strong><span *ngIf="it.zones"> · {{ it.zones }}</span></div>
+          <button type="button" class="act" (click)="setStatus(it, 'pending')" [disabled]="busy.has(it.id)">Volver a la lista</button>
+          <button type="button" class="icon danger" (click)="confirmDelete(it)" aria-label="Borrar" title="Borrar">✕</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" *ngIf="toast" role="status">
+  <span>{{ toast.text }}</span>
+  <button type="button" *ngIf="toast.undo" (click)="doUndo()">Deshacer</button>
+</div>

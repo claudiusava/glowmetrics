@@ -45,8 +45,8 @@
     class="notes-pin"
     [class.has-unread]="hasUnreadNotes"
     (click)="toggleNotesModal()"
-    title="Cuaderno de notas"
-    aria-label="Abrir cuaderno de notas"
+    title="Lista de espera y notas"
+    aria-label="Abrir lista de espera y notas"
   >📌</button>
 
   <app-notes-board
@@ -57,6 +57,8 @@
     [editing]="editingNote"
     [editError]="editNoteError"
     [addError]="addNoteError"
+    [hasUnread]="hasUnreadNotes"
+    (notesViewed)="onNotesViewed()"
     (closeRequested)="closeNotesModal()"
     (addNote)="onAddNote($event)"
     (deleteNote)="onDeleteNote($event)"

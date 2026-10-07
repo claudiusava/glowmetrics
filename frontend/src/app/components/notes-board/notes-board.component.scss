@@ -263,3 +263,50 @@
   color: #fff;
   margin-left: auto;
 }
+
+// ---- Pestañas (Lista de espera | Notas) ----
+.tabs {
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+}
+
+.tab {
+  position: relative;
+  min-height: 40px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: #64748b;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s ease, color 0.12s ease;
+
+  &:hover:not(.on) { background: #f1f5f9; }
+
+  &.on {
+    background: #fde7f1;
+    color: #be185d;
+  }
+}
+
+// Notas nuevas mientras se está en la otra pestaña.
+.tab-dot {
+  position: absolute;
+  top: 7px;
+  right: 6px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #f59e0b;
+  box-shadow: 0 0 0 2px #ffffff;
+}
+
+@media (max-width: 480px) {
+  .modal-header { padding: 12px 12px 12px 14px; }
+  .tab { padding: 0 11px; font-size: 14px; }
+}
