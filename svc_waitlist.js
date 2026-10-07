@@ -87,7 +87,9 @@ function getWaitlist() {
 }
 
 /** Alta. Idempotente por clientId: si el cliente reintenta tras un timeout y la
- * primera petición sí llegó a guardarse, no se duplica la clienta. */
+ * primera petición sí llegó a guardarse, no se duplica la clienta.
+ * Las escrituras devuelven solo lo que han tocado (no vuelven a leer la hoja
+ * entera): la web ya tiene la lista y cada llamada a Sheets cuesta ~0,2 s. */
 function addWaitItem_(params, clientId) {
   ensureWaitlistSheet_();
   params = params || {};
@@ -108,14 +110,15 @@ function addWaitItem_(params, clientId) {
   if (dedupeKey) cache.put(dedupeKey, '1', 600);
 
   const sh = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(WAITLIST_SHEET_NAME);
-  const id = Utilities.getUuid();
   const now = new Date().toISOString();
-  sh.appendRow([
-    id, name, cleanText_(params.zones, 200), cleanDays_(params.days), cleanParts_(params.parts),
+  const row = [
+    Utilities.getUuid(), name, cleanText_(params.zones, 200), cleanDays_(params.days), cleanParts_(params.parts),
     cleanText_(params.detail, 120), 'pending', 0, now, now
-  ]);
+  ];
+  sh.appendRow(row);
 
-  return { ok: true, id: id, items: getWaitlist() };
+  const item = rowToWaitItem_(row);
+  return { ok: true, id: item.id, item: item };
 }
 
 /** Cambia solo los campos que vengan en `patch` (nombre, zonas, días, franja,
@@ -123,7 +126,7 @@ function addWaitItem_(params, clientId) {
 function updateWaitItem_(id, patch) {
   ensureWaitlistSheet_();
   patch = patch || {};
-  if (!id) return { ok: false, items: getWaitlist() };
+  if (!id) return { ok: false };
   // Con candado: la fila se localiza por posición y un borrado simultáneo la desplazaría.
   return withLock_(() => updateWaitItemLocked_(id, patch));
 }
@@ -131,15 +134,14 @@ function updateWaitItem_(id, patch) {
 function updateWaitItemLocked_(id, patch) {
   const sh = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(WAITLIST_SHEET_NAME);
   const last = sh.getLastRow();
-  if (last <= 1) return { ok: false, items: [] };
+  if (last <= 1) return { ok: false };
 
-  const ids = sh.getRange(2, 1, last - 1, 1).getValues().flat();
-  const idx = ids.findIndex(v => String(v) === String(id));
-  if (idx === -1) return { ok: false, items: getWaitlist() };
+  // Una sola lectura de la hoja: sirve para localizar la fila y para tener sus valores.
+  const rows = sh.getRange(2, 1, last - 1, WAITLIST_COLS).getValues();
+  const idx = rows.findIndex(r => String(r[0]) === String(id));
+  if (idx === -1) return { ok: false };
 
-  const rowNum = idx + 2;
-  const cur = sh.getRange(rowNum, 1, 1, WAITLIST_COLS).getValues()[0];
-  const item = rowToWaitItem_(cur);
+  const item = rowToWaitItem_(rows[idx]);
 
   if ('name' in patch) {
     const name = cleanText_(patch.name, 80);
@@ -156,17 +158,17 @@ function updateWaitItemLocked_(id, patch) {
   }
   item.updatedAt = new Date().toISOString();
 
-  sh.getRange(rowNum, 1, 1, WAITLIST_COLS).setValues([[
+  sh.getRange(idx + 2, 1, 1, WAITLIST_COLS).setValues([[
     item.id, item.name, item.zones, item.days, item.parts, item.detail,
     item.status, item.attempts, item.createdAt, item.updatedAt
   ]]);
 
-  return { ok: true, items: getWaitlist() };
+  return { ok: true, item: item };
 }
 
 function deleteWaitItem_(id) {
   ensureWaitlistSheet_();
-  if (!id) return { ok: false, items: getWaitlist() };
+  if (!id) return { ok: false };
   // Con candado por el mismo motivo que updateWaitItem_: dos borrados a la vez
   // podrían calcular la fila antes de que el otro desplace las demás.
   return withLock_(() => deleteWaitItemLocked_(id));
@@ -175,12 +177,12 @@ function deleteWaitItem_(id) {
 function deleteWaitItemLocked_(id) {
   const sh = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(WAITLIST_SHEET_NAME);
   const last = sh.getLastRow();
-  if (last <= 1) return { ok: false, items: [] };
+  if (last <= 1) return { ok: false };
 
   const ids = sh.getRange(2, 1, last - 1, 1).getValues().flat();
   const idx = ids.findIndex(v => String(v) === String(id));
-  if (idx === -1) return { ok: false, items: getWaitlist() };
+  if (idx === -1) return { ok: false };
 
   sh.deleteRow(idx + 2);
-  return { ok: true, items: getWaitlist() };
+  return { ok: true };
 }

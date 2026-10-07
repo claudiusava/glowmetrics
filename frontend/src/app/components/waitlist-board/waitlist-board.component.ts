@@ -22,6 +22,7 @@ const PART_ORDER = 'MT';
 const POLL_MS = 30_000;
 const QUIET_AFTER_WRITE_MS = 5_000;
 const OLD_AFTER_DAYS = 14;
+const TEMP_PREFIX = 'tmp_'; // clienta recién añadida cuyo guardado aún no ha vuelto
 
 interface Toast { text: string; undo?: () => void; }
 
@@ -216,44 +217,87 @@ export class WaitlistBoardComponent implements OnInit, OnDestroy {
     return order.split('').filter(c => set.has(c)).join('');
   }
 
+  // Guardar es "optimista": el formulario se cierra y la clienta aparece al
+  // instante; el envío va por detrás. Si falla, se deshace y se vuelve a abrir
+  // el formulario con lo que había escrito.
   submit(): void {
     if (this.saving || !this.form.name.trim()) return;
-    this.saving = true;
+    const data = { ...this.form, name: this.form.name.trim() };
     this.formError = null;
-    this.pendingWrites++;
-    const seq = ++this.seq;
-
-    if (this.editingId) {
-      const id = this.editingId;
-      this.subs.add(this.svc.updateWaitItem(id, { ...this.form }).subscribe(res => this.afterSave(res, seq, null)));
-    } else {
-      if (!this.addRequestId) this.addRequestId = Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
-      this.subs.add(this.svc.addWaitItem({ ...this.form }, this.addRequestId).subscribe(res => this.afterSave(res, seq, res?.id ?? null)));
-    }
+    this.setFormOpen(false);
+    if (this.editingId) this.saveEdit(this.editingId, data); else this.saveNew(data);
   }
 
-  private afterSave(res: { items: WaitItem[]; error?: string } | null, seq: number, newId: string | null): void {
-    this.saving = false;
-    this.pendingWrites--;
-    this.lastWriteAt = Date.now();
-    if (this.destroyed) return;
+  isTemp(i: WaitItem): boolean { return i.id.startsWith(TEMP_PREFIX); }
 
-    if (!res) {
-      // No sabemos si llegó a guardarse. "Reintentar" reenvía el mismo clientId, que el servidor deduplica.
-      this.formError = 'No se pudo confirmar el guardado. Inténtalo de nuevo.';
-      return;
-    }
-    if (res.error) {
-      this.formError = res.error;
-      if (seq === this.seq) { this.items = res.items; this.recompute(); }
-      return;
-    }
-
-    this.loading = false;
-    if (seq === this.seq) { this.items = res.items; this.recompute(); } else { this.load(); }
-    this.setFormOpen(false);
+  private saveNew(data: { name: string; zones: string; days: string; parts: string; detail: string }): void {
+    const requestId = this.addRequestId || (this.addRequestId = Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10));
     this.addRequestId = null;
-    if (newId) this.highlight(newId);
+    const now = new Date().toISOString();
+    const temp: WaitItem = { ...data, id: TEMP_PREFIX + requestId, status: 'pending', attempts: 0, createdAt: now, updatedAt: now };
+    this.items = [...this.items, temp];
+    this.recompute();
+    this.highlight(temp.id);
+
+    this.pendingWrites++;
+    ++this.seq;
+    let tries = 0;
+    const fail = (msg: string) => {
+      this.items = this.items.filter(x => x !== temp);
+      this.recompute();
+      if (this.formOpen) { this.say(`No se pudo guardar a ${data.name}. Vuelve a añadirla.`); return; }
+      this.editingId = null;
+      this.form = { ...data };
+      this.addRequestId = requestId; // reintentar reenvía el mismo id y el servidor no duplica
+      this.formError = msg;
+      this.setFormOpen(true);
+    };
+    const send = () => this.subs.add(this.svc.addWaitItem(data, requestId).subscribe(res => {
+      if (this.destroyed) return;
+      // El servidor deja 1,5 s entre altas: si justo coincide, se reintenta solo.
+      if (res?.error && res.error.startsWith('Espera') && tries++ < 3) { setTimeout(send, 1700); return; }
+      this.pendingWrites--;
+      this.lastWriteAt = Date.now();
+      this.jobDone(temp.id);
+      if (!res) return fail('No se pudo confirmar el guardado. Inténtalo de nuevo.');
+      if (res.error) return fail(res.error);
+      if (res.item) {
+        const wasFlashing = this.justAddedId === temp.id;
+        Object.assign(temp, res.item);
+        if (wasFlashing) this.justAddedId = temp.id;
+        this.recompute();
+      } else {
+        // Ya estaba guardada (reintento): se descarta la provisional y se lee la lista.
+        this.items = this.items.filter(x => x !== temp);
+        this.recompute();
+        this.load();
+      }
+    }));
+    this.enqueue(temp.id, send);
+  }
+
+  private saveEdit(id: string, data: { name: string; zones: string; days: string; parts: string; detail: string }): void {
+    const item = this.items.find(x => x.id === id);
+    if (!item) return;
+    const prev: WaitItem = { ...item };
+    Object.assign(item, data, { updatedAt: new Date().toISOString() });
+    this.recompute();
+    this.highlight(id);
+
+    this.pendingWrites++;
+    ++this.seq;
+    this.enqueue(id, () => this.subs.add(this.svc.updateWaitItem(id, data).subscribe(res => {
+      this.pendingWrites--;
+      this.lastWriteAt = Date.now();
+      this.jobDone(id);
+      if (this.destroyed) return;
+      if (!res || res.ok === false || res.error) {
+        Object.assign(item, prev);
+        this.recompute();
+        this.say('No se pudo guardar el cambio.');
+        this.load();
+      }
+    })));
   }
 
   private highlight(id: string): void {

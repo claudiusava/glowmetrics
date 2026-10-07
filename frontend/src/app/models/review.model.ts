@@ -90,5 +90,6 @@ export interface WaitlistResult {
   ok?: boolean;
   error?: string;
   id?: string;
-  items: WaitItem[];
+  item?: WaitItem;   // lo que se ha guardado (altas y cambios)
+  items?: WaitItem[]; // solo en respuestas de error
 }

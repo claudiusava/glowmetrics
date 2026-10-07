@@ -102,7 +102,7 @@
     >
       <div class="card-top">
         <div class="name">{{ it.name }}</div>
-        <div class="ago" [class.old]="isOld(it)" [title]="'Apuntada: ' + fmt(it.createdAt)">{{ ago(it) }}</div>
+        <div class="ago" [class.old]="isOld(it)" [title]="'Apuntada: ' + fmt(it.createdAt)">{{ isTemp(it) ? 'Guardando…' : ago(it) }}</div>
       </div>
 
       <div class="zones" *ngIf="it.zones">{{ it.zones }}</div>
@@ -128,8 +128,8 @@
         <button type="button" class="act" (click)="setStatus(it, 'noanswer')" [disabled]="busy.has(it.id)">📞 Sin respuesta</button>
         <button type="button" class="act ok" (click)="setStatus(it, 'booked', { undoable: true })" [disabled]="busy.has(it.id)">✅ Citada</button>
         <span class="spacer"></span>
-        <button type="button" class="icon" (click)="openEdit(it)" aria-label="Editar" title="Editar">✎</button>
-        <button type="button" class="icon danger" (click)="askDelete(it)" aria-label="Borrar" title="Borrar">✕</button>
+        <button type="button" class="icon" (click)="openEdit(it)" [disabled]="isTemp(it)" aria-label="Editar" title="Editar">✎</button>
+        <button type="button" class="icon danger" (click)="askDelete(it)" [disabled]="isTemp(it)" aria-label="Borrar" title="Borrar">✕</button>
       </div>
       <ng-template #confirmTpl>
         <div class="actions confirm">
