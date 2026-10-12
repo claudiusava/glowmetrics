@@ -12,14 +12,15 @@
  *************************/
 
 const WAITLIST_SHEET_NAME = 'ListaEspera';
-const WAITLIST_HEADERS = ['id', 'name', 'zones', 'days', 'parts', 'detail', 'status', 'attempts', 'createdAt', 'updatedAt'];
+// 'status' y 'attempts' ya no se usan (la web no los muestra) pero se conservan
+// como columnas 7 y 8 para no mover datos ya guardados. 'tech' se añadió después.
+const WAITLIST_HEADERS = ['id', 'name', 'zones', 'days', 'parts', 'detail', 'status', 'attempts', 'createdAt', 'updatedAt', 'tech'];
 const WAITLIST_COLS = WAITLIST_HEADERS.length;
 const WAITLIST_MAX_ROWS = 500;
-const WAITLIST_STATUSES = ['pending', 'noanswer', 'booked'];
 
 function ensureWaitlistSheet_() {
   const cache = CacheService.getScriptCache();
-  if (cache.get('waitlist_sheet_ensured')) return;
+  if (cache.get('waitlist_sheet_v2')) return;
 
   return withLock_(() => {
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
@@ -30,8 +31,14 @@ function ensureWaitlistSheet_() {
       // Todo como texto plano: un nombre que empiece por "=" no se interpreta
       // como fórmula de la hoja.
       sh.getRange(1, 1, sh.getMaxRows(), WAITLIST_COLS).setNumberFormat('@');
+    } else if (String(sh.getRange(1, WAITLIST_COLS).getValue()) !== 'tech') {
+      // Hoja creada antes de existir la columna de técnico: se añade solo la
+      // cabecera y el formato de texto de esa columna; los datos no se tocan.
+      if (sh.getMaxColumns() < WAITLIST_COLS) sh.insertColumnsAfter(sh.getMaxColumns(), WAITLIST_COLS - sh.getMaxColumns());
+      sh.getRange(1, WAITLIST_COLS, sh.getMaxRows(), 1).setNumberFormat('@');
+      sh.getRange(1, WAITLIST_COLS).setValue('tech');
     }
-    cache.put('waitlist_sheet_ensured', '1', 3600);
+    cache.put('waitlist_sheet_v2', '1', 3600);
   });
 }
 
@@ -51,6 +58,12 @@ function cleanParts_(v) {
   return 'MT'.split('').filter(c => s.indexOf(c) !== -1).join('');
 }
 
+// Técnico preferido: L = Laura, E = Elena, vacío = le es indiferente.
+function cleanTech_(v) {
+  const s = String(v == null ? '' : v).toUpperCase();
+  return s === 'L' || s === 'E' ? s : '';
+}
+
 function rowToWaitItem_(r) {
   return {
     id: String(r[0]),
@@ -59,8 +72,7 @@ function rowToWaitItem_(r) {
     days: String(r[3] || ''),
     parts: String(r[4] || ''),
     detail: String(r[5] || ''),
-    status: WAITLIST_STATUSES.indexOf(String(r[6])) === -1 ? 'pending' : String(r[6]),
-    attempts: Number(r[7]) || 0,
+    tech: cleanTech_(r[10]),
     createdAt: String(r[8] || ''),
     updatedAt: String(r[9] || '')
   };
@@ -113,7 +125,7 @@ function addWaitItem_(params, clientId) {
   const now = new Date().toISOString();
   const row = [
     Utilities.getUuid(), name, cleanText_(params.zones, 200), cleanDays_(params.days), cleanParts_(params.parts),
-    cleanText_(params.detail, 120), 'pending', 0, now, now
+    cleanText_(params.detail, 120), 'pending', 0, now, now, cleanTech_(params.tech)
   ];
   sh.appendRow(row);
 
@@ -122,7 +134,7 @@ function addWaitItem_(params, clientId) {
 }
 
 /** Cambia solo los campos que vengan en `patch` (nombre, zonas, días, franja,
- * detalle, estado). Pasar a "sin respuesta" suma un intento de llamada. */
+ * detalle, técnico). */
 function updateWaitItem_(id, patch) {
   ensureWaitlistSheet_();
   patch = patch || {};
@@ -141,7 +153,8 @@ function updateWaitItemLocked_(id, patch) {
   const idx = rows.findIndex(r => String(r[0]) === String(id));
   if (idx === -1) return { ok: false };
 
-  const item = rowToWaitItem_(rows[idx]);
+  const cur = rows[idx];
+  const item = rowToWaitItem_(cur);
 
   if ('name' in patch) {
     const name = cleanText_(patch.name, 80);
@@ -152,15 +165,13 @@ function updateWaitItemLocked_(id, patch) {
   if ('days' in patch) item.days = cleanDays_(patch.days);
   if ('parts' in patch) item.parts = cleanParts_(patch.parts);
   if ('detail' in patch) item.detail = cleanText_(patch.detail, 120);
-  if ('status' in patch && WAITLIST_STATUSES.indexOf(String(patch.status)) !== -1) {
-    if (patch.status === 'noanswer') item.attempts += 1; // cada "sin respuesta" cuenta como un intento
-    item.status = String(patch.status);
-  }
+  if ('tech' in patch) item.tech = cleanTech_(patch.tech);
   item.updatedAt = new Date().toISOString();
 
+  // Las columnas heredadas 'status' y 'attempts' se reescriben tal cual estaban.
   sh.getRange(idx + 2, 1, 1, WAITLIST_COLS).setValues([[
     item.id, item.name, item.zones, item.days, item.parts, item.detail,
-    item.status, item.attempts, item.createdAt, item.updatedAt
+    cur[6], cur[7], item.createdAt, item.updatedAt, item.tech
   ]]);
 
   return { ok: true, item: item };

@@ -138,16 +138,16 @@ export class GlowmetricsService {
     return this.write<T>(url);
   }
 
-  addWaitItem(item: { name: string; zones: string; days: string; parts: string; detail: string }, clientId: string): Observable<WaitlistResult | null> {
+  addWaitItem(item: { name: string; zones: string; days: string; parts: string; detail: string; tech: string }, clientId: string): Observable<WaitlistResult | null> {
     const q = (k: string, v: string) => `&${k}=${encodeURIComponent(v)}`;
     return this.writeWait<WaitlistResult>(
       `${this.api}?route=waitlist-add` + q('name', item.name) + q('zones', item.zones) + q('days', item.days) +
-      q('parts', item.parts) + q('detail', item.detail) + q('clientId', clientId)
+      q('parts', item.parts) + q('detail', item.detail) + q('tech', item.tech) + q('clientId', clientId)
     );
   }
 
   // Solo se envían los campos que cambian.
-  updateWaitItem(id: string, patch: Partial<Pick<WaitItem, 'name' | 'zones' | 'days' | 'parts' | 'detail' | 'status'>>): Observable<WaitlistResult | null> {
+  updateWaitItem(id: string, patch: Partial<Pick<WaitItem, 'name' | 'zones' | 'days' | 'parts' | 'detail' | 'tech'>>): Observable<WaitlistResult | null> {
     let url = `${this.api}?route=waitlist-update&id=${encodeURIComponent(id)}`;
     for (const [k, v] of Object.entries(patch)) url += `&${k}=${encodeURIComponent(String(v ?? ''))}`;
     return this.writeWait<WaitlistResult>(url);

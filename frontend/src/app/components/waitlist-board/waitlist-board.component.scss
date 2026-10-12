@@ -253,9 +253,13 @@
 
 .card-top {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
+  align-items: center;
+  gap: 4px;
+
+  .name { flex: 1; min-width: 0; margin-right: 6px; }
+  .ago { white-space: nowrap; margin-right: 4px; }
+  // Los botones son grandes para tocarlos bien, pero no deben hacer más alta la tarjeta.
+  .icon { flex: none; margin: -6px 0; }
 }
 
 .name {
@@ -315,14 +319,16 @@
   font-weight: 600;
 }
 
+.ttag {
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: #ede9fe;
+  color: #5b21b6;
+  font-weight: 600;
+}
+
 .any { color: #94a3b8; }
 .detail { color: #475569; font-style: italic; overflow-wrap: anywhere; }
-
-.tried {
-  font-size: 12px;
-  font-weight: 700;
-  color: #b45309;
-}
 
 .actions {
   display: flex;
@@ -352,7 +358,6 @@
   &:hover:not(:disabled) { background: #eef2f7; }
   &:disabled { opacity: 0.5; cursor: default; }
 
-  &.ok { background: #dcfce7; border-color: #bbf7d0; color: #166534; &:hover:not(:disabled) { background: #bbf7d0; } }
   &.danger { background: #fee2e2; border-color: #fecaca; color: #b91c1c; &:hover:not(:disabled) { background: #fecaca; } }
 }
 
@@ -373,30 +378,6 @@
   &.danger:hover { background: #fee2e2; color: #ef4444; }
 }
 
-// ---- Citadas ----
-.booked { margin-top: 6px; }
-.toggle { font-size: 14px; text-decoration: none; padding: 10px 2px; }
-
-.booked-list {
-  display: grid;
-  gap: 8px;
-  margin-top: 4px;
-}
-
-.booked-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: 12px;
-  background: #f8fafc;
-  border: 1px solid #eef1f5;
-  color: #64748b;
-  font-size: 14px;
-}
-
-.booked-name { flex: 1; min-width: 0; overflow-wrap: anywhere; }
-
 // ---- Aviso breve ----
 .toast {
   position: absolute;
@@ -415,16 +396,6 @@
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
   animation: toast-in 0.2s ease;
   z-index: 3;
-
-  button {
-    border: none;
-    background: transparent;
-    color: #fbbf24;
-    font: inherit;
-    font-weight: 800;
-    cursor: pointer;
-    padding: 4px 2px;
-  }
 }
 
 @keyframes toast-in {

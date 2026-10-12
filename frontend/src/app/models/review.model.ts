@@ -69,8 +69,6 @@ export interface AddNoteResult {
 }
 
 // Lista de espera de clientas (ver svc_waitlist.js).
-export type WaitStatus = 'pending' | 'noanswer' | 'booked';
-
 export interface WaitItem {
   id: string;
   name: string;
@@ -80,8 +78,8 @@ export interface WaitItem {
   // Franja: M = mañana, T = tarde; vacío = cualquiera.
   parts: string;
   detail: string;
-  status: WaitStatus;
-  attempts: number;
+  // Técnico preferido: L = Laura, E = Elena; vacío = le es indiferente.
+  tech: string;
   createdAt: string;
   updatedAt: string;
 }

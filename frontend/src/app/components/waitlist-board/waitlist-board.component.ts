@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { interval, Subscription } from 'rxjs';
 import { GlowmetricsService } from '../../services/glowmetrics.service';
-import { WaitItem, WaitStatus } from '../../models/review.model';
+import { WaitItem } from '../../models/review.model';
 
 // El centro abre de lunes a viernes. X = miércoles (como en un calendario).
 const DAYS = [
@@ -16,6 +16,12 @@ const DAYS = [
 const DAY_ORDER = 'LMXJV';
 const PART_ORDER = 'MT';
 
+// Técnico con quien prefiere hacerse el tratamiento ('' = le es indiferente).
+const TECHS = [
+  { k: 'L', name: 'Laura' },
+  { k: 'E', name: 'Elena' },
+];
+
 // La lista la usan a la vez varias personas: mientras está abierta se
 // refresca sola. Tras escribir se espera un poco antes de volver a leer para
 // que una lectura "vieja" no pise el cambio recién hecho.
@@ -24,7 +30,7 @@ const QUIET_AFTER_WRITE_MS = 5_000;
 const OLD_AFTER_DAYS = 14;
 const TEMP_PREFIX = 'tmp_'; // clienta recién añadida cuyo guardado aún no ha vuelto
 
-interface Toast { text: string; undo?: () => void; }
+interface Toast { text: string; }
 
 @Component({
   selector: 'app-waitlist-board',
@@ -38,10 +44,10 @@ export class WaitlistBoardComponent implements OnInit, OnDestroy {
   @Output() formOpenChange = new EventEmitter<boolean>();
 
   readonly days = DAYS;
+  readonly techs = TECHS;
 
   items: WaitItem[] = [];
-  active: WaitItem[] = [];
-  booked: WaitItem[] = [];
+  list: WaitItem[] = [];
   loading = true;
   loadFailed = false;
 
@@ -53,7 +59,7 @@ export class WaitlistBoardComponent implements OnInit, OnDestroy {
   // Formulario (alta y edición)
   formOpen = false;
   editingId: string | null = null;
-  form = { name: '', zones: '', days: '', parts: '', detail: '' };
+  form = { name: '', zones: '', days: '', parts: '', detail: '', tech: '' };
   saving = false;
   formError: string | null = null;
   private addRequestId: string | null = null;
@@ -61,7 +67,6 @@ export class WaitlistBoardComponent implements OnInit, OnDestroy {
   // Estado por elemento
   busy = new Set<string>();
   confirmDeleteId: string | null = null;
-  showBooked = false;
   justAddedId: string | null = null;
   toast: Toast | null = null;
 
@@ -122,14 +127,11 @@ export class WaitlistBoardComponent implements OnInit, OnDestroy {
 
   private recompute(): void {
     const matches = (i: WaitItem) => this.matches(i);
-    const act = this.items.filter(i => i.status !== 'booked'); // ya vienen por orden de llegada
-    this.matchCount = act.filter(matches).length;
-    this.active = this.gapActive
-      ? [...act.filter(matches), ...act.filter(i => !matches(i))]
-      : act;
-    this.booked = this.items
-      .filter(i => i.status === 'booked')
-      .sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
+    // Ya vienen por orden de llegada; con un hueco marcado, las que encajan van primero.
+    this.matchCount = this.items.filter(matches).length;
+    this.list = this.gapActive
+      ? [...this.items.filter(matches), ...this.items.filter(i => !matches(i))]
+      : this.items;
   }
 
   trackId = (_: number, i: WaitItem) => i.id;
@@ -182,7 +184,7 @@ export class WaitlistBoardComponent implements OnInit, OnDestroy {
 
   openAdd(): void {
     this.editingId = null;
-    this.form = { name: '', zones: '', days: '', parts: '', detail: '' };
+    this.form = { name: '', zones: '', days: '', parts: '', detail: '', tech: '' };
     this.addRequestId = null;
     this.formError = null;
     this.setFormOpen(true);
@@ -191,7 +193,7 @@ export class WaitlistBoardComponent implements OnInit, OnDestroy {
 
   openEdit(i: WaitItem): void {
     this.editingId = i.id;
-    this.form = { name: i.name, zones: i.zones, days: i.days, parts: i.parts, detail: i.detail };
+    this.form = { name: i.name, zones: i.zones, days: i.days, parts: i.parts, detail: i.detail, tech: i.tech || '' };
     this.formError = null;
     this.confirmDeleteId = null;
     this.setFormOpen(true);
@@ -210,6 +212,8 @@ export class WaitlistBoardComponent implements OnInit, OnDestroy {
 
   toggleFormDay(k: string): void { this.form.days = this.toggleLetter(this.form.days, k, DAY_ORDER); }
   toggleFormPart(k: string): void { this.form.parts = this.toggleLetter(this.form.parts, k, PART_ORDER); }
+  setTech(k: string): void { this.form.tech = k; }
+  techName(k: string): string { return TECHS.find(t => t.k === k)?.name ?? ''; }
 
   private toggleLetter(s: string, k: string, order: string): string {
     const set = new Set(s.split(''));
@@ -230,11 +234,11 @@ export class WaitlistBoardComponent implements OnInit, OnDestroy {
 
   isTemp(i: WaitItem): boolean { return i.id.startsWith(TEMP_PREFIX); }
 
-  private saveNew(data: { name: string; zones: string; days: string; parts: string; detail: string }): void {
+  private saveNew(data: { name: string; zones: string; days: string; parts: string; detail: string; tech: string }): void {
     const requestId = this.addRequestId || (this.addRequestId = Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10));
     this.addRequestId = null;
     const now = new Date().toISOString();
-    const temp: WaitItem = { ...data, id: TEMP_PREFIX + requestId, status: 'pending', attempts: 0, createdAt: now, updatedAt: now };
+    const temp: WaitItem = { ...data, id: TEMP_PREFIX + requestId, createdAt: now, updatedAt: now };
     this.items = [...this.items, temp];
     this.recompute();
     this.highlight(temp.id);
@@ -276,7 +280,7 @@ export class WaitlistBoardComponent implements OnInit, OnDestroy {
     this.enqueue(temp.id, send);
   }
 
-  private saveEdit(id: string, data: { name: string; zones: string; days: string; parts: string; detail: string }): void {
+  private saveEdit(id: string, data: { name: string; zones: string; days: string; parts: string; detail: string; tech: string }): void {
     const item = this.items.find(x => x.id === id);
     if (!item) return;
     const prev: WaitItem = { ...item };
@@ -310,10 +314,10 @@ export class WaitlistBoardComponent implements OnInit, OnDestroy {
     setTimeout(() => document.querySelector('app-waitlist-board .scroll')?.scrollTo({ top: 0, behavior: 'smooth' }), 0);
   }
 
-  // ---------- acciones sobre una clienta (se ven al instante; si falla, se deshacen) ----------
+  // ---------- borrar (se ve al instante; si falla, se deshace) ----------
 
   // Los cambios sobre una misma clienta se envían de uno en uno y en orden
-  // (así "Deshacer" funciona aunque el guardado anterior siga en camino).
+  // (p. ej. editar y borrar seguidos, aunque el guardado anterior siga en camino).
   private queues = new Map<string, Array<() => void>>();
 
   private enqueue(id: string, job: () => void): void {
@@ -329,34 +333,6 @@ export class WaitlistBoardComponent implements OnInit, OnDestroy {
     if (job) { job(); return; }
     this.queues.delete(id);
     this.busy.delete(id);
-  }
-
-  setStatus(i: WaitItem, status: WaitStatus, opts: { undoable?: boolean } = {}): void {
-    const prev: WaitItem = { ...i };
-    i.status = status;
-    if (status === 'noanswer') i.attempts += 1;
-    i.updatedAt = new Date().toISOString();
-    this.confirmDeleteId = null;
-    this.recompute();
-
-    this.pendingWrites++;
-    ++this.seq;
-    this.enqueue(i.id, () => this.subs.add(this.svc.updateWaitItem(i.id, { status }).subscribe(res => {
-      this.pendingWrites--;
-      this.lastWriteAt = Date.now();
-      this.jobDone(i.id);
-      if (this.destroyed) return;
-      if (!res || res.ok === false) {
-        i.status = prev.status; i.attempts = prev.attempts; i.updatedAt = prev.updatedAt;
-        this.recompute();
-        this.say('No se pudo guardar el cambio.');
-        this.load();
-      }
-    })));
-
-    if (opts.undoable) {
-      this.say(`${i.name} pasa a citadas.`, () => this.setStatus(i, 'pending'));
-    }
   }
 
   askDelete(i: WaitItem): void { this.confirmDeleteId = this.confirmDeleteId === i.id ? null : i.id; }
@@ -385,16 +361,9 @@ export class WaitlistBoardComponent implements OnInit, OnDestroy {
 
   // ---------- aviso breve ----------
 
-  private say(text: string, undo?: () => void): void {
+  private say(text: string): void {
     if (this.toastTimer) clearTimeout(this.toastTimer);
-    this.toast = { text, undo };
-    this.toastTimer = setTimeout(() => { this.toast = null; }, undo ? 7000 : 3500);
-  }
-
-  doUndo(): void {
-    const t = this.toast;
-    this.toast = null;
-    if (this.toastTimer) clearTimeout(this.toastTimer);
-    t?.undo?.();
+    this.toast = { text };
+    this.toastTimer = setTimeout(() => { this.toast = null; }, 3500);
   }
 }
