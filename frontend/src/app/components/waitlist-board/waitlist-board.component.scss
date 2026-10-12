@@ -23,7 +23,7 @@
   top: 0;
   z-index: 2;
   background: #ffffff;
-  padding: 14px 0 10px;
+  padding: 14px 0 8px;
   border-bottom: 1px solid #eef1f5;
   margin-bottom: 14px;
 }
@@ -101,7 +101,9 @@
 
 .addbar {
   display: flex;
-  align-items: center;
+  // El contador va abajo, pegado a la línea que separa la cabecera de la lista,
+  // para que se entienda que habla de esa lista.
+  align-items: flex-end;
   justify-content: space-between;
   gap: 12px;
   margin-top: 12px;
@@ -112,6 +114,7 @@
   font-size: 13px;
   font-weight: 600;
   color: #64748b;
+  padding-bottom: 1px;
 }
 
 .primary,
