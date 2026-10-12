@@ -1,9 +1,13 @@
 <div class="scroll">
   <!-- Barra fija: ¿ha quedado un hueco? + añadir (se oculta mientras hay un formulario abierto) -->
   <div class="topbar" *ngIf="!formOpen">
+    <!-- 1) Buscador de huecos -->
     <div class="gap">
-      <div class="gap-title">¿Ha quedado un hueco?</div>
-      <div class="chips" role="group" aria-label="Día del hueco">
+      <div class="gap-head">
+        <div class="gap-title">¿Ha quedado un hueco?</div>
+        <button type="button" class="link" *ngIf="gapActive" (click)="clearGap()">Quitar</button>
+      </div>
+      <div class="chips" role="group" aria-label="Día y franja del hueco">
         <button
           *ngFor="let d of days"
           type="button"
@@ -17,16 +21,15 @@
         <span class="sep"></span>
         <button type="button" class="chip" [class.on]="gapPart === 'M'" [attr.aria-pressed]="gapPart === 'M'" (click)="toggleGapPart('M')">☀️ Mañana</button>
         <button type="button" class="chip" [class.on]="gapPart === 'T'" [attr.aria-pressed]="gapPart === 'T'" (click)="toggleGapPart('T')">🌙 Tarde</button>
-        <button type="button" class="link" *ngIf="gapActive" (click)="clearGap()">Quitar</button>
-      </div>
-      <div class="gap-hint" *ngIf="gapActive">
-        <strong>{{ matchCount }}</strong> {{ matchCount === 1 ? 'encaja' : 'encajan' }} · van primero
       </div>
     </div>
 
+    <!-- 2) Cabecera de la lista: contador a la izquierda, añadir a la derecha, en la misma línea -->
     <div class="addbar">
-      <span class="count">{{ items.length }} en espera</span>
-      <button type="button" class="primary" *ngIf="!formOpen" (click)="openAdd()">＋ Añadir</button>
+      <span class="count">
+        <strong>{{ items.length }}</strong> en espera<span class="count-match" *ngIf="gapActive"> · <strong>{{ matchCount }}</strong> {{ matchCount === 1 ? 'encaja' : 'encajan' }}</span>
+      </span>
+      <button type="button" class="primary" (click)="openAdd()">＋ Añadir</button>
     </div>
   </div>
 

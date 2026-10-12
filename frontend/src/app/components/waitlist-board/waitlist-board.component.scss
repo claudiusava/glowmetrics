@@ -23,9 +23,19 @@
   top: 0;
   z-index: 2;
   background: #ffffff;
-  padding: 14px 0 8px;
-  border-bottom: 1px solid #eef1f5;
-  margin-bottom: 14px;
+  padding: 14px 0 10px;
+  margin-bottom: 4px;
+}
+
+.gap-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 24px;
+  margin-bottom: 8px;
+
+  .gap-title { margin-bottom: 0; }
+  .link { padding: 0 2px; }
 }
 
 .gap-title {
@@ -91,30 +101,24 @@
   padding: 8px 4px;
 }
 
-.gap-hint {
-  margin-top: 8px;
-  font-size: 13px;
-  color: #475569;
-
-  strong { color: #f7307d; }
-}
-
 .addbar {
+  // Separada del buscador por una línea; contador y botón centrados en la misma fila.
   display: flex;
-  // El contador va abajo, pegado a la línea que separa la cabecera de la lista,
-  // para que se entienda que habla de esa lista.
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   margin-top: 12px;
-  min-height: 44px;
+  padding-top: 12px;
+  border-top: 1px solid #eef1f5;
 }
 
 .count {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: #64748b;
-  padding-bottom: 1px;
+
+  strong { color: #0f172a; font-weight: 800; }
+  .count-match strong { color: #f7307d; }
 }
 
 .primary,
