@@ -406,6 +406,8 @@
 @media (max-width: 480px) {
   .scroll { padding: 0 14px 18px; }
   .form { padding: 14px; }
+  // Con poco ancho las franjas bajan a otra línea y el separador se quedaría suelto al final de la primera.
+  .sep { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
