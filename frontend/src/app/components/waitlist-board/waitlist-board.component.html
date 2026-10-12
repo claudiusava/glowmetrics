@@ -1,6 +1,6 @@
 <div class="scroll">
-  <!-- Barra fija: ¿ha quedado un hueco? + añadir -->
-  <div class="topbar">
+  <!-- Barra fija: ¿ha quedado un hueco? + añadir (se oculta mientras hay un formulario abierto) -->
+  <div class="topbar" *ngIf="!formOpen">
     <div class="gap">
       <div class="gap-title">¿Ha quedado un hueco?</div>
       <div class="chips" role="group" aria-label="Día del hueco">
@@ -92,8 +92,8 @@
     </div>
   </form>
 
-  <!-- Lista -->
-  <div class="list">
+  <!-- Lista (se oculta mientras hay un formulario abierto, para no confundirlos) -->
+  <div class="list" *ngIf="!formOpen">
     <div class="empty" *ngIf="loading && !loadFailed">Cargando…</div>
     <div class="empty" *ngIf="loading && loadFailed">No se pudo cargar. Reintentando…</div>
     <div class="empty" *ngIf="!loading && !list.length">
