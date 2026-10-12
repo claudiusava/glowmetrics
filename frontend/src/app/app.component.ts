@@ -418,7 +418,7 @@ export class AppComponent implements OnInit, OnDestroy {
     const prevTotal = this.totalCount;
     this.subs.add(
       this.svc.refreshReviews().subscribe(res => {
-        if (!res) {
+        if (!res || res.error) {
           this.showRefreshToast('Error al actualizar las reseñas');
           return;
         }

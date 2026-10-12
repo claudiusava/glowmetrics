@@ -27,6 +27,7 @@ export interface ReviewsBundle {
 
 // Respuesta del refresco manual de reseñas (palabra secreta "reseñas").
 export interface ReviewsRefresh extends ReviewsBundle {
+  error?: string;     // el servidor no conoce la ruta (versión antigua)
   refreshed: boolean; // false = ya se había hecho hace poco (cooldown)
   updated: boolean;   // true = el sync ha encontrado reseñas nuevas
 }
