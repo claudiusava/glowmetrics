@@ -1,7 +1,11 @@
 .backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.45);
+  // Fondo bastante oscuro y algo desenfocado: con el modal abierto, lo que hay
+  // detrás (reseñas, KPI, confeti) no debe distraer.
+  background: rgba(15, 23, 42, 0.74);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
   display: grid;
   place-items: center;
   // El confeti del objetivo mensual usa z-index 99999 (ver
