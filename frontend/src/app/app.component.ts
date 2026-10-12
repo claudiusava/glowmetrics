@@ -44,11 +44,18 @@ const TIP_ROTATE_MS = 60_000;
 // entre pantallas.
 const NOTES_SEEN_KEY = 'glowmetrics_notes_seen_v1';
 
-// Código secreto: se teclea en cualquier momento (la app no tiene campos de
-// texto, así que nadie lo escribe sin querer) para forzar un refresco real
-// de Airtable, útil si el trigger de las 13:00/19:00 coincidió con un
-// filtro puesto a mano en la tabla. El cooldown real vive en el backend.
-const SECRET_REFRESH_CODE = 'airtable';
+// Palabras secretas: se teclean en cualquier momento (con el foco fuera de
+// cualquier campo de texto, para que no salten al escribir una nota o una
+// clienta). "airtable" fuerza un refresco real del porcentaje de Airtable (útil
+// si el trigger de las 13:00/19:00 coincidió con un filtro puesto a mano en la
+// tabla) y "reseñas" lanza ya el sync de reseñas en vez de esperar al diario.
+// Sin la ñ también vale ("resenas"). Los cooldowns reales viven en el backend.
+const SECRET_CODES: Record<string, 'airtable' | 'reviews'> = {
+  airtable: 'airtable',
+  'reseñas': 'reviews',
+  resenas: 'reviews',
+};
+const SECRET_BUFFER_LEN = Math.max(...Object.keys(SECRET_CODES).map(k => k.length));
 
 @Component({
   selector: 'app-root',
@@ -375,11 +382,18 @@ export class AppComponent implements OnInit, OnDestroy {
 
   @HostListener('document:keydown', ['$event'])
   onKeydown(ev: KeyboardEvent): void {
-    if (ev.key.length !== 1 || !/[a-z]/i.test(ev.key)) return;
-    this.secretBuffer = (this.secretBuffer + ev.key.toLowerCase()).slice(-SECRET_REFRESH_CODE.length);
-    if (this.secretBuffer === SECRET_REFRESH_CODE) {
+    if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    if (ev.key.length !== 1 || !/[a-zñ]/i.test(ev.key)) return;
+    const t = ev.target as HTMLElement | null;
+    if (t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable)) return;
+
+    this.secretBuffer = (this.secretBuffer + ev.key.toLowerCase()).slice(-SECRET_BUFFER_LEN);
+    for (const code of Object.keys(SECRET_CODES)) {
+      if (!this.secretBuffer.endsWith(code)) continue;
       this.secretBuffer = '';
-      this.triggerManualAirtableRefresh();
+      if (SECRET_CODES[code] === 'airtable') this.triggerManualAirtableRefresh();
+      else this.triggerManualReviewsRefresh();
+      break;
     }
   }
 
@@ -394,6 +408,30 @@ export class AppComponent implements OnInit, OnDestroy {
         this.kpi = res;
         this.showRefreshToast(
           res.refreshed ? 'Airtable actualizado ✓' : 'Ya se actualizó hace poco, espera unos minutos'
+        );
+      })
+    );
+  }
+
+  private triggerManualReviewsRefresh(): void {
+    this.showRefreshToast('Actualizando reseñas…', 20000);
+    const prevTotal = this.totalCount;
+    this.subs.add(
+      this.svc.refreshReviews().subscribe(res => {
+        if (!res) {
+          this.showRefreshToast('Error al actualizar las reseñas');
+          return;
+        }
+        if (res.ready) {
+          this.applyReviews(res.totalCount, res.reviews, res.newReviewsCount);
+          if (res.totalCount !== prevTotal) this.loadMonthlyGoal();
+        }
+        const n = res.totalCount - prevTotal;
+        this.showRefreshToast(
+          !res.refreshed ? 'Ya se actualizó hace poco, espera unos minutos'
+            : res.updated && n > 0 ? `Reseñas actualizadas ✓ · ${n === 1 ? '1 nueva' : n + ' nuevas'}`
+            : 'Reseñas al día ✓ · sin novedades',
+          4000
         );
       })
     );

@@ -115,3 +115,28 @@ function getBootstrap() {
 
   return out;
 }
+
+/** Refresco manual de reseñas (palabra secreta "reseñas" en la web): hace ya el
+ * mismo sync que el trigger diario (1 llamada a SerpApi) en vez de esperar a
+ * la hora programada. Cooldown de 5 minutos compartido, para que nadie pueda
+ * gastar la cuota de SerpApi aunque descubra la ruta. Devuelve lo mismo que
+ * `bootstrap` para las reseñas, más `refreshed` (false = ya se hizo hace poco)
+ * y `updated` (true = el sync encontró reseñas nuevas). */
+function manualRefreshReviews() {
+  return withLock_(() => {
+    if (!cooldownOk_('manual_reviews_refresh', 5 * 60 * 1000)) {
+      return Object.assign({}, getReviewsBundle_(), { refreshed: false, updated: false });
+    }
+
+    let updated = false;
+    try {
+      const res = scheduledSerpApiCheck(); // ya vacía las cachés si hubo novedades
+      updated = !!(res && res.updated);
+    } catch (e) {
+      console.error('manualRefreshReviews ERROR:', e);
+    }
+
+    return Object.assign({}, getReviewsBundle_(), { refreshed: true, updated: updated });
+  });
+}
+

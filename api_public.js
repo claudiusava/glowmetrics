@@ -102,6 +102,7 @@ function jsonRoute_(route, callback, params) {
     'sales-tips': getSalesTips,
     'airtable-kpi': getAirtablePercentage,
     'refresh-airtable-kpi': manualRefreshAirtableKpi,
+    'refresh-reviews': manualRefreshReviews,
     'monthly-history': getMonthlyHistory,
     'bootstrap': getBootstrap,
     'notes-list': getNotes,

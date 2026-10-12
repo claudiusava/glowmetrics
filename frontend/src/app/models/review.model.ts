@@ -25,6 +25,12 @@ export interface ReviewsBundle {
   newReviewsCount: number;
 }
 
+// Respuesta del refresco manual de reseñas (palabra secreta "reseñas").
+export interface ReviewsRefresh extends ReviewsBundle {
+  refreshed: boolean; // false = ya se había hecho hace poco (cooldown)
+  updated: boolean;   // true = el sync ha encontrado reseñas nuevas
+}
+
 export interface BootstrapResponse {
   reviews: ReviewsBundle | null;
   kpi: AirtableKpi | null;

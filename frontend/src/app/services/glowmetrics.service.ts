@@ -3,7 +3,7 @@ import { Observable, catchError, finalize, of, shareReplay, timeout } from 'rxjs
 import { hedgedRequest } from './hedged-request';
 import { jsonpRequest } from './jsonp-request';
 import { environment } from '../../environments/environment';
-import { ReviewsResponse, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry, Note, AddNoteResult, BootstrapResponse, WaitItem, WaitlistResult } from '../models/review.model';
+import { ReviewsResponse, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry, Note, AddNoteResult, BootstrapResponse, WaitItem, WaitlistResult, ReviewsRefresh } from '../models/review.model';
 
 // Apps Script (ContentService) no manda cabeceras CORS, así que consumimos
 // su API vía JSONP en vez de XHR/fetch normal.
@@ -89,6 +89,12 @@ export class GlowmetricsService {
 
   getAirtableKpi(): Observable<AirtableKpi | null> {
     return this.read<AirtableKpi>('airtable-kpi');
+  }
+
+  // Refresco manual de reseñas bajo demanda (código secreto "reseñas"): hace
+  // ya el sync de SerpApi en vez de esperar al diario. Cooldown en el backend.
+  refreshReviews(): Observable<ReviewsRefresh | null> {
+    return this.write<ReviewsRefresh>(`${this.api}?route=refresh-reviews`);
   }
 
   // Refresco manual bajo demanda (código secreto). Cooldown real en el
