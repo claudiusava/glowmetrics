@@ -25,6 +25,11 @@
   flex-direction: column;
   overflow: hidden;
   animation: modal-in 0.18s cubic-bezier(.22, .61, .36, 1);
+
+  // Pantallas grandes: más ancho para que la lista respire.
+  @media (min-width: 1200px) {
+    width: min(860px, 92vw);
+  }
 }
 
 @keyframes modal-in {
