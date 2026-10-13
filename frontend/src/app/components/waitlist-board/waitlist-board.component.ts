@@ -27,7 +27,6 @@ const TECHS = [
 // que una lectura "vieja" no pise el cambio recién hecho.
 const POLL_MS = 30_000;
 const QUIET_AFTER_WRITE_MS = 5_000;
-const OLD_AFTER_DAYS = 14;
 const TEMP_PREFIX = 'tmp_'; // clienta recién añadida cuyo guardado aún no ha vuelto
 
 interface Toast { text: string; }
@@ -127,11 +126,13 @@ export class WaitlistBoardComponent implements OnInit, OnDestroy {
 
   private recompute(): void {
     const matches = (i: WaitItem) => this.matches(i);
-    // Ya vienen por orden de llegada; con un hueco marcado, las que encajan van primero.
-    this.matchCount = this.items.filter(matches).length;
+    // Por orden de registro (la que se apuntó antes, arriba: tiene preferencia).
+    // Con un hueco marcado, las que encajan van primero y mantienen ese orden.
+    const ordered = [...this.items].sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
+    this.matchCount = ordered.filter(matches).length;
     this.list = this.gapActive
-      ? [...this.items.filter(matches), ...this.items.filter(i => !matches(i))]
-      : this.items;
+      ? [...ordered.filter(matches), ...ordered.filter(i => !matches(i))]
+      : ordered;
   }
 
   trackId = (_: number, i: WaitItem) => i.id;
@@ -151,31 +152,6 @@ export class WaitlistBoardComponent implements OnInit, OnDestroy {
   clearGap(): void { this.gapDay = null; this.gapPart = null; this.recompute(); }
 
   // ---------- presentación ----------
-
-  ago(i: WaitItem): string {
-    const n = this.daysWaiting(i);
-    if (n <= 0) return 'Hoy';
-    if (n === 1) return 'Hace 1 día';
-    if (n < OLD_AFTER_DAYS) return `Hace ${n} días`;
-    const w = Math.floor(n / 7);
-    return `Hace ${w} sem.`;
-  }
-
-  isOld(i: WaitItem): boolean { return this.daysWaiting(i) >= OLD_AFTER_DAYS; }
-
-  private daysWaiting(i: WaitItem): number {
-    const t = Date.parse(i.createdAt);
-    if (isNaN(t)) return 0;
-    return Math.floor((Date.now() - t) / 86_400_000);
-  }
-
-  fmt(iso: string): string {
-    try {
-      return new Date(iso).toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' });
-    } catch {
-      return iso;
-    }
-  }
 
   dayList(i: WaitItem): string[] { return i.days ? i.days.split('') : []; }
   dayFull(k: string): string { return DAYS.find(d => d.k === k)?.full ?? k; }

@@ -113,7 +113,7 @@
     >
       <div class="card-top">
         <div class="name">{{ it.name }}</div>
-        <div class="ago" [class.old]="isOld(it)" [title]="'Apuntada: ' + fmt(it.createdAt)">{{ isTemp(it) ? 'Guardando…' : ago(it) }}</div>
+        <div class="saving" *ngIf="isTemp(it)">Guardando…</div>
         <button type="button" class="icon" (click)="openEdit(it)" [disabled]="isTemp(it)" aria-label="Editar" title="Editar">✎</button>
         <button type="button" class="icon danger" (click)="askDelete(it)" [disabled]="isTemp(it)" aria-label="Borrar" title="Borrar">✕</button>
       </div>

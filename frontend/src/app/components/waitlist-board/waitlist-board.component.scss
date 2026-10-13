@@ -264,7 +264,7 @@
   gap: 4px;
 
   .name { flex: 1; min-width: 0; margin-right: 6px; }
-  .ago { white-space: nowrap; margin-right: 4px; }
+  .saving { margin-right: 4px; }
   // Los botones son grandes para tocarlos bien, pero no deben hacer más alta la tarjeta.
   .icon { flex: none; margin: -6px 0; }
 }
@@ -276,20 +276,12 @@
   overflow-wrap: anywhere;
 }
 
-.ago {
+.saving {
   flex: none;
   font-size: 12px;
   font-weight: 600;
   color: #94a3b8;
   white-space: nowrap;
-
-  // Lleva mucho esperando: se resalta para que no se quede olvidada.
-  &.old {
-    color: #b45309;
-    background: #fef3c7;
-    border-radius: 999px;
-    padding: 2px 8px;
-  }
 }
 
 .zones {
