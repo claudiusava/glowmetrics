@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, HostListener, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, Output, HostListener, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Note } from '../../models/review.model';
@@ -11,7 +11,7 @@ import { WaitlistBoardComponent } from '../waitlist-board/waitlist-board.compone
   templateUrl: './notes-board.component.html',
   styleUrls: ['./notes-board.component.scss'],
 })
-export class NotesBoardComponent implements OnChanges {
+export class NotesBoardComponent implements OnChanges, OnDestroy {
   @Input() open = false;
   @Input() notes: Note[] = [];
   @Input() adding = false;
@@ -29,6 +29,13 @@ export class NotesBoardComponent implements OnChanges {
   @Output() deleteNote = new EventEmitter<string>();
   @Output() editNote = new EventEmitter<{ id: string; text: string }>();
   @Output() editSessionEnded = new EventEmitter<void>();
+
+  // Mientras el modal está abierto, la página de detrás queda bloqueada: no se
+  // cierra al pulsar fuera (solo con la ✕ o Escape, para no perder lo que se
+  // esté escribiendo) y tampoco se puede hacer scroll de lo que hay detrás.
+  nudge = false; // pequeña sacudida del modal al pulsar fuera, para que se vea que no es un fallo
+  private nudgeTimer: ReturnType<typeof setTimeout> | null = null;
+  private lockedBody: { overflow: string; paddingRight: string } | null = null;
 
   tab: 'espera' | 'notas' = 'espera';
   waitFormOpen = false; // la lista de espera tiene un formulario abierto (Escape lo cierra a él, no al modal)
@@ -48,6 +55,8 @@ export class NotesBoardComponent implements OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes['open']) this.setPageLocked(this.open);
+
     // Al abrir el modal: en la lista de espera, salvo que haya notas sin leer.
     if (changes['open'] && this.open) {
       this.tab = this.hasUnread ? 'notas' : 'espera';
@@ -77,6 +86,42 @@ export class NotesBoardComponent implements OnChanges {
       // el MISMO clientId, así que un reintento nunca duplica la nota
       // aunque el intento anterior sí hubiera llegado a guardarse.
     }
+  }
+
+  private setPageLocked(lock: boolean): void {
+    const body = document.body;
+    if (lock && !this.lockedBody) {
+      this.lockedBody = { overflow: body.style.overflow, paddingRight: body.style.paddingRight };
+      // Al ocultar la barra de scroll de la página la pantalla "salta" a lo ancho: se compensa.
+      const bar = window.innerWidth - document.documentElement.clientWidth;
+      if (bar > 0) body.style.paddingRight = `${bar}px`;
+      body.style.overflow = 'hidden';
+    } else if (!lock && this.lockedBody) {
+      body.style.overflow = this.lockedBody.overflow;
+      body.style.paddingRight = this.lockedBody.paddingRight;
+      this.lockedBody = null;
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.setPageLocked(false);
+    if (this.nudgeTimer) clearTimeout(this.nudgeTimer);
+  }
+
+  // Pulsar en la zona oscura: no cierra, solo avisa con una sacudida breve.
+  onBackdropClick(): void {
+    this.nudge = false;
+    if (this.nudgeTimer) clearTimeout(this.nudgeTimer);
+    // En el siguiente ciclo para poder repetir la animación en pulsaciones seguidas.
+    setTimeout(() => {
+      this.nudge = true;
+      this.nudgeTimer = setTimeout(() => (this.nudge = false), 380);
+    }, 0);
+  }
+
+  // Rueda y dedo sobre la zona oscura no deben mover nada (ni en iOS, que ignora overflow:hidden del body).
+  blockOutsideScroll(ev: Event): void {
+    if (ev.target === ev.currentTarget) ev.preventDefault();
   }
 
   private genRequestId(): string {

@@ -36,6 +36,16 @@
   }
 }
 
+// Sacudida breve al pulsar fuera del modal.
+.modal.nudge { animation: modal-nudge 0.36s ease; }
+
+@keyframes modal-nudge {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-7px); }
+  45% { transform: translateX(6px); }
+  70% { transform: translateX(-3px); }
+}
+
 @keyframes modal-in {
   from { opacity: 0; transform: scale(0.96) translateY(8px); }
   to { opacity: 1; transform: scale(1) translateY(0); }
@@ -145,6 +155,7 @@
 .notes-list {
   flex: 1;
   overflow-y: auto;
+  overscroll-behavior: contain; // al llegar al final, el scroll no pasa a la página de detrás
   padding: 16px 22px 22px;
   display: flex;
   flex-direction: column;
