@@ -33,8 +33,6 @@ export class NotesBoardComponent implements OnChanges, OnDestroy {
   // Mientras el modal está abierto, la página de detrás queda bloqueada: no se
   // cierra al pulsar fuera (solo con la ✕ o Escape, para no perder lo que se
   // esté escribiendo) y tampoco se puede hacer scroll de lo que hay detrás.
-  nudge = false; // pequeña sacudida del modal al pulsar fuera, para que se vea que no es un fallo
-  private nudgeTimer: ReturnType<typeof setTimeout> | null = null;
   private lockedBody: { overflow: string; paddingRight: string } | null = null;
 
   tab: 'espera' | 'notas' = 'espera';
@@ -105,18 +103,6 @@ export class NotesBoardComponent implements OnChanges, OnDestroy {
 
   ngOnDestroy(): void {
     this.setPageLocked(false);
-    if (this.nudgeTimer) clearTimeout(this.nudgeTimer);
-  }
-
-  // Pulsar en la zona oscura: no cierra, solo avisa con una sacudida breve.
-  onBackdropClick(): void {
-    this.nudge = false;
-    if (this.nudgeTimer) clearTimeout(this.nudgeTimer);
-    // En el siguiente ciclo para poder repetir la animación en pulsaciones seguidas.
-    setTimeout(() => {
-      this.nudge = true;
-      this.nudgeTimer = setTimeout(() => (this.nudge = false), 380);
-    }, 0);
   }
 
   // Rueda y dedo sobre la zona oscura no deben mover nada (ni en iOS, que ignora overflow:hidden del body).

@@ -12,6 +12,11 @@
   // confetti.service.ts) — el modal tiene que quedar por encima de eso.
   z-index: 100000;
   animation: backdrop-in 0.15s ease;
+  // La zona oscura no es "contenido": sin esto, un doble clic ahí selecciona el
+  // texto más cercano (p. ej. la ✕) y se ve un resaltado azul parpadeando.
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 @keyframes backdrop-in {
@@ -29,21 +34,14 @@
   flex-direction: column;
   overflow: hidden;
   animation: modal-in 0.18s cubic-bezier(.22, .61, .36, 1);
+  // Dentro del modal sí se puede seleccionar y copiar texto (notas, nombres...).
+  -webkit-user-select: text;
+  user-select: text;
 
   // Pantallas grandes: más ancho para que la lista respire.
   @media (min-width: 1200px) {
     width: min(860px, 92vw);
   }
-}
-
-// Sacudida breve al pulsar fuera del modal.
-.modal.nudge { animation: modal-nudge 0.36s ease; }
-
-@keyframes modal-nudge {
-  0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-7px); }
-  45% { transform: translateX(6px); }
-  70% { transform: translateX(-3px); }
 }
 
 @keyframes modal-in {

@@ -1,5 +1,5 @@
-<div class="backdrop" *ngIf="open" (click)="onBackdropClick()" (wheel)="blockOutsideScroll($event)" (touchmove)="blockOutsideScroll($event)">
-  <div class="modal" [class.nudge]="nudge" role="dialog" aria-modal="true" aria-label="Lista de espera y notas" (click)="$event.stopPropagation()">
+<div class="backdrop" *ngIf="open" (wheel)="blockOutsideScroll($event)" (touchmove)="blockOutsideScroll($event)">
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Lista de espera y notas">
     <div class="modal-header">
       <div class="tabs" role="tablist">
         <button type="button" class="tab" role="tab" [class.on]="tab === 'espera'" [attr.aria-selected]="tab === 'espera'" (click)="selectTab('espera')">⏳ Lista de espera</button>
