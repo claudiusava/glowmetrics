@@ -3,3 +3,6 @@ node_modules/
 frontend/dist/
 frontend/.angular/
 glowmetrics-angular/
+
+__pycache__/
+ranking/data/_prueba/

@@ -1,0 +1,1214 @@
+{
+  "a-coruna-a-coruna": {
+    "nombre": "A Coruña",
+    "resenas": 289,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "a-coruna-santiago-de-compostela": {
+    "nombre": "Santiago de Compostela",
+    "resenas": 697,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "alava-vitoria": {
+    "nombre": "Vitoria",
+    "resenas": 173,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "albacete-menendez-pidal": {
+    "nombre": "Albacete - Menéndez Pidal",
+    "resenas": 449,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "alicante-alcoi": {
+    "nombre": "Alcoi",
+    "resenas": 99,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "alicante-alicante-centro": {
+    "nombre": "Alicante - Centro",
+    "resenas": 849,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "alicante-alicante-gran-via": {
+    "nombre": "Alicante - Gran Vía",
+    "resenas": 203,
+    "nota": 4.8,
+    "ultimo_ok": "2026-10-26"
+  },
+  "alicante-denia": {
+    "nombre": "Denia",
+    "resenas": 213,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "alicante-elche": {
+    "nombre": "Elche",
+    "resenas": 461,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "alicante-elda": {
+    "nombre": "Elda",
+    "resenas": 333,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "alicante-orihuela": {
+    "nombre": "Orihuela",
+    "resenas": 29,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "alicante-san-vicente-del-raspeig": {
+    "nombre": "San Vicente del Raspeig",
+    "resenas": 141,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "alicante-torrevieja": {
+    "nombre": "Torrevieja",
+    "resenas": 407,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "almeria-almeria": {
+    "nombre": "Almería",
+    "resenas": 569,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "almeria-el-ejido": {
+    "nombre": "El Ejido",
+    "resenas": 368,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "almeria-roquetas-de-mar": {
+    "nombre": "Roquetas de Mar",
+    "resenas": 379,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "asturias-gijon": {
+    "nombre": "Gijón",
+    "resenas": 306,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "asturias-oviedo": {
+    "nombre": "Oviedo",
+    "resenas": 107,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "avila-avila": {
+    "nombre": "Ávila",
+    "resenas": 260,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "badajoz-badajoz": {
+    "nombre": "Badajoz",
+    "resenas": 42,
+    "nota": 4.7,
+    "ultimo_ok": "2026-10-26"
+  },
+  "badajoz-merida": {
+    "nombre": "Mérida",
+    "resenas": 1,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "barcelona-badalona": {
+    "nombre": "Badalona",
+    "resenas": 209,
+    "nota": 4.8,
+    "ultimo_ok": "2026-10-26"
+  },
+  "barcelona-cornella-de-llobregat": {
+    "nombre": "Cornellà de Llobregat",
+    "resenas": 139,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "barcelona-el-clot": {
+    "nombre": "Barcelona - El Clot",
+    "resenas": 737,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "barcelona-gracia": {
+    "nombre": "Barcelona - Gràcia",
+    "resenas": 1124,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "barcelona-granollers": {
+    "nombre": "Granollers",
+    "resenas": 538,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "barcelona-mataro": {
+    "nombre": "Mataró",
+    "resenas": 786,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "barcelona-nou-barris": {
+    "nombre": "Barcelona - Nou Barris",
+    "resenas": 143,
+    "nota": 4.7,
+    "ultimo_ok": "2026-10-26"
+  },
+  "barcelona-poblenou": {
+    "nombre": "Barcelona - Poblenou",
+    "resenas": 244,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "barcelona-provenca": {
+    "nombre": "Barcelona - Provença",
+    "resenas": 720,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "barcelona-rambla-catalunya": {
+    "nombre": "Barcelona - Rambla Catalunya",
+    "resenas": 455,
+    "nota": 4.8,
+    "ultimo_ok": "2026-10-26"
+  },
+  "barcelona-rubi": {
+    "nombre": "Rubí",
+    "resenas": 149,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "barcelona-sabadell": {
+    "nombre": "Sabadell",
+    "resenas": 414,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "barcelona-sagrada-familia": {
+    "nombre": "Barcelona - Sagrada Familia",
+    "resenas": 531,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "barcelona-sant-andreu": {
+    "nombre": "Barcelona - Sant Andreu",
+    "resenas": 592,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "barcelona-sant-boi-de-llobregat": {
+    "nombre": "Sant Boi de Llobregat",
+    "resenas": 197,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "barcelona-sant-cugat-del-valles": {
+    "nombre": "Sant Cugat del Valles",
+    "resenas": 330,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "barcelona-sant-gervasi": {
+    "nombre": "Barcelona - Sant Gervasi",
+    "resenas": 127,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "barcelona-sant-marti": {
+    "nombre": "Barcelona - Sant Martí",
+    "resenas": 90,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "barcelona-sants": {
+    "nombre": "Barcelona - Sants",
+    "resenas": 610,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "barcelona-terrassa-centro": {
+    "nombre": "Terrassa",
+    "resenas": 331,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "bizkaia-barakaldo": {
+    "nombre": "Barakaldo",
+    "resenas": 424,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "bizkaia-bilbao": {
+    "nombre": "Bilbao / Depilación Láser de Diodo",
+    "resenas": 554,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "bizkaia-getxo": {
+    "nombre": "Getxo",
+    "resenas": 87,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "burgos-burgos": {
+    "nombre": "Burgos",
+    "resenas": 361,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "caceres-caceres": {
+    "nombre": "Cáceres",
+    "resenas": 726,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "cadiz-algeciras": {
+    "nombre": "Algeciras",
+    "resenas": 415,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "cadiz-cadiz-centro": {
+    "nombre": "Cádiz",
+    "resenas": 957,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "cadiz-chiclana-de-la-frontera": {
+    "nombre": "Chiclana",
+    "resenas": 407,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "cadiz-el-puerto-de-santa-maria": {
+    "nombre": "El Puerto de Santa María",
+    "resenas": 301,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "cadiz-jerez-de-la-frontera": {
+    "nombre": "Jerez",
+    "resenas": 275,
+    "nota": 4.8,
+    "ultimo_ok": "2026-10-26"
+  },
+  "cadiz-la-linea-de-la-concepcion": {
+    "nombre": "La Línea de la Concepción",
+    "resenas": 269,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "cadiz-san-fernando": {
+    "nombre": "San Fernando",
+    "resenas": 591,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "cadiz-sanlucar-de-barrameda": {
+    "nombre": "Sanlúcar de Barrameda",
+    "resenas": 377,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "cantabria-castro-urdiales": {
+    "nombre": "Castro - Urdiales",
+    "resenas": 283,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "cantabria-santander": {
+    "nombre": "Santander",
+    "resenas": 157,
+    "nota": 4.8,
+    "ultimo_ok": "2026-10-26"
+  },
+  "cantabria-torrelavega": {
+    "nombre": "Torrelavega",
+    "resenas": 261,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "castellon-castellon-de-la-plana": {
+    "nombre": "Castellón",
+    "resenas": 407,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "ceuta-ceuta": {
+    "nombre": "Ceuta",
+    "resenas": 219,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "ciudad-real-ciudad-real": {
+    "nombre": "Ciudad Real",
+    "resenas": 453,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "ciudad-real-puertollano": {
+    "nombre": "Puertollano",
+    "resenas": 164,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "cordoba-c-c-el-arcangel": {
+    "nombre": "Córdoba - C.C. El Arcángel",
+    "resenas": 544,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "cordoba-lucena": {
+    "nombre": "Lucena",
+    "resenas": 925,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "cordoba-manolete": {
+    "nombre": "Córdoba - Zoco",
+    "resenas": 902,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "cordoba-montilla": {
+    "nombre": "Montilla",
+    "resenas": 550,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "cordoba-pozoblanco": {
+    "nombre": "Pozoblanco",
+    "resenas": 155,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "cordoba-puente-genil": {
+    "nombre": "Puente Genil",
+    "resenas": 710,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "cordoba-republica-argentina": {
+    "nombre": "Córdoba - República Argentina",
+    "resenas": 1719,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "cordoba-sierra": {
+    "nombre": "Córdoba - Sierra",
+    "resenas": 644,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "cordoba-vinuela": {
+    "nombre": "Córdoba - La Viñuela",
+    "resenas": 802,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "cuenca-cuenca": {
+    "nombre": "Cuenca",
+    "resenas": 49,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "girona-girona-centro": {
+    "nombre": "Girona",
+    "resenas": 282,
+    "nota": 4.8,
+    "ultimo_ok": "2026-10-26"
+  },
+  "girona-girona-figueres": {
+    "nombre": "Figueres",
+    "resenas": 575,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "granada-granada-gran-capitan": {
+    "nombre": "Granada - Gran Capitán",
+    "resenas": 1319,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "granada-granada-la-caleta": {
+    "nombre": "Granada - La Caleta",
+    "resenas": 941,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "granada-granada-zaidin": {
+    "nombre": "Granada - Zaidín",
+    "resenas": 81,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "granada-motril": {
+    "nombre": "Motril",
+    "resenas": 794,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "guadalajara-azuqueca-de-henares": {
+    "nombre": "Azuqueca de Henares",
+    "resenas": 381,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "guadalajara-guadalajara-centro": {
+    "nombre": "Guadalajara",
+    "resenas": 665,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "guipuzkoa-san-sebastian": {
+    "nombre": "San Sebastián",
+    "resenas": 737,
+    "nota": 4.6,
+    "ultimo_ok": "2026-10-26"
+  },
+  "huelva-huelva-centro": {
+    "nombre": "Huelva",
+    "resenas": 1188,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "islas-baleares-ibiza-sant-josep": {
+    "nombre": "Ibiza - Sant Josep",
+    "resenas": 26,
+    "nota": 4.7,
+    "ultimo_ok": "2026-10-26"
+  },
+  "islas-baleares-manacor": {
+    "nombre": "Manacor",
+    "resenas": 223,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "islas-baleares-palma-de-mallorca-plaza-espana": {
+    "nombre": "Palma - Plaza España",
+    "resenas": 1051,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "islas-baleares-palma-de-mallorca-son-dameto": {
+    "nombre": "Palma - Son Dameto",
+    "resenas": 1906,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "jaen-andujar": {
+    "nombre": "Andújar",
+    "resenas": 714,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "jaen-jaen-centro": {
+    "nombre": "Jaén",
+    "resenas": 710,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "jaen-linares": {
+    "nombre": "Linares",
+    "resenas": 86,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "jaen-ubeda": {
+    "nombre": "Úbeda",
+    "resenas": 254,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "la-rioja-logrono": {
+    "nombre": "Logroño - Jesuitas",
+    "resenas": 652,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "la-rioja-logrono-centro": {
+    "nombre": "Logroño - Centro",
+    "resenas": 201,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "las-palmas-arrecife": {
+    "nombre": "Arrecife",
+    "resenas": 106,
+    "nota": 4.7,
+    "ultimo_ok": "2026-10-26"
+  },
+  "las-palmas-las-palmas-de-gran-canaria": {
+    "nombre": "Las Palmas de Gran Canaria",
+    "resenas": 870,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "las-palmas-puerto-del-rosario": {
+    "nombre": "Puerto del Rosario",
+    "resenas": 43,
+    "nota": 4.8,
+    "ultimo_ok": "2026-10-26"
+  },
+  "las-palmas-telde": {
+    "nombre": "Telde",
+    "resenas": 73,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "leon-leon": {
+    "nombre": "León",
+    "resenas": 79,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "lugo-lugo": {
+    "nombre": "Lugo",
+    "resenas": 158,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-alcala-414": {
+    "nombre": "Madrid - Alcalá",
+    "resenas": 15,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-alcala-de-henares": {
+    "nombre": "Alcalá de Henares",
+    "resenas": 386,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-alcorcon": {
+    "nombre": "Alcorcón",
+    "resenas": 902,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-aranjuez": {
+    "nombre": "Aranjuez",
+    "resenas": 534,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-arganda-del-rey": {
+    "nombre": "Arganda del Rey",
+    "resenas": 195,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-boadilla-del-monte": {
+    "nombre": "Boadilla del Monte",
+    "resenas": 684,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-carabanchel": {
+    "nombre": "Madrid - Carabanchel",
+    "resenas": 413,
+    "nota": 4.8,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-chamartin": {
+    "nombre": "Madrid - Chamartín",
+    "resenas": 18,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-chamberi": {
+    "nombre": "Madrid - Chamberí",
+    "resenas": 503,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-collado-villalba": {
+    "nombre": "Collado Villalba",
+    "resenas": 427,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-colmenar-viejo": {
+    "nombre": "Colmenar Viejo",
+    "resenas": 314,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-coslada": {
+    "nombre": "Coslada",
+    "resenas": 358,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-cuatro-caminos": {
+    "nombre": "Madrid - Cuatro Caminos / Depilación Láser Diodo",
+    "resenas": 378,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-el-pilar": {
+    "nombre": "Madrid - El Pilar",
+    "resenas": 522,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-fuenlabrada": {
+    "nombre": "Fuenlabrada",
+    "resenas": 371,
+    "nota": 4.8,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-getafe": {
+    "nombre": "Getafe",
+    "resenas": 531,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-goya": {
+    "nombre": "Madrid - Goya",
+    "resenas": 842,
+    "nota": 4.8,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-hortaleza": {
+    "nombre": "Madrid - Hortaleza",
+    "resenas": 974,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-las-rozas": {
+    "nombre": "Las Rozas",
+    "resenas": 419,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-leganes": {
+    "nombre": "Leganés",
+    "resenas": 301,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-majadahonda": {
+    "nombre": "Majadahonda",
+    "resenas": 237,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-moratalaz": {
+    "nombre": "Madrid - Moratalaz",
+    "resenas": 242,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-mostoles": {
+    "nombre": "Móstoles - ESTORIL",
+    "resenas": 374,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-mostoles-alfonso-xii": {
+    "nombre": "Móstoles - Alfonso XII",
+    "resenas": 125,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-navalcarnero": {
+    "nombre": "Navalcarnero",
+    "resenas": 506,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-parla": {
+    "nombre": "Parla - Centro",
+    "resenas": 936,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-parla-este": {
+    "nombre": "Parla - Este",
+    "resenas": 279,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-pinto": {
+    "nombre": "Pinto / Depilación Láser Diodo",
+    "resenas": 562,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-pozuelo-de-alarcon": {
+    "nombre": "Pozuelo de Alarcón",
+    "resenas": 154,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-rivas-vaciamadrid": {
+    "nombre": "Rivas - Vaciamadrid",
+    "resenas": 275,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-rosas": {
+    "nombre": "Madrid - Rosas",
+    "resenas": 402,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-san-sebastian-de-los-reyes": {
+    "nombre": "San Sebastián de los Reyes",
+    "resenas": 151,
+    "nota": 4.8,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-torrejon-de-ardoz": {
+    "nombre": "Torrejón de Ardoz",
+    "resenas": 421,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-tres-cantos": {
+    "nombre": "Tres Cantos",
+    "resenas": 80,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-tres-olivos": {
+    "nombre": "Madrid - Tres Olivos / Depilación Láser de Diodo",
+    "resenas": 204,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-valdemoro": {
+    "nombre": "Valdemoro",
+    "resenas": 445,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-vallecas": {
+    "nombre": "Madrid - Vallecas",
+    "resenas": 32,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-ventas": {
+    "nombre": "Madrid - Ventas",
+    "resenas": 197,
+    "nota": 4.8,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-vicalvaro": {
+    "nombre": "Madrid - Vicálvaro",
+    "resenas": 352,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-villaverde": {
+    "nombre": "Madrid - Villaverde",
+    "resenas": 107,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "madrid-villaviciosa-de-odon": {
+    "nombre": "Villaviciosa de Odón",
+    "resenas": 257,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "malaga-alhaurin-de-la-torre": {
+    "nombre": "Alhaurín de la Torre",
+    "resenas": 271,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "malaga-antequera": {
+    "nombre": "Antequera",
+    "resenas": 428,
+    "nota": 4.8,
+    "ultimo_ok": "2026-10-26"
+  },
+  "malaga-bailen-miraflores": {
+    "nombre": "Málaga - Bailén - Miraflores",
+    "resenas": 247,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "malaga-benalmadena-1": {
+    "nombre": "Benalmádena",
+    "resenas": 541,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "malaga-carretera-de-cadiz": {
+    "nombre": "Málaga - Carretera de Cádiz",
+    "resenas": 644,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "malaga-el-palo": {
+    "nombre": "Málaga - El Palo",
+    "resenas": 71,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "malaga-el-perchel": {
+    "nombre": "Málaga - El Perchel",
+    "resenas": 267,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "malaga-estepona": {
+    "nombre": "Estepona",
+    "resenas": 488,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "malaga-fuengirola": {
+    "nombre": "Fuengirola",
+    "resenas": 484,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "malaga-marbella": {
+    "nombre": "Marbella",
+    "resenas": 84,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "malaga-san-pedro-de-alcantara": {
+    "nombre": "San Pedro de Alcántara",
+    "resenas": 128,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "malaga-teatinos": {
+    "nombre": "Málaga - Teatinos",
+    "resenas": 2026,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "malaga-torremolinos": {
+    "nombre": "Torremolinos",
+    "resenas": 599,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "malaga-velez-malaga": {
+    "nombre": "Vélez - Málaga",
+    "resenas": 282,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "murcia-alcantarilla": {
+    "nombre": "Alcantarilla",
+    "resenas": 84,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "murcia-cartagena": {
+    "nombre": "Cartagena",
+    "resenas": 785,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "murcia-lorca": {
+    "nombre": "Lorca",
+    "resenas": 277,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "murcia-molina-de-segura": {
+    "nombre": "Molina de Segura",
+    "resenas": 181,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "murcia-murcia": {
+    "nombre": "Murcia",
+    "resenas": 287,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "navarra-pamplona": {
+    "nombre": "Pamplona",
+    "resenas": 101,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "ourense-ourense": {
+    "nombre": "Ourense",
+    "resenas": 301,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "palencia-palencia": {
+    "nombre": "Palencia",
+    "resenas": 1072,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "pontevedra-vigo": {
+    "nombre": "Vigo",
+    "resenas": 399,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "salamanca-salamanca-centro": {
+    "nombre": "Salamanca / Depilación Láser Diodo",
+    "resenas": 446,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "segovia-segovia": {
+    "nombre": "Segovia",
+    "resenas": 80,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "sevilla-alcala-de-guadaira": {
+    "nombre": "Alcalá de Guadaíra",
+    "resenas": 916,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "sevilla-dos-hermanas": {
+    "nombre": "Dos Hermanas",
+    "resenas": 617,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "sevilla-ecija": {
+    "nombre": "Écija",
+    "resenas": 529,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "sevilla-el-viso-del-alcor": {
+    "nombre": "El Viso del Alcor",
+    "resenas": 908,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "sevilla-los-palacios-y-villafranca": {
+    "nombre": "Los Palacios y Villafranca",
+    "resenas": 326,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "sevilla-los-remedios": {
+    "nombre": "Sevilla - Los Remedios",
+    "resenas": 717,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "sevilla-macarena": {
+    "nombre": "Sevilla - Macarena",
+    "resenas": 448,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "sevilla-mairena-del-aljarafe": {
+    "nombre": "Mairena del Aljarafe",
+    "resenas": 718,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "sevilla-montequinto": {
+    "nombre": "Montequinto",
+    "resenas": 721,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "sevilla-nervion": {
+    "nombre": "Sevilla - Nervión",
+    "resenas": 1067,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "sevilla-pino-montano": {
+    "nombre": "Sevilla - Pino Montano",
+    "resenas": 1134,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "sevilla-san-jose-de-la-rinconada": {
+    "nombre": "San José de la Rinconada",
+    "resenas": 896,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "sevilla-sevilla-este": {
+    "nombre": "Sevilla - Sevilla Este",
+    "resenas": 808,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "sevilla-tomares": {
+    "nombre": "Tomares",
+    "resenas": 370,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "sevilla-utrera": {
+    "nombre": "Utrera",
+    "resenas": 255,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "tarragona-el-vendrell": {
+    "nombre": "El Vendrell",
+    "resenas": 861,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "tarragona-reus": {
+    "nombre": "Reus",
+    "resenas": 82,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "tarragona-tarragona-centro": {
+    "nombre": "Tarragona",
+    "resenas": 499,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "tenerife-la-laguna-de-san-cristobal": {
+    "nombre": "La Laguna",
+    "resenas": 337,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "tenerife-puerto-de-la-cruz": {
+    "nombre": "Puerto de la Cruz",
+    "resenas": 40,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "tenerife-santa-cruz-de-tenerife": {
+    "nombre": "Santa Cruz de Tenerife",
+    "resenas": 174,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "toledo-illescas": {
+    "nombre": "Illescas",
+    "resenas": 568,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "toledo-toledo-centro": {
+    "nombre": "Toledo",
+    "resenas": 674,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "valencia-alzira": {
+    "nombre": "Alzira",
+    "resenas": 274,
+    "nota": 4.8,
+    "ultimo_ok": "2026-10-26"
+  },
+  "valencia-benimaclet": {
+    "nombre": "Valencia - Benimaclet",
+    "resenas": 143,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "valencia-campanar": {
+    "nombre": "Valencia - Campanar",
+    "resenas": 254,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "valencia-canovas": {
+    "nombre": "Valencia - Cánovas",
+    "resenas": 656,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "valencia-gandia": {
+    "nombre": "Gandía",
+    "resenas": 322,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "valencia-la-roqueta": {
+    "nombre": "Valencia - La Roqueta",
+    "resenas": 553,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "valencia-paterna": {
+    "nombre": "Paterna",
+    "resenas": 336,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "valencia-patraix": {
+    "nombre": "Valencia - Patraix",
+    "resenas": 141,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "valencia-puerto-de-sagunto": {
+    "nombre": "Puerto de Sagunto",
+    "resenas": 390,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "valencia-requena": {
+    "nombre": "Requena / Depilación Láser Diodo",
+    "resenas": 116,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "valencia-torrent": {
+    "nombre": "Torrent",
+    "resenas": 487,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "valladolid-laguna-de-duero": {
+    "nombre": "Laguna de Duero",
+    "resenas": 580,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "valladolid-valladolid-centro": {
+    "nombre": "Valladolid",
+    "resenas": 865,
+    "nota": 4.9,
+    "ultimo_ok": "2026-10-26"
+  },
+  "zamora-zamora-centro": {
+    "nombre": "Zamora",
+    "resenas": 140,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  },
+  "zaragoza-zaragoza-centro": {
+    "nombre": "Zaragoza - Catedral",
+    "resenas": 186,
+    "nota": 4.8,
+    "ultimo_ok": "2026-10-26"
+  },
+  "zaragoza-zaragoza-goya": {
+    "nombre": "Zaragoza - Goya",
+    "resenas": 142,
+    "nota": 5.0,
+    "ultimo_ok": "2026-10-26"
+  }
+}

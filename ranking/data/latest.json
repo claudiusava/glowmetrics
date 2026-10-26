@@ -1,0 +1,424 @@
+{
+  "fecha": "2026-10-26",
+  "capturado_en": "2026-10-26T15:40:40+00:00",
+  "modo": "completo",
+  "centros_leidos": 202,
+  "centros_consultados": 204,
+  "centros_total": 204,
+  "publicado": true,
+  "centros_desactualizados": [],
+  "ranking": [
+    {
+      "puesto": 1,
+      "nombre": "Málaga - Teatinos",
+      "slug": "malaga-teatinos",
+      "reseñas": 2026,
+      "nota": 4.9,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 2,
+      "nombre": "Palma - Son Dameto",
+      "slug": "islas-baleares-palma-de-mallorca-son-dameto",
+      "reseñas": 1906,
+      "nota": 4.9,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 3,
+      "nombre": "Córdoba - República Argentina",
+      "slug": "cordoba-republica-argentina",
+      "reseñas": 1719,
+      "nota": 5.0,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 4,
+      "nombre": "Granada - Gran Capitán",
+      "slug": "granada-granada-gran-capitan",
+      "reseñas": 1319,
+      "nota": 5.0,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 5,
+      "nombre": "Huelva",
+      "slug": "huelva-huelva-centro",
+      "reseñas": 1188,
+      "nota": 5.0,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 6,
+      "nombre": "Sevilla - Pino Montano",
+      "slug": "sevilla-pino-montano",
+      "reseñas": 1134,
+      "nota": 4.9,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 7,
+      "nombre": "Barcelona - Gràcia",
+      "slug": "barcelona-gracia",
+      "reseñas": 1124,
+      "nota": 4.9,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 8,
+      "nombre": "Palencia",
+      "slug": "palencia-palencia",
+      "reseñas": 1072,
+      "nota": 4.9,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 9,
+      "nombre": "Sevilla - Nervión",
+      "slug": "sevilla-nervion",
+      "reseñas": 1067,
+      "nota": 4.9,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 10,
+      "nombre": "Palma - Plaza España",
+      "slug": "islas-baleares-palma-de-mallorca-plaza-espana",
+      "reseñas": 1051,
+      "nota": 4.9,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 11,
+      "nombre": "Madrid - Hortaleza",
+      "slug": "madrid-hortaleza",
+      "reseñas": 974,
+      "nota": 5.0,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 12,
+      "nombre": "Cádiz",
+      "slug": "cadiz-cadiz-centro",
+      "reseñas": 957,
+      "nota": 5.0,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 13,
+      "nombre": "Granada - La Caleta",
+      "slug": "granada-granada-la-caleta",
+      "reseñas": 941,
+      "nota": 5.0,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 14,
+      "nombre": "Parla - Centro",
+      "slug": "madrid-parla",
+      "reseñas": 936,
+      "nota": 5.0,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 15,
+      "nombre": "Lucena",
+      "slug": "cordoba-lucena",
+      "reseñas": 925,
+      "nota": 4.9,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 16,
+      "nombre": "Alcalá de Guadaíra",
+      "slug": "sevilla-alcala-de-guadaira",
+      "reseñas": 916,
+      "nota": 5.0,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 17,
+      "nombre": "El Viso del Alcor",
+      "slug": "sevilla-el-viso-del-alcor",
+      "reseñas": 908,
+      "nota": 5.0,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 18,
+      "nombre": "Alcorcón",
+      "slug": "madrid-alcorcon",
+      "reseñas": 902,
+      "nota": 5.0,
+      "es_nuestro": true
+    },
+    {
+      "puesto": 19,
+      "nombre": "Córdoba - Zoco",
+      "slug": "cordoba-manolete",
+      "reseñas": 902,
+      "nota": 4.9,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 20,
+      "nombre": "San José de la Rinconada",
+      "slug": "sevilla-san-jose-de-la-rinconada",
+      "reseñas": 896,
+      "nota": 4.9,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 21,
+      "nombre": "Las Palmas de Gran Canaria",
+      "slug": "las-palmas-las-palmas-de-gran-canaria",
+      "reseñas": 870,
+      "nota": 5.0,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 22,
+      "nombre": "Valladolid",
+      "slug": "valladolid-valladolid-centro",
+      "reseñas": 865,
+      "nota": 4.9,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 23,
+      "nombre": "El Vendrell",
+      "slug": "tarragona-el-vendrell",
+      "reseñas": 861,
+      "nota": 4.9,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 24,
+      "nombre": "Alicante - Centro",
+      "slug": "alicante-alicante-centro",
+      "reseñas": 849,
+      "nota": 4.9,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 25,
+      "nombre": "Madrid - Goya",
+      "slug": "madrid-goya",
+      "reseñas": 842,
+      "nota": 4.8,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 26,
+      "nombre": "Sevilla - Sevilla Este",
+      "slug": "sevilla-sevilla-este",
+      "reseñas": 808,
+      "nota": 4.9,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 27,
+      "nombre": "Córdoba - La Viñuela",
+      "slug": "cordoba-vinuela",
+      "reseñas": 802,
+      "nota": 4.9,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 28,
+      "nombre": "Motril",
+      "slug": "granada-motril",
+      "reseñas": 794,
+      "nota": 5.0,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 29,
+      "nombre": "Mataró",
+      "slug": "barcelona-mataro",
+      "reseñas": 786,
+      "nota": 4.9,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 30,
+      "nombre": "Cartagena",
+      "slug": "murcia-cartagena",
+      "reseñas": 785,
+      "nota": 4.9,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 31,
+      "nombre": "Barcelona - El Clot",
+      "slug": "barcelona-el-clot",
+      "reseñas": 737,
+      "nota": 5.0,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 32,
+      "nombre": "San Sebastián",
+      "slug": "guipuzkoa-san-sebastian",
+      "reseñas": 737,
+      "nota": 4.6,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 33,
+      "nombre": "Cáceres",
+      "slug": "caceres-caceres",
+      "reseñas": 726,
+      "nota": 5.0,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 34,
+      "nombre": "Montequinto",
+      "slug": "sevilla-montequinto",
+      "reseñas": 721,
+      "nota": 5.0,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 35,
+      "nombre": "Barcelona - Provença",
+      "slug": "barcelona-provenca",
+      "reseñas": 720,
+      "nota": 5.0,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 36,
+      "nombre": "Mairena del Aljarafe",
+      "slug": "sevilla-mairena-del-aljarafe",
+      "reseñas": 718,
+      "nota": 5.0,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 37,
+      "nombre": "Sevilla - Los Remedios",
+      "slug": "sevilla-los-remedios",
+      "reseñas": 717,
+      "nota": 4.9,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 38,
+      "nombre": "Andújar",
+      "slug": "jaen-andujar",
+      "reseñas": 714,
+      "nota": 4.9,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 39,
+      "nombre": "Jaén",
+      "slug": "jaen-jaen-centro",
+      "reseñas": 710,
+      "nota": 4.9,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 40,
+      "nombre": "Puente Genil",
+      "slug": "cordoba-puente-genil",
+      "reseñas": 710,
+      "nota": 4.9,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 41,
+      "nombre": "Santiago de Compostela",
+      "slug": "a-coruna-santiago-de-compostela",
+      "reseñas": 697,
+      "nota": 4.9,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 42,
+      "nombre": "Boadilla del Monte",
+      "slug": "madrid-boadilla-del-monte",
+      "reseñas": 684,
+      "nota": 4.9,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 43,
+      "nombre": "Toledo",
+      "slug": "toledo-toledo-centro",
+      "reseñas": 674,
+      "nota": 5.0,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 44,
+      "nombre": "Guadalajara",
+      "slug": "guadalajara-guadalajara-centro",
+      "reseñas": 665,
+      "nota": 4.9,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 45,
+      "nombre": "Valencia - Cánovas",
+      "slug": "valencia-canovas",
+      "reseñas": 656,
+      "nota": 4.9,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 46,
+      "nombre": "Logroño - Jesuitas",
+      "slug": "la-rioja-logrono",
+      "reseñas": 652,
+      "nota": 4.9,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 47,
+      "nombre": "Córdoba - Sierra",
+      "slug": "cordoba-sierra",
+      "reseñas": 644,
+      "nota": 4.9,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 48,
+      "nombre": "Málaga - Carretera de Cádiz",
+      "slug": "malaga-carretera-de-cadiz",
+      "reseñas": 644,
+      "nota": 4.9,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 49,
+      "nombre": "Dos Hermanas",
+      "slug": "sevilla-dos-hermanas",
+      "reseñas": 617,
+      "nota": 4.9,
+      "es_nuestro": false
+    },
+    {
+      "puesto": 50,
+      "nombre": "Barcelona - Sants",
+      "slug": "barcelona-sants",
+      "reseñas": 610,
+      "nota": 5.0,
+      "es_nuestro": false
+    }
+  ],
+  "incidencias": [
+    {
+      "slug": "albacete-albacete-centro",
+      "motivo": "la ficha no tiene enlace a Google Maps",
+      "accion": "sin dato, fuera del ranking"
+    },
+    {
+      "slug": "barcelona-viladecans",
+      "motivo": "Page.wait_for_function: Timeout 20000ms exceeded.",
+      "accion": "sin dato, fuera del ranking"
+    }
+  ]
+}
