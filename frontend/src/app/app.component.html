@@ -1,9 +1,9 @@
 <main class="wrap">
   <!-- KPI superior -->
-  <app-kpi-card [kpi]="kpi" [tip]="currentTip" [attr.inert]="notesModalOpen ? '' : null"></app-kpi-card>
+  <app-kpi-card [kpi]="kpi" [tip]="currentTip" [attr.inert]="notesModalOpen || rankingOpen ? '' : null"></app-kpi-card>
 
   <!-- Sección inferior -->
-  <section class="bottom" [attr.inert]="notesModalOpen ? '' : null">
+  <section class="bottom" [attr.inert]="notesModalOpen || rankingOpen ? '' : null">
     <div class="header" #bottomHeader>
       <div class="head-left">
         <div class="title-row">
@@ -30,6 +30,7 @@
           [history]="monthlyHistory"
           [current]="monthlyGoal"
         ></app-monthly-history>
+        <button type="button" class="rank-link" (click)="rankingOpen = true">🏆 Ranking España</button>
       </div>
     </div>
 
@@ -43,12 +44,14 @@
 
   <button
     class="notes-pin"
-    [attr.inert]="notesModalOpen ? '' : null"
+    [attr.inert]="notesModalOpen || rankingOpen ? '' : null"
     [class.has-unread]="hasUnreadNotes"
     (click)="toggleNotesModal()"
     title="Lista de espera y notas"
     aria-label="Abrir lista de espera y notas"
   >📌</button>
+
+  <app-ranking-modal [open]="rankingOpen" (closeRequested)="rankingOpen = false"></app-ranking-modal>
 
   <app-notes-board
     [open]="notesModalOpen"

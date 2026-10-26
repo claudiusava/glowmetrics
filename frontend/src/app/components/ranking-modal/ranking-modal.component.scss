@@ -1,0 +1,85 @@
+// Mismo aspecto que el modal de la chincheta (notes-board.component.scss).
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.74);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  display: grid;
+  place-items: center;
+  // El confeti del objetivo mensual usa z-index 99999: el modal queda por encima.
+  z-index: 100000;
+  animation: backdrop-in 0.15s ease;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@keyframes backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  width: min(700px, 92vw);
+  height: min(640px, 86vh);
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modal-in 0.18s cubic-bezier(.22, .61, .36, 1);
+  -webkit-user-select: text;
+  user-select: text;
+
+  @media (min-width: 1200px) {
+    width: min(860px, 92vw);
+  }
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border-bottom: 1px solid #eef1f5;
+}
+
+// Rótulo con el mismo estilo que la pestaña activa del modal de la chincheta.
+.title {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: #fde7f1;
+  color: #be185d;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 14px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background 0.15s ease;
+
+  &:hover { background: #e2e8f0; }
+}
+
+@media (max-width: 480px) {
+  .modal-header { padding: 12px 12px 12px 14px; }
+}

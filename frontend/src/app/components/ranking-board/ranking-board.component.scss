@@ -39,11 +39,10 @@
   top: 0;
   z-index: 2;
   background: #ffffff;
-  padding: 16px 0 6px;
+  padding: 14px 0 4px;
 }
 
-.head-title { font-size: 16px; font-weight: 800; color: #0f172a; }
-.head-sub { margin-top: 2px; font-size: 13px; color: #64748b; }
+.head-sub { font-size: 13px; color: #64748b; }
 
 .me {
   width: 100%;
@@ -52,7 +51,7 @@
   text-align: left;
   cursor: pointer;
   position: sticky;
-  top: 58px;
+  top: 36px;
   z-index: 2;
   display: flex;
   align-items: center;

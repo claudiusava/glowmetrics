@@ -11,6 +11,7 @@ import { SnapshotCacheService } from './services/snapshot-cache.service';
 import { KpiCardComponent } from './components/kpi-card/kpi-card.component';
 import { MonthlyGoalComponent } from './components/monthly-goal/monthly-goal.component';
 import { MonthlyHistoryComponent } from './components/monthly-history/monthly-history.component';
+import { RankingModalComponent } from './components/ranking-modal/ranking-modal.component';
 import { NotesBoardComponent } from './components/notes-board/notes-board.component';
 import { ReviewsFeedComponent } from './components/reviews-feed/reviews-feed.component';
 import { Review, ReviewsResponse, BootstrapResponse, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry, Note } from './models/review.model';
@@ -60,7 +61,7 @@ const SECRET_BUFFER_LEN = Math.max(...Object.keys(SECRET_CODES).map(k => k.lengt
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, KpiCardComponent, MonthlyGoalComponent, MonthlyHistoryComponent, NotesBoardComponent, ReviewsFeedComponent],
+  imports: [CommonModule, KpiCardComponent, MonthlyGoalComponent, MonthlyHistoryComponent, RankingModalComponent, NotesBoardComponent, ReviewsFeedComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
@@ -551,6 +552,9 @@ export class AppComponent implements OnInit, OnDestroy {
     try { localStorage.setItem(NOTES_SEEN_KEY, latestId); } catch { /* ignorar */ }
     this.hasUnreadNotes = false;
   }
+
+  // Ranking de reseñas de la franquicia (enlace "Ranking España" bajo los 12 meses).
+  rankingOpen = false;
 
   toggleNotesModal(): void {
     this.notesModalOpen = !this.notesModalOpen;

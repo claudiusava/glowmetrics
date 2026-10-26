@@ -1,0 +1,9 @@
+<div class="backdrop" *ngIf="open" (wheel)="blockOutsideScroll($event)" (touchmove)="blockOutsideScroll($event)">
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Ranking de reseñas de España">
+    <div class="modal-header">
+      <div class="title">🏆 Ranking España</div>
+      <button class="close-btn" (click)="close()" aria-label="Cerrar">✕</button>
+    </div>
+    <app-ranking-board></app-ranking-board>
+  </div>
+</div>

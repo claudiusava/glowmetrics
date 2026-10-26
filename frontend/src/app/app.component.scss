@@ -44,6 +44,29 @@ app-reviews-feed {
 }
 
 .head-left { align-self: end; }
+.head-right {
+  // Los 12 meses y, justo debajo, el enlace al ranking; pegados abajo a la derecha.
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.rank-link {
+  border: none;
+  background: transparent;
+  padding: 0;
+  line-height: 14px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  transition: color 0.15s ease;
+
+  &:hover { color: #f7307d; text-decoration: underline; }
+}
+
 .head-center {
   display: grid;
   place-items: center;

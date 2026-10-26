@@ -328,10 +328,3 @@
   .modal-header { padding: 12px 12px 12px 14px; }
   .tab { padding: 0 11px; font-size: 14px; }
 }
-
-// Pantallas muy estrechas: caben las tres pestañas ("Lista de espera" pasa a "Espera").
-@media (max-width: 380px) {
-  .tabs { gap: 2px; }
-  .tab { padding: 0 6px; font-size: 12.5px; }
-  .tab .long { display: none; }
-}
