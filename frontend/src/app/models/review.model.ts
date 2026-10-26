@@ -59,6 +59,7 @@ export interface AirtableKpi {
 export interface MonthlyHistoryEntry {
   monthKey: string;
   count: number | null;
+  goal?: number; // objetivo que valía ese mes (puede faltar en copias antiguas)
   met: boolean | null;
 }
 

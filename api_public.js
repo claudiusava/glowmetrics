@@ -264,14 +264,14 @@ function getMonthlyReviewCount() {
     const counts = getMonthCounts_();
     const count = Number(counts[monthKey]) || 0;
 
-    const payload = { count, goal: MONTHLY_GOAL, monthKey };
+    const payload = { count, goal: goalForMonth_(monthKey), monthKey };
     setLastGood_('monthly_' + monthKey, payload);
     readCachePut_('goal', payload);
     return payload;
 
   } catch (e) {
     console.error('getMonthlyReviewCount ERROR:', e);
-    return getLastGood_('monthly_' + monthKey, { count: 0, goal: MONTHLY_GOAL, monthKey });
+    return getLastGood_('monthly_' + monthKey, { count: 0, goal: goalForMonth_(monthKey), monthKey });
   }
 }
 
@@ -299,7 +299,8 @@ function getMonthlyHistory() {
       .slice(-11)
       .map(mk => {
         const count = Number(counts[mk]) || 0;
-        return { monthKey: mk, count, met: count >= MONTHLY_GOAL };
+        const goal = goalForMonth_(mk); // el que valía ese mes
+        return { monthKey: mk, count, goal, met: count >= goal };
       });
 
     setLastGood_('monthly_history', history);

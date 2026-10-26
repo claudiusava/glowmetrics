@@ -91,7 +91,7 @@ function backfillMonthlyHistory_() {
     const covered = oldestSeen < monthStart;
     if (covered) {
       const count = counts[mk] || 0;
-      history.push({ monthKey: mk, count, met: count >= MONTHLY_GOAL });
+      history.push({ monthKey: mk, count, goal: goalForMonth_(mk), met: count >= goalForMonth_(mk) });
     } else {
       history.push({ monthKey: mk, count: null, met: null });
     }

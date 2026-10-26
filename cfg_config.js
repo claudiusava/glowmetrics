@@ -22,7 +22,23 @@ const PLACE_URL = 'https://www.google.com/maps/place/SinVello!+Alcorc%C3%B3n+%7C
 const PLACE_ID = 'ChIJM836u7yJQQ0Rh5Zxvc3cO0o';
 
 const INITIAL_WINDOW_SIZE = 20;
-const MONTHLY_GOAL = 20;
+// Objetivo mensual de reseñas. Cada objetivo vale desde el mes indicado ("AAAA-MM")
+// hasta que empieza el siguiente: así los meses pasados siguen evaluándose con el
+// objetivo que tenían entonces (cambiar el objetivo no pone en rojo el histórico).
+// Para cambiarlo en el futuro: añadir una línea con el primer mes en que vale.
+const MONTHLY_GOAL_SCHEDULE = [
+  { from: '0000-00', goal: 20 },
+  { from: '2026-11', goal: 25 }  // subido a 25 desde noviembre de 2026 (media de los últimos 11 meses: 25)
+];
+
+/** Objetivo de reseñas que valía en el mes `monthKey` ("AAAA-MM"). */
+function goalForMonth_(monthKey) {
+  let goal = MONTHLY_GOAL_SCHEDULE[0].goal;
+  for (let i = 0; i < MONTHLY_GOAL_SCHEDULE.length; i++) {
+    if (MONTHLY_GOAL_SCHEDULE[i].from <= String(monthKey)) goal = MONTHLY_GOAL_SCHEDULE[i].goal;
+  }
+  return goal;
+}
 
 // SerpApi
 // Guarda SERPAPI_KEY en Script Properties (igual que AIRTABLE_PAT)

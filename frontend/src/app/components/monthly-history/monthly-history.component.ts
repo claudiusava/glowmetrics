@@ -38,7 +38,7 @@ export class MonthlyHistoryComponent implements OnChanges {
     const squares: HistorySquare[] = trimmed.map(h => ({
       key: h.monthKey,
       state: h.met == null ? 'nodata' : h.met ? 'met' : 'missed',
-      tooltip: h.count == null ? `${this.labelFor(h.monthKey)}: sin datos` : `${this.labelFor(h.monthKey)}: ${h.count} reseñas`,
+      tooltip: h.count == null ? `${this.labelFor(h.monthKey)}: sin datos` : `${this.labelFor(h.monthKey)}: ${h.count} reseñas${h.goal ? ` (objetivo ${h.goal})` : ''}`,
     }));
 
     if (this.current) {
