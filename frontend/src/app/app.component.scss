@@ -53,18 +53,22 @@ app-reviews-feed {
 }
 
 .rank-link {
-  border: none;
-  background: transparent;
-  padding: 0;
-  line-height: 14px;
+  // Parece un botón (pastilla rosa), a diferencia del rótulo gris de los 12 meses.
+  margin-top: 4px;
+  padding: 1px 9px;
+  border: 1px solid #fbcfe0;
+  border-radius: 999px;
+  background: #fff1f6;
   font: inherit;
   font-size: 11px;
-  font-weight: 600;
-  color: #6b7280;
+  font-weight: 700;
+  line-height: 15px;
+  white-space: nowrap;
+  color: #be185d;
   cursor: pointer;
-  transition: color 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease;
 
-  &:hover { color: #f7307d; text-decoration: underline; }
+  &:hover { background: #ffe0ec; border-color: #f7307d; }
 }
 
 .head-center {
