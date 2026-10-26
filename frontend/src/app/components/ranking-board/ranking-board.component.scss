@@ -33,41 +33,12 @@
   padding: 10px 6px;
 }
 
-// Cabecera fija: título y "dónde estamos".
+// Subtítulo: se desplaza con la lista (nada fijo arriba).
 .head {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  background: #ffffff;
-  padding: 14px 0 4px;
+  padding: 14px 0 10px;
 }
 
 .head-sub { font-size: 13px; color: #64748b; }
-
-.me {
-  width: 100%;
-  border: none;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-  position: sticky;
-  top: 36px;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 6px 0 12px;
-  padding: 10px 14px;
-  border-radius: 14px;
-  background: linear-gradient(90deg, #f7307d, #ff7a59);
-  color: #ffffff;
-  font-size: 14px;
-  box-shadow: 0 6px 16px rgba(247, 48, 125, 0.28);
-
-  .me-pos { font-size: 20px; font-weight: 900; }
-  .me-text { flex: 1; min-width: 0; overflow-wrap: anywhere; }
-  .me-note { font-weight: 800; white-space: nowrap; }
-}
 
 .rows {
   list-style: none;

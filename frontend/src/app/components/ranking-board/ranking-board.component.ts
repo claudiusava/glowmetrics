@@ -44,11 +44,6 @@ export class RankingBoardComponent implements OnInit {
 
   trackSlug = (_: number, r: RankingRow) => r.slug;
 
-  // El recuadro de "nuestro puesto" lleva hasta nuestra fila en la lista.
-  goToOurs(): void {
-    document.getElementById('rk-ours')?.scrollIntoView({ block: 'center', behavior: 'smooth' });
-  }
-
   // 2026 -> "2.026" (es-ES no agrupa los números de 4 cifras, y aquí se lee mejor con el punto).
   num(n: number): string {
     return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
