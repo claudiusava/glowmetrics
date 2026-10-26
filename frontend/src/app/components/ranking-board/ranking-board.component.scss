@@ -1,0 +1,155 @@
+:host {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 22px 22px;
+}
+
+.empty {
+  padding: 48px 8px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.link {
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 10px 6px;
+}
+
+// Cabecera fija: título y "dónde estamos".
+.head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #ffffff;
+  padding: 16px 0 6px;
+}
+
+.head-title { font-size: 16px; font-weight: 800; color: #0f172a; }
+.head-sub { margin-top: 2px; font-size: 13px; color: #64748b; }
+
+.me {
+  width: 100%;
+  border: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  position: sticky;
+  top: 58px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0 12px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: linear-gradient(90deg, #f7307d, #ff7a59);
+  color: #ffffff;
+  font-size: 14px;
+  box-shadow: 0 6px 16px rgba(247, 48, 125, 0.28);
+
+  .me-pos { font-size: 20px; font-weight: 900; }
+  .me-text { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+  .me-note { font-weight: 800; white-space: nowrap; }
+}
+
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #eef1f5;
+  overflow: hidden;
+  font-size: 14px;
+  color: #334155;
+
+  // Barra de fondo proporcional al número de reseñas.
+  .bar {
+    position: absolute;
+    inset: 0 auto 0 0;
+    background: #eef2ff;
+    border-radius: 12px 0 0 12px;
+    z-index: 0;
+  }
+  > :not(.bar) { position: relative; z-index: 1; }
+
+  .pos { font-weight: 800; color: #64748b; text-align: center; font-size: 15px; }
+  .name { font-weight: 700; color: #0f172a; overflow-wrap: anywhere; }
+  .reviews { font-weight: 800; color: #0f172a; font-variant-numeric: tabular-nums; }
+  .note { min-width: 52px; text-align: right; font-weight: 700; color: #b45309; font-variant-numeric: tabular-nums; }
+
+  &.top .pos { font-size: 20px; }
+
+  // Nuestro centro: color llamativo.
+  &.ours {
+    background: linear-gradient(90deg, #f7307d, #ff7a59);
+    border-color: #f7307d;
+    box-shadow: 0 6px 16px rgba(247, 48, 125, 0.3);
+
+    .bar { background: rgba(255, 255, 255, 0.18); }
+    .pos, .name, .reviews, .note { color: #ffffff; }
+    .name { font-weight: 800; }
+  }
+}
+
+.tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.25);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  vertical-align: 1px;
+}
+
+.gap {
+  text-align: center;
+  color: #94a3b8;
+  letter-spacing: 0.3em;
+  line-height: 1;
+}
+
+.foot {
+  margin-top: 16px;
+  text-align: center;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+@media (max-width: 480px) {
+  .scroll { padding: 0 14px 18px; }
+  .row { grid-template-columns: 30px minmax(0, 1fr) auto; gap: 8px; padding: 10px; }
+  .row .note { display: none; }
+  .head-sub { font-size: 12px; }
+}

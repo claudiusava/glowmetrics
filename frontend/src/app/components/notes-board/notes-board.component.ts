@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Note } from '../../models/review.model';
 import { WaitlistBoardComponent } from '../waitlist-board/waitlist-board.component';
+import { RankingBoardComponent } from '../ranking-board/ranking-board.component';
 
 @Component({
   selector: 'app-notes-board',
   standalone: true,
-  imports: [CommonModule, FormsModule, WaitlistBoardComponent],
+  imports: [CommonModule, FormsModule, WaitlistBoardComponent, RankingBoardComponent],
   templateUrl: './notes-board.component.html',
   styleUrls: ['./notes-board.component.scss'],
 })
@@ -35,7 +36,7 @@ export class NotesBoardComponent implements OnChanges, OnDestroy {
   // esté escribiendo) y tampoco se puede hacer scroll de lo que hay detrás.
   private lockedBody: { overflow: string; paddingRight: string } | null = null;
 
-  tab: 'espera' | 'notas' = 'espera';
+  tab: 'espera' | 'notas' | 'ranking' = 'espera';
   waitFormOpen = false; // la lista de espera tiene un formulario abierto (Escape lo cierra a él, no al modal)
 
   draft = '';
@@ -46,7 +47,7 @@ export class NotesBoardComponent implements OnChanges, OnDestroy {
   private savingAdd = false;
   private addRequestId: string | null = null;
 
-  selectTab(t: 'espera' | 'notas'): void {
+  selectTab(t: 'espera' | 'notas' | 'ranking'): void {
     this.tab = t;
     this.waitFormOpen = false;
     if (t === 'notas') this.notesViewed.emit();

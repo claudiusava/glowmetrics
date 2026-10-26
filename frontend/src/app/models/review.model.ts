@@ -98,3 +98,20 @@ export interface WaitlistResult {
   item?: WaitItem;   // lo que se ha guardado (altas y cambios)
   items?: WaitItem[]; // solo en respuestas de error
 }
+
+// Ranking mensual de reseñas de Google de la franquicia (ver ranking/README.md).
+export interface RankingRow {
+  puesto: number;
+  nombre: string;
+  slug: string;
+  reseñas: number;
+  nota: number | null;
+  es_nuestro: boolean;
+}
+
+export interface RankingCapture {
+  fecha: string; // AAAA-MM-DD
+  centros_leidos: number;
+  centros_total: number;
+  ranking: RankingRow[];
+}

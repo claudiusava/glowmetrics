@@ -1,16 +1,19 @@
 <div class="backdrop" *ngIf="open" (wheel)="blockOutsideScroll($event)" (touchmove)="blockOutsideScroll($event)">
-  <div class="modal" role="dialog" aria-modal="true" aria-label="Lista de espera y notas">
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Lista de espera, notas y ranking">
     <div class="modal-header">
       <div class="tabs" role="tablist">
-        <button type="button" class="tab" role="tab" [class.on]="tab === 'espera'" [attr.aria-selected]="tab === 'espera'" (click)="selectTab('espera')">⏳ Lista de espera</button>
+        <button type="button" class="tab" role="tab" [class.on]="tab === 'espera'" [attr.aria-selected]="tab === 'espera'" (click)="selectTab('espera')">⏳ <span class="long">Lista de </span>espera</button>
         <button type="button" class="tab" role="tab" [class.on]="tab === 'notas'" [attr.aria-selected]="tab === 'notas'" (click)="selectTab('notas')">
           📌 Notas<span class="tab-dot" *ngIf="hasUnread && tab !== 'notas'" aria-label="Notas nuevas"></span>
         </button>
+        <button type="button" class="tab" role="tab" [class.on]="tab === 'ranking'" [attr.aria-selected]="tab === 'ranking'" (click)="selectTab('ranking')">🏆 Ranking</button>
       </div>
       <button class="close-btn" (click)="close()" aria-label="Cerrar">✕</button>
     </div>
 
     <app-waitlist-board *ngIf="tab === 'espera'" (formOpenChange)="waitFormOpen = $event"></app-waitlist-board>
+
+    <app-ranking-board *ngIf="tab === 'ranking'"></app-ranking-board>
 
     <ng-container *ngIf="tab === 'notas'">
     <div class="composer">

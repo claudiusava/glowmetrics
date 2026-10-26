@@ -41,6 +41,11 @@
               ]
             },
             "development": {
+              "assets": [
+                "src/favicon.svg",
+                { "glob": "*.woff2", "input": "src/fonts", "output": "fonts" },
+                { "glob": "latest.json", "input": "../ranking/data", "output": "ranking" }
+              ],
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true

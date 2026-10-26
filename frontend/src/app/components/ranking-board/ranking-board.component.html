@@ -1,0 +1,40 @@
+<div class="scroll">
+  <div class="empty" *ngIf="loading">Cargando ranking…</div>
+  <div class="empty" *ngIf="!loading && failed">
+    No se pudo cargar el ranking.<br />
+    <button type="button" class="link" (click)="load()">Reintentar</button>
+  </div>
+
+  <ng-container *ngIf="data && !loading">
+    <div class="head">
+      <div class="head-title">Ranking de reseñas de Google</div>
+      <div class="head-sub">Franquicia SinVello! · top 50 por número total de reseñas</div>
+    </div>
+
+    <button type="button" class="me" *ngIf="ours" (click)="goToOurs()" title="Ver mi puesto en la lista">
+      <span class="me-pos">{{ ours.puesto }}º</span>
+      <span class="me-text"><strong>{{ ours.nombre }}</strong> · {{ num(ours['reseñas']) }} reseñas</span>
+      <span class="me-note">★ {{ nota(ours.nota) }}</span>
+    </button>
+
+    <ol class="rows">
+      <ng-container *ngFor="let r of data.ranking; trackBy: trackSlug">
+        <li class="gap" *ngIf="ourOutside && r.es_nuestro" aria-hidden="true">···</li>
+        <li class="row" [id]="r.es_nuestro ? 'rk-ours' : null" [class.ours]="r.es_nuestro" [class.top]="r.puesto <= 3">
+          <span class="bar" [style.width.%]="barWidth(r)"></span>
+          <span class="pos">{{ medal(r.puesto) || r.puesto }}</span>
+          <span class="name">
+            {{ r.nombre }}
+            <span class="tag" *ngIf="r.es_nuestro">Nuestro centro</span>
+          </span>
+          <span class="reviews">{{ num(r['reseñas']) }}</span>
+          <span class="note">★ {{ nota(r.nota) }}</span>
+        </li>
+      </ng-container>
+    </ol>
+
+    <div class="foot">
+      Actualizado el {{ fecha }} · {{ data.centros_leidos }} de {{ data.centros_total }} centros leídos
+    </div>
+  </ng-container>
+</div>
