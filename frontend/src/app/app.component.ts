@@ -51,10 +51,12 @@ const NOTES_SEEN_KEY = 'glowmetrics_notes_seen_v1';
 // si el trigger de las 13:00/19:00 coincidió con un filtro puesto a mano en la
 // tabla) y "reseñas" lanza ya el sync de reseñas en vez de esperar al diario.
 // Sin la ñ también vale ("resenas"). Los cooldowns reales viven en el backend.
-const SECRET_CODES: Record<string, 'airtable' | 'reviews'> = {
+// "coste" muestra u oculta el coste de publicidad por lead / por cita (oculto por defecto).
+const SECRET_CODES: Record<string, 'airtable' | 'reviews' | 'cost'> = {
   airtable: 'airtable',
   'reseñas': 'reviews',
   resenas: 'reviews',
+  coste: 'cost',
 };
 const SECRET_BUFFER_LEN = Math.max(...Object.keys(SECRET_CODES).map(k => k.length));
 
@@ -153,6 +155,7 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.subs.unsubscribe();
     if (this.tipTimer) clearInterval(this.tipTimer);
+    if (this.costTimer) clearTimeout(this.costTimer);
     this.retryTimers.forEach(t => clearTimeout(t));
     this.retryTimers.clear();
     this.confetti.stopLoop();
@@ -392,10 +395,27 @@ export class AppComponent implements OnInit, OnDestroy {
     for (const code of Object.keys(SECRET_CODES)) {
       if (!this.secretBuffer.endsWith(code)) continue;
       this.secretBuffer = '';
-      if (SECRET_CODES[code] === 'airtable') this.triggerManualAirtableRefresh();
+      const accion = SECRET_CODES[code];
+      if (accion === 'airtable') this.triggerManualAirtableRefresh();
+      else if (accion === 'cost') this.toggleCost();
       else this.triggerManualReviewsRefresh();
       break;
     }
+  }
+
+  // Coste de publicidad: es un dato del negocio, no de la pantalla compartida. Oculto
+  // al abrir; "coste" lo muestra un rato (y se vuelve a ocultar solo) o lo oculta al momento.
+  showCost = false;
+  costVisibleMs = 60_000;
+  private costTimer: ReturnType<typeof setTimeout> | null = null;
+
+  private toggleCost(): void {
+    if (this.costTimer) { clearTimeout(this.costTimer); this.costTimer = null; }
+    this.showCost = !this.showCost;
+    if (this.showCost) {
+      this.costTimer = setTimeout(() => { this.showCost = false; this.costTimer = null; }, this.costVisibleMs);
+    }
+    this.showRefreshToast(this.showCost ? 'Coste visible (se oculta solo en 1 minuto)' : 'Coste oculto', 2500);
   }
 
   private triggerManualAirtableRefresh(): void {

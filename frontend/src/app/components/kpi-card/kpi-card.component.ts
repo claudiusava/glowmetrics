@@ -19,6 +19,8 @@ const TREND_STORAGE_KEY = 'glowmetrics_kpi_trend_v1';
 export class KpiCardComponent implements OnChanges {
   @Input() kpi: AirtableKpi | null = null;
   @Input() tip: string = 'Cargando consejo…';
+  // El coste de publicidad solo se enseña si se pide (palabra secreta "coste" en la pantalla).
+  @Input() showCost = false;
 
   displayValue = '-- %';
   subText = 'Calculando…';

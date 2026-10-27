@@ -11,7 +11,7 @@
           </div>
         </div>
         <div class="kpi-sub">{{ subText }}</div>
-        <div class="kpi-cost" *ngIf="cost">
+        <div class="kpi-cost" *ngIf="cost && showCost">
           <div class="cost-line">
             <span class="cost-label">Coste por lead</span>
             <span class="cost-net">{{ cost.lead }}</span>

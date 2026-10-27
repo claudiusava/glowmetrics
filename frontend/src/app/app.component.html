@@ -1,6 +1,6 @@
 <main class="wrap">
   <!-- KPI superior -->
-  <app-kpi-card [kpi]="kpi" [tip]="currentTip" [attr.inert]="notesModalOpen || rankingOpen ? '' : null"></app-kpi-card>
+  <app-kpi-card [kpi]="kpi" [tip]="currentTip" [showCost]="showCost" [attr.inert]="notesModalOpen || rankingOpen ? '' : null"></app-kpi-card>
 
   <!-- Sección inferior -->
   <section class="bottom" [attr.inert]="notesModalOpen || rankingOpen ? '' : null">
