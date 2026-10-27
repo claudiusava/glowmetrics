@@ -104,9 +104,9 @@
   cursor: help;
 
   .cost-line { display: flex; align-items: baseline; justify-content: center; gap: 5px; white-space: nowrap; }
-  .cost-label { opacity: 0.8; }
-  strong { font-weight: 800; }
-  .cost-vat { opacity: 0.7; }
+  // Se atenúa con el color (no con opacity, que también atenuaría el importe en negrita).
+  .cost-label, .cost-net, .cost-vat { color: rgba(17, 24, 39, 0.72); }
+  strong { font-weight: 800; color: #111827; }
   .cost-note { margin-top: 1px; font-size: 11px; opacity: 0.6; }
 }
 
