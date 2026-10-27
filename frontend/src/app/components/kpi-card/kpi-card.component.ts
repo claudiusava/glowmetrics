@@ -2,6 +2,8 @@ import { Component, Input, OnChanges, SimpleChanges, ElementRef, ViewChild } fro
 import { CommonModule } from '@angular/common';
 import { AirtableKpi } from '../../models/review.model';
 
+const EUR = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
+
 // Recuerda el último % conocido entre recargas de la página (localStorage)
 // para poder mostrar la flechita de tendencia desde el primer momento,
 // no solo tras el segundo refresco de la sesión actual.
@@ -24,15 +26,34 @@ export class KpiCardComponent implements OnChanges {
   trend: 'up' | 'down' | null = null;
   trendDeltaLabel = '';
 
+  // Coste de publicidad (por lead y por cita), con y sin IVA
+  cost: { lead: string; leadVat: string; cita: string; citaVat: string; tip: string } | null = null;
+
   private lastPct: number | null = null;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['kpi'] && this.kpi) {
       this.subText = `${this.kpi.citadas} citados de ${this.kpi.total} leads`;
+      this.cost = this.buildCost(this.kpi);
       this.bgColor = this.getBackgroundColor(this.kpi.pct);
       if (this.kpi.total > 0) this.updateTrend(this.kpi.pct);
       this.animateValue(this.lastPct ?? this.kpi.pct, this.kpi.pct, 600);
     }
+  }
+
+  private buildCost(kpi: AirtableKpi) {
+    const c = kpi.cost;
+    if (!c || c.perLead == null) return null;
+    const eur = (n: number | null) => (n == null ? '–' : EUR.format(n));
+    return {
+      lead: eur(c.perLead),
+      leadVat: eur(c.perLeadVat),
+      cita: eur(c.perCita),
+      citaVat: eur(c.perCitaVat),
+      tip:
+        `Publicidad: ${EUR.format(c.spend)} al mes (${EUR.format(c.spendVat)} con IVA) ÷ los ${c.leads} leads ` +
+        `de los últimos ${c.windowDays} días (por lead) o ÷ las ${c.citadas} citas entre ellos (por cita).`,
+    };
   }
 
   private updateTrend(pct: number): void {

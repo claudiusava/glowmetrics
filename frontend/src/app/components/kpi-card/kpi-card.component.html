@@ -11,6 +11,19 @@
           </div>
         </div>
         <div class="kpi-sub">{{ subText }}</div>
+        <div class="kpi-cost" *ngIf="cost" [attr.title]="cost.tip">
+          <div class="cost-line">
+            <span class="cost-label">Coste por lead</span>
+            <strong>{{ cost.lead }}</strong>
+            <span class="cost-vat">· con IVA {{ cost.leadVat }}</span>
+          </div>
+          <div class="cost-line">
+            <span class="cost-label">Coste por cita</span>
+            <strong>{{ cost.cita }}</strong>
+            <span class="cost-vat">· con IVA {{ cost.citaVat }}</span>
+          </div>
+          <div class="cost-note">publicidad · últimos 30 días</div>
+        </div>
       </div>
       <div class="kpi-right">
         <div class="tip-title"><span class="tip-emoji">💡</span> CONSEJOS RÁPIDOS DE VENTAS:</div>

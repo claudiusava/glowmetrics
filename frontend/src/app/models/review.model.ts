@@ -47,7 +47,21 @@ export interface MonthlyGoal {
   monthKey: string;
 }
 
+// Coste de la publicidad por lead y por cita (con y sin IVA), con los leads de los últimos N días.
+export interface AdCost {
+  windowDays: number;
+  leads: number;
+  citadas: number;
+  spend: number;       // gasto al mes sin IVA
+  spendVat: number;    // gasto al mes con IVA
+  perLead: number | null;
+  perLeadVat: number | null;
+  perCita: number | null;
+  perCitaVat: number | null;
+}
+
 export interface AirtableKpi {
+  cost?: AdCost; // puede faltar (copia antigua o aún sin calcular)
   pct: number;
   total: number;
   citadas: number;

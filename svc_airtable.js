@@ -66,6 +66,8 @@ function getAirtableStats() {
   };
 
   let total = 0, citadas = 0, offset = null, guard = 0;
+  let leadsVentana = 0, citadasVentana = 0;
+  const desde = Date.now() - AD_SPEND.WINDOW_DAYS * 24 * 60 * 60 * 1000;
 
   do {
     let url = baseUrl + (params ? `?${params}` : '');
@@ -85,7 +87,15 @@ function getAirtableStats() {
     for (const r of records) {
       const v = r.fields && r.fields[AIRTABLE.FIELD_NAME];
       const text = typeof v === 'string' ? v : (v && v.name ? v.name : '');
-      if (String(text || '').trim().toUpperCase() === 'CITADA') citadas++;
+      const esCitada = String(text || '').trim().toUpperCase() === 'CITADA';
+      if (esCitada) citadas++;
+
+      // Fecha en que entró el lead (la que guarda Airtable al crear el registro)
+      const creado = Date.parse(r.createdTime || '');
+      if (!isNaN(creado) && creado >= desde) {
+        leadsVentana++;
+        if (esCitada) citadasVentana++;
+      }
     }
 
     offset = data.offset || null;
@@ -93,7 +103,7 @@ function getAirtableStats() {
   } while (offset);
 
   const pct = total > 0 ? Math.round((citadas / total) * 10000) / 100 : 0;
-  const payload = { total, citadas, pct };
+  const payload = { total, citadas, pct, leadsVentana, citadasVentana };
 
   cache.put('airtable_stats', JSON.stringify(payload), AIRTABLE.CACHE_SECS);
   return payload;
@@ -120,6 +130,8 @@ function getAirtablePercentage(centerId) {
     var snap = readAirtableSnapshot_(centerId);
     if (snap) {
       snap.stale = true;
+      const cost = adCostFromStored_();
+      if (cost) snap.cost = cost;
       readCachePut_('kpi', snap);
       return snap;
     }
@@ -190,7 +202,50 @@ function saveAirtableSnapshot_(centerId, stats) {
     new Date()
   ]]);
 
+  // Leads y citadas de los últimos 30 días (para el coste por lead / por cita).
+  // Si esta vez no se calcularon (snapshot de emergencia), se conserva lo anterior.
+  if (stats.leadsVentana !== undefined) {
+    PropertiesService.getScriptProperties().setProperty('AD_WINDOW_STATS', JSON.stringify({
+      leads: Number(stats.leadsVentana) || 0,
+      citadas: Number(stats.citadasVentana) || 0,
+      at: new Date().toISOString()
+    }));
+  }
+
   invalidateReadCaches_(); // el KPI cacheado ya no vale
+}
+
+/** Coste de publicidad por lead y por cita (con y sin IVA) a partir de los leads y citadas
+ * de la ventana. Gasto fijo al mes (AD_SPEND). Un coste es null si no hay nada con que dividir. */
+function adCost_(leads, citadas) {
+  const r2 = function (n) { return Math.round(n * 100) / 100; };
+  const spend = AD_SPEND.MONTHLY_EUR;
+  const spendVat = spend * (1 + AD_SPEND.VAT_RATE);
+  const por = function (importe, n) { return n > 0 ? r2(importe / n) : null; };
+  return {
+    windowDays: AD_SPEND.WINDOW_DAYS,
+    leads: leads,
+    citadas: citadas,
+    spend: r2(spend),
+    spendVat: r2(spendVat),
+    perLead: por(spend, leads),
+    perLeadVat: por(spendVat, leads),
+    perCita: por(spend, citadas),
+    perCitaVat: por(spendVat, citadas)
+  };
+}
+
+/** Coste de publicidad con los últimos datos guardados (null si aún no se calculó nunca). */
+function adCostFromStored_() {
+  try {
+    const raw = PropertiesService.getScriptProperties().getProperty('AD_WINDOW_STATS');
+    if (!raw) return null;
+    const w = JSON.parse(raw);
+    return adCost_(Number(w.leads) || 0, Number(w.citadas) || 0);
+  } catch (e) {
+    console.error('adCostFromStored_ ERROR:', e);
+    return null;
+  }
 }
 
 function parseNum_(v) {

@@ -95,6 +95,21 @@
   opacity: 0.92;
 }
 
+// Coste de publicidad: discreto, bajo el "260 citados de 712 leads".
+.kpi-cost {
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #111827;
+  cursor: help;
+
+  .cost-line { display: flex; align-items: baseline; justify-content: center; gap: 5px; white-space: nowrap; }
+  .cost-label { opacity: 0.8; }
+  strong { font-weight: 800; }
+  .cost-vat { opacity: 0.7; }
+  .cost-note { margin-top: 1px; font-size: 11px; opacity: 0.6; }
+}
+
 .kpi-right {
   flex: 2;
   text-align: left;
@@ -177,6 +192,9 @@
   }
 
   .kpi-sub { font-size: 12px; }
+
+  // En pantallas pequeñas solo el porcentaje de leads (el coste queda para el ordenador).
+  .kpi-cost { display: none; }
 
   // Móvil en horizontal: la altura es muy poca, todo más bajo.
   @media (max-height: 520px) {

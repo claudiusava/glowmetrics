@@ -16,6 +16,15 @@ const AIRTABLE = Object.freeze({
   CACHE_SECS: 900
 });
 
+// Publicidad de la franquicia: gasto fijo al mes (sin IVA) y IVA, para el coste por lead / por cita.
+// El coste se calcula con los leads que han entrado en los últimos WINDOW_DAYS días (siempre
+// comparable, a cualquier hora del mes). Si el gasto cambia, se cambia aquí.
+const AD_SPEND = Object.freeze({
+  MONTHLY_EUR: 750,
+  VAT_RATE: 0.21,
+  WINDOW_DAYS: 30
+});
+
 // Google Sheets / negocio
 const SPREADSHEET_ID = '1o-z4-0XLKpmV_houX06G4DgAeImNWHkgoHPJBXxFZbQ';
 const PLACE_URL = 'https://www.google.com/maps/place/SinVello!+Alcorc%C3%B3n+%7C+Depilaci%C3%B3n+L%C3%A1ser+Diodo/@40.35219,-3.8246795,15z/data=!4m6!3m5!1s0xd4189bcbbfacd33:0x4a3bdccdbd719687!8m2!3d40.35219!4d-3.8246795!16s%2Fg%2F11vlpq89hn?entry=ttu&g_ep=EgoyMDI1MTAxNC4wIKXMDSoASAFQAw%3D%3D';
