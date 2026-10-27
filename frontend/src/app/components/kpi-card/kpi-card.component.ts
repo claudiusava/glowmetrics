@@ -27,7 +27,7 @@ export class KpiCardComponent implements OnChanges {
   trendDeltaLabel = '';
 
   // Coste de publicidad (por lead y por cita), con y sin IVA
-  cost: { lead: string; leadVat: string; cita: string; citaVat: string; tip: string } | null = null;
+  cost: { lead: string; leadVat: string; cita: string; citaVat: string } | null = null;
 
   private lastPct: number | null = null;
 
@@ -50,9 +50,6 @@ export class KpiCardComponent implements OnChanges {
       leadVat: eur(c.perLeadVat),
       cita: eur(c.perCita),
       citaVat: eur(c.perCitaVat),
-      tip:
-        `Publicidad: ${EUR.format(c.spend)} al mes (${EUR.format(c.spendVat)} con IVA) ÷ los ${c.leads} leads ` +
-        `de los últimos ${c.windowDays} días (por lead) o ÷ las ${c.citadas} citas entre ellos (por cita).`,
     };
   }
 

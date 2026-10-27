@@ -101,13 +101,11 @@
   font-size: 13px;
   line-height: 1.5;
   color: #111827;
-  cursor: help;
 
   .cost-line { display: flex; align-items: baseline; justify-content: center; gap: 5px; white-space: nowrap; }
   // Se atenúa con el color (no con opacity, que también atenuaría el importe en negrita).
   .cost-label, .cost-net, .cost-vat { color: rgba(17, 24, 39, 0.72); }
   strong { font-weight: 800; color: #111827; }
-  .cost-note { margin-top: 1px; font-size: 11px; opacity: 0.6; }
 }
 
 .kpi-right {

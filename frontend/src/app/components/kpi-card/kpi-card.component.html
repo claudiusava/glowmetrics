@@ -11,7 +11,7 @@
           </div>
         </div>
         <div class="kpi-sub">{{ subText }}</div>
-        <div class="kpi-cost" *ngIf="cost" [attr.title]="cost.tip">
+        <div class="kpi-cost" *ngIf="cost">
           <div class="cost-line">
             <span class="cost-label">Coste por lead</span>
             <span class="cost-net">{{ cost.lead }}</span>
@@ -22,7 +22,6 @@
             <span class="cost-net">{{ cost.cita }}</span>
             <span class="cost-vat">· con IVA <strong>{{ cost.citaVat }}</strong></span>
           </div>
-          <div class="cost-note">publicidad · últimos 30 días</div>
         </div>
       </div>
       <div class="kpi-right">
