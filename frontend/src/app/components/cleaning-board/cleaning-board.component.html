@@ -1,105 +1,152 @@
 <div class="scroll">
   <div class="empty" *ngIf="loading && !loadFailed">Cargando…</div>
-  <div class="empty" *ngIf="loading && loadFailed">
-    No se pudo cargar. Reintentando…
-  </div>
+  <div class="empty" *ngIf="loading && loadFailed">No se pudo cargar. Reintentando…</div>
 
-  <div class="grid" *ngIf="!loading">
-    <article
-      class="card"
-      *ngFor="let t of tasks; trackBy: trackTask"
-      [ngClass]="'lvl-' + state(t).level"
-    >
-      <header class="card-top">
-        <div class="task">
-          <span class="icon" aria-hidden="true">{{ t.icon }}</span>
-          <span class="name">{{ t.name }}</span>
+  <div class="layout" *ngIf="!loading">
+    <!-- Lo que toca hacer: lo primero que se ve -->
+    <section class="banner" [class.alert]="todo.length" [class.calm]="!todo.length" aria-live="polite">
+      <ng-container *ngIf="todo.length; else allGood">
+        <span class="b-title">🧹 Toca hacer</span>
+        <span class="b-list">
+          <span class="b-item" *ngFor="let c of todo; trackBy: trackCard" [class.late]="c.state.level === 'late'">
+            {{ c.task.icon }} {{ c.task.name }}
+            <em>{{ c.state.level === 'late' ? c.state.status.toLowerCase() : 'hoy' }}</em>
+          </span>
+        </span>
+      </ng-container>
+      <ng-template #allGood>
+        <span class="b-title">✨ Todo al día</span>
+        <span class="b-list" *ngIf="nextUp">
+          Lo próximo: <strong>{{ nextUp.task.icon }} {{ nextUp.task.name }}</strong> · {{ nextUp.state.status.toLowerCase() }}
+        </span>
+      </ng-template>
+    </section>
+
+    <div class="cards">
+      <article
+        class="card"
+        *ngFor="let c of cards; trackBy: trackCard"
+        [ngClass]="'lvl-' + c.state.level"
+        [class.flash]="flash.has(c.task.id)"
+      >
+        <header class="card-top">
+          <span class="icon" aria-hidden="true">{{ c.task.icon }}</span>
+          <span class="name">{{ c.task.name }}</span>
+          <span class="today-tag" *ngIf="c.state.level === 'due'">HOY</span>
+        </header>
+
+        <div class="status">
+          <span class="st">{{ c.state.status }}</span>
+          <span class="suggest" *ngIf="c.who">Le toca a <strong>{{ c.who }}</strong></span>
         </div>
-        <div class="when">
-          <span class="ago">{{ state(t).ago }}</span>
-          <span class="who" *ngIf="state(t).last">· {{ state(t).last!.who }}</span>
+
+        <div
+          class="meter"
+          role="img"
+          [attr.aria-label]="c.state.status"
+          [attr.title]="'Cada ' + c.task.everyDays + ' días'"
+        >
+          <div class="fill" [style.width.%]="c.state.ratio * 100" [style.--dirt]="c.color"></div>
         </div>
-      </header>
+        <div class="meter-ends" aria-hidden="true"><span>✨ limpio</span><span>sucio 🕸️</span></div>
 
-      <div class="status" *ngIf="levelText(t) || suggestion(t)">
-        <span class="badge" *ngIf="levelText(t)">{{ levelText(t) }}</span>
-        <span class="suggest" *ngIf="suggestion(t) as s">Le toca a <strong>{{ s }}</strong></span>
-      </div>
-
-      <div class="actions">
-        <button
-          type="button"
-          class="done"
-          *ngFor="let p of staff"
-          (click)="done(t, p)"
-        >✓ Hecho: {{ p }}</button>
-      </div>
-
-      <div class="options">
-        <button type="button" class="chip" [class.on]="soloSuelo.has(t.id)" [attr.aria-pressed]="soloSuelo.has(t.id)" (click)="toggleSoloSuelo(t)">Solo suelo</button>
-        <button type="button" class="link" (click)="toggleOtherDay(t)">{{ openOtherDay.has(t.id) ? 'Hoy' : 'Otro día' }}</button>
-        <input
-          *ngIf="openOtherDay.has(t.id)"
-          type="date"
-          class="date"
-          [max]="today"
-          [value]="otherDay.get(t.id) || ''"
-          (change)="setOtherDay(t, $any($event.target).value)"
-          aria-label="Día en que se hizo"
-        />
-        <span class="spacer"></span>
-        <button type="button" class="link" (click)="toggleHistory(t)" [attr.aria-expanded]="expanded.has(t.id)">
-          {{ expanded.has(t.id) ? '▾' : '▸' }} Historial
-        </button>
-      </div>
-
-      <ul class="history" *ngIf="expanded.has(t.id)">
-        <li class="none" *ngIf="!history(t).length">Todavía no hay nada apuntado.</li>
-        <li class="entry" *ngFor="let e of history(t); trackBy: trackEntry" [class.saving]="isTemp(e)">
-          <ng-container *ngIf="confirmDeleteId !== e.id; else confirmTpl">
-            <span class="d">{{ entryDate(e.date) }}</span>
-            <span class="p">{{ e.who }}</span>
-            <span class="n" *ngIf="e.note">· {{ e.note }}</span>
-            <span class="a">{{ isTemp(e) ? 'Guardando…' : entryAgo(e) }}</span>
-            <button type="button" class="x" (click)="askDelete(e)" [disabled]="isTemp(e)" aria-label="Borrar este apunte" title="Borrar">✕</button>
+        <div class="last">
+          <ng-container *ngIf="c.state.last; else never">
+            Última vez: <strong>{{ c.state.ago.toLowerCase() }}</strong> · {{ c.state.last.who }}<span *ngIf="c.state.last.note"> · {{ c.state.last.note.toLowerCase() }}</span>
           </ng-container>
-          <ng-template #confirmTpl>
-            <span class="q">¿Borrar el del {{ entryDate(e.date) }} ({{ e.who }})?</span>
-            <span class="spacer"></span>
-            <button type="button" class="no" (click)="askDelete(e)">No</button>
-            <button type="button" class="yes" (click)="confirmDelete(e)">Sí, borrar</button>
-          </ng-template>
-        </li>
-        <li class="more" *ngIf="hasMore(t)">Se muestran los últimos {{ history(t).length }}.</li>
-      </ul>
-    </article>
+          <ng-template #never>Todavía sin apuntar</ng-template>
+        </div>
 
-    <!-- Reparto de los últimos 90 días: ocupa el hueco que deja la última fila -->
-    <article class="card share" *ngIf="staff.length">
-      <header class="card-top">
-        <div class="task">
+        <div class="actions">
+          <button type="button" class="done" *ngFor="let p of staff" (click)="done(c.task, p)">✓ Hecho: {{ p }}</button>
+        </div>
+
+        <div class="options">
+          <button type="button" class="chip" [class.on]="soloSuelo.has(c.task.id)" [attr.aria-pressed]="soloSuelo.has(c.task.id)" (click)="toggleSoloSuelo(c.task)">Solo suelo</button>
+          <ng-container *ngIf="!openOtherDay.has(c.task.id); else dayPicker">
+            <button type="button" class="link" (click)="toggleOtherDay(c.task)">Otro día</button>
+            <span class="spacer"></span>
+            <button type="button" class="link" (click)="showHistoryOf(c.task)">Historial</button>
+          </ng-container>
+          <ng-template #dayPicker>
+            <input
+              type="date"
+              class="date"
+              [max]="today"
+              [value]="otherDay.get(c.task.id) || ''"
+              (change)="setOtherDay(c.task, $any($event.target).value)"
+              aria-label="Día en que se hizo"
+            />
+            <button type="button" class="link" (click)="toggleOtherDay(c.task)" aria-label="Volver a hoy">Hoy</button>
+          </ng-template>
+        </div>
+      </article>
+
+      <!-- Reparto de los últimos 90 días -->
+      <article class="card share" *ngIf="staff.length">
+        <header class="card-top">
           <span class="icon" aria-hidden="true">⚖️</span>
           <span class="name">Reparto</span>
-        </div>
-        <div class="when"><span class="ago">últimos 90 días</span></div>
-      </header>
-      <ng-container *ngIf="share.total; else noShare">
-        <div class="bars">
-          <div class="bar-row" *ngFor="let r of share.rows">
-            <div class="bar-label">
-              <strong>{{ r.who }}</strong>
-              <span>{{ r.count }} · {{ r.pct }} %</span>
-            </div>
-            <div class="track" [attr.title]="'Le corresponde el ' + r.target + ' %'">
-              <div class="fill" [style.width.%]="r.pct"></div>
-              <div class="mark" [style.left.%]="r.target"></div>
+          <span class="sub">últimos 90 días</span>
+        </header>
+        <ng-container *ngIf="share.total; else noShare">
+          <div class="bars">
+            <div class="bar-row" *ngFor="let r of share.rows">
+              <div class="bar-label">
+                <strong>{{ r.who }}</strong>
+                <span>{{ r.count }} · {{ r.pct }} % <small>(le toca {{ r.target }} %)</small></span>
+              </div>
+              <div class="track" [attr.title]="'Le corresponde el ' + r.target + ' %'">
+                <div class="fill" [style.width.%]="r.pct"></div>
+                <div class="mark" [style.left.%]="r.target"></div>
+              </div>
             </div>
           </div>
+          <div class="legend">La raya marca la parte que le corresponde según sus horas.</div>
+        </ng-container>
+        <ng-template #noShare><div class="legend">Aún no hay apuntes de los últimos 90 días.</div></ng-template>
+      </article>
+    </div>
+
+    <!-- Historial: a la derecha en pantallas grandes, plegable debajo en las pequeñas -->
+    <aside class="history-panel" [class.open]="historyOpen" #historyPanel>
+      <button type="button" class="hist-toggle" (click)="toggleHistory()" [attr.aria-expanded]="historyOpen">
+        <span>{{ historyOpen ? '▾' : '▸' }} Historial</span>
+        <span class="count">{{ historyTotal }}</span>
+      </button>
+      <h3 class="hist-title">Historial</h3>
+
+      <div class="hist-body">
+        <div class="filters" role="group" aria-label="Filtrar por tarea">
+          <button type="button" class="f" [class.on]="!filter" (click)="setFilter('')">Todo</button>
+          <button type="button" class="f" *ngFor="let t of tasks" [class.on]="filter === t.id" (click)="setFilter(t.id)" [attr.title]="t.name">
+            {{ t.icon }}<span class="f-name"> {{ t.name.replace('Polvo ', '') }}</span>
+          </button>
         </div>
-        <div class="legend">La raya marca la parte que le corresponde a cada una.</div>
-      </ng-container>
-      <ng-template #noShare><div class="legend">Aún no hay apuntes de los últimos 90 días.</div></ng-template>
-    </article>
+
+        <ul class="history">
+          <li class="none" *ngIf="!history.length">Todavía no hay nada apuntado.</li>
+          <li class="entry" *ngFor="let e of history; trackBy: trackEntry" [class.saving]="isTemp(e)">
+            <ng-container *ngIf="confirmDeleteId !== e.id; else confirmTpl">
+              <span class="d">{{ entryDate(e.date) }}</span>
+              <span class="t" aria-hidden="true">{{ taskOf(e.task)?.icon }}</span>
+              <span class="what">
+                <span class="tn">{{ taskOf(e.task)?.name }}</span>
+                <span class="p">{{ e.who }}<ng-container *ngIf="e.note"> · {{ e.note }}</ng-container> · {{ isTemp(e) ? 'guardando…' : entryAgo(e).toLowerCase() }}</span>
+              </span>
+              <button type="button" class="x" (click)="askDelete(e)" [disabled]="isTemp(e)" aria-label="Borrar este apunte" title="Borrar">✕</button>
+            </ng-container>
+            <ng-template #confirmTpl>
+              <span class="q">¿Borrar el del {{ entryDate(e.date) }} ({{ e.who }})?</span>
+              <span class="spacer"></span>
+              <button type="button" class="no" (click)="askDelete(e)">No</button>
+              <button type="button" class="yes" (click)="confirmDelete(e)">Sí, borrar</button>
+            </ng-template>
+          </li>
+          <li class="more" *ngIf="historyTotal > history.length">Se muestran los últimos {{ history.length }}.</li>
+        </ul>
+      </div>
+    </aside>
   </div>
 </div>
 

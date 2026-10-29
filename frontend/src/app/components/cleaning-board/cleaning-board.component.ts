@@ -1,10 +1,10 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { interval, Subscription } from 'rxjs';
 import { GlowmetricsService } from '../../services/glowmetrics.service';
-import { CleaningData } from '../../models/review.model';
 import {
-  CleaningEntry, CleaningTask, ShareRow, TaskState, agoText, daysBetween, normalizeDate, shareStats, suggestWho, taskState, todayIso,
+  CleaningEntry, CleaningTask, ShareRow, TaskState, agoText, daysBetween, dirtColor, normalizeDate,
+  shareStats, suggestWho, taskState, todayIso, todoNow,
 } from './cleaning-logic';
 
 // El registro lo usan dos personas en el mismo ordenador: se refresca solo mientras está abierto.
@@ -12,8 +12,17 @@ import {
 const POLL_MS = 60_000;
 const QUIET_AFTER_WRITE_MS = 5_000;
 const TEMP_PREFIX = 'tmp_';
-const HISTORY_SHOWN = 8;
+const HISTORY_SHOWN = 40;
+const FLASH_MS = 1600;
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+
+/** Todo lo que pinta una tarjeta de tarea, calculado de una vez. */
+export interface TaskCard {
+  task: CleaningTask;
+  state: TaskState;
+  color: string;           // color de la barra de suciedad
+  who: string | null;      // "le toca a…" (solo si la tarea ya se acerca o toca)
+}
 
 @Component({
   selector: 'app-cleaning-board',
@@ -23,6 +32,8 @@ const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'o
   styleUrls: ['./cleaning-board.component.scss'],
 })
 export class CleaningBoardComponent implements OnInit, OnDestroy {
+  @ViewChild('historyPanel') historyPanel?: ElementRef<HTMLElement>;
+
   tasks: CleaningTask[] = [];
   staff: string[] = [];
   shares: Record<string, number> = {};
@@ -31,11 +42,21 @@ export class CleaningBoardComponent implements OnInit, OnDestroy {
   loadFailed = false;
   today = todayIso();
 
-  // Estado de cada tarjeta
-  expanded = new Set<string>();     // historial abierto
-  soloSuelo = new Set<string>();    // nota rápida "solo suelo" marcada
-  otherDay = new Map<string, string>(); // "otro día": fecha elegida (vacío = hoy)
+  // Lo que se pinta (se recalcula en refresh(), nunca en la plantilla)
+  cards: TaskCard[] = [];
+  todo: TaskCard[] = [];             // lo que toca hacer ya (hoy o atrasado)
+  nextUp: TaskCard | null = null;    // si no hay nada urgente: lo siguiente que va a tocar
+  share: { total: number; rows: ShareRow[] } = { total: 0, rows: [] };
+  history: CleaningEntry[] = [];     // historial visible (con el filtro aplicado)
+  historyTotal = 0;
+
+  // Estado de la pantalla
+  filter = '';                           // tarea filtrada en el historial ('' = todas)
+  historyOpen = false;                   // en pantallas pequeñas el historial va plegado
+  soloSuelo = new Set<string>();         // nota rápida "solo suelo" marcada
+  otherDay = new Map<string, string>();  // "otro día": fecha elegida
   openOtherDay = new Set<string>();
+  flash = new Set<string>();             // tarjetas recién apuntadas
   confirmDeleteId: string | null = null;
   toast: string | null = null;
 
@@ -52,7 +73,8 @@ export class CleaningBoardComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.load();
     this.subs.add(interval(POLL_MS).subscribe(() => {
-      this.today = todayIso(); // la pantalla puede pasar la noche abierta
+      const t = todayIso(); // la pantalla puede pasar la noche abierta
+      if (t !== this.today) { this.today = t; this.refresh(); }
       if (document.hidden || this.pendingWrites > 0) return;
       if (Date.now() - this.lastWriteAt < QUIET_AFTER_WRITE_MS) return;
       this.load();
@@ -88,36 +110,35 @@ export class CleaningBoardComponent implements OnInit, OnDestroy {
       // La fecha siempre como "AAAA-MM-DD"; un apunte sin fecha legible se ignora.
       this.entries = res.entries.map(e => ({ ...e, date: normalizeDate(e.date) })).filter(e => e.date);
       this.today = todayIso();
+      this.refresh();
     }));
   }
 
-  // ---------- lo que se pinta ----------
+  /** Recalcula todo lo que se pinta a partir de los apuntes. */
+  private refresh(): void {
+    const cardOf = (task: CleaningTask): TaskCard => {
+      const state = taskState(task, this.entries, this.today);
+      const who = state.level === 'ok' ? null : suggestWho(this.entries, this.staff, this.shares, task.id, this.today);
+      return { task, state, color: dirtColor(state), who };
+    };
+    this.cards = this.tasks.map(cardOf);
+    const urgent = new Set(todoNow(this.tasks, this.entries, this.today).map(x => x.task.id));
+    this.todo = this.cards
+      .filter(c => urgent.has(c.task.id))
+      .sort((a, b) => (a.state.daysLeft ?? 0) - (b.state.daysLeft ?? 0));
+    this.nextUp = this.todo.length ? null
+      : this.cards.filter(c => c.state.daysLeft !== null)
+          .sort((a, b) => (a.state.daysLeft ?? 0) - (b.state.daysLeft ?? 0))[0] ?? null;
+    this.share = shareStats(this.entries, this.staff, this.shares, this.today);
 
-  state(t: CleaningTask): TaskState { return taskState(t, this.entries, this.today); }
-
-  /** Reparto de los últimos 90 días (lo que ha hecho cada una frente a lo que le corresponde). */
-  get share(): { total: number; rows: ShareRow[] } {
-    return shareStats(this.entries, this.staff, this.shares, this.today);
+    const all = this.filter ? this.entries.filter(e => e.task === this.filter) : this.entries;
+    this.historyTotal = all.length;
+    this.history = all.slice(0, HISTORY_SHOWN);
   }
 
-  /** "Toca a…": solo si la tarea ya toca (o nunca se ha hecho). */
-  suggestion(t: CleaningTask): string | null {
-    const lvl = this.state(t).level;
-    return lvl === 'ok' ? null : suggestWho(this.entries, this.staff, this.shares, t.id, this.today);
-  }
+  // ---------- textos ----------
 
-  levelText(t: CleaningTask): string {
-    const lvl = this.state(t).level;
-    return lvl === 'late' ? 'Atrasada' : lvl === 'due' ? 'Toca ya' : '';
-  }
-
-  history(t: CleaningTask): CleaningEntry[] {
-    return this.entries.filter(e => e.task === t.id).slice(0, HISTORY_SHOWN);
-  }
-
-  hasMore(t: CleaningTask): boolean {
-    return this.entries.filter(e => e.task === t.id).length > HISTORY_SHOWN;
-  }
+  taskOf(id: string): CleaningTask | undefined { return this.tasks.find(t => t.id === id); }
 
   entryDate(iso: string): string {
     const d = Number(iso.slice(8, 10)), m = Number(iso.slice(5, 7));
@@ -128,15 +149,29 @@ export class CleaningBoardComponent implements OnInit, OnDestroy {
 
   isTemp(e: CleaningEntry): boolean { return e.id.startsWith(TEMP_PREFIX); }
 
-  trackTask = (_: number, t: CleaningTask) => t.id;
+  trackCard = (_: number, c: TaskCard) => c.task.id;
   trackEntry = (_: number, e: CleaningEntry) => e.id;
 
-  // ---------- acciones de cada tarjeta ----------
+  // ---------- historial ----------
 
-  toggleHistory(t: CleaningTask): void {
-    if (this.expanded.has(t.id)) this.expanded.delete(t.id); else this.expanded.add(t.id);
+  setFilter(id: string): void {
+    this.filter = this.filter === id ? '' : id;
     this.confirmDeleteId = null;
+    this.refresh();
   }
+
+  toggleHistory(): void { this.historyOpen = !this.historyOpen; this.confirmDeleteId = null; }
+
+  /** "Historial" de una tarjeta: filtra el historial por esa tarea y lo enseña. */
+  showHistoryOf(t: CleaningTask): void {
+    this.filter = t.id;
+    this.historyOpen = true;
+    this.confirmDeleteId = null;
+    this.refresh();
+    setTimeout(() => this.historyPanel?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
+  }
+
+  // ---------- acciones de cada tarjeta ----------
 
   toggleSoloSuelo(t: CleaningTask): void {
     if (this.soloSuelo.has(t.id)) this.soloSuelo.delete(t.id); else this.soloSuelo.add(t.id);
@@ -164,6 +199,10 @@ export class CleaningBoardComponent implements OnInit, OnDestroy {
     this.soloSuelo.delete(t.id);
     this.otherDay.delete(t.id);
     this.openOtherDay.delete(t.id);
+    this.refresh();
+    this.flash.add(t.id);
+    setTimeout(() => this.flash.delete(t.id), FLASH_MS);
+    this.say(`✓ ${t.name}: apuntado a ${who}`);
 
     this.pendingWrites++;
     ++this.seq;
@@ -176,9 +215,11 @@ export class CleaningBoardComponent implements OnInit, OnDestroy {
       } else if (res && res.ok) {
         // Ya estaba guardado (reintento): se lee la lista real.
         this.entries = this.entries.filter(e => e !== temp);
+        this.refresh();
         this.load();
       } else {
         this.entries = this.entries.filter(e => e !== temp);
+        this.refresh();
         this.say(res && res.error ? res.error : 'No se pudo guardar. Inténtalo de nuevo.');
       }
     }));
@@ -192,6 +233,7 @@ export class CleaningBoardComponent implements OnInit, OnDestroy {
     this.confirmDeleteId = null;
     const before = this.entries;
     this.entries = this.entries.filter(x => x.id !== e.id);
+    this.refresh();
     this.pendingWrites++;
     ++this.seq;
     this.subs.add(this.svc.deleteCleaning(e.id).subscribe(res => {
@@ -200,6 +242,7 @@ export class CleaningBoardComponent implements OnInit, OnDestroy {
       if (this.destroyed) return;
       if (!res) {
         this.entries = before;
+        this.refresh();
         this.say('No se pudo borrar. Inténtalo de nuevo.');
       }
     }));
@@ -210,6 +253,6 @@ export class CleaningBoardComponent implements OnInit, OnDestroy {
   private say(text: string): void {
     if (this.toastTimer) clearTimeout(this.toastTimer);
     this.toast = text;
-    this.toastTimer = setTimeout(() => { this.toast = null; }, 3500);
+    this.toastTimer = setTimeout(() => { this.toast = null; }, 3000);
   }
 }

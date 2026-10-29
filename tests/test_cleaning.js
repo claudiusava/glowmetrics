@@ -72,7 +72,7 @@ check('la hoja Limpieza se crea sola, con formato de texto y cabecera', t.log.in
 check('sin apuntes al principio', vacio.entries.length === 0);
 check('tareas: recepción, cabina 1, cabina 2, baño y cristales', vacio.tasks.map(x => x.id).join() === 'recepcion,cabina1,cabina2,bano,cristales', vacio.tasks);
 check('plazos: 30, 21, 21, 15 y 60 días', vacio.tasks.map(x => x.everyDays).join() === '30,21,21,15,60');
-check('personas: Elena y Laura, con reparto del 50 %', vacio.staff.join() === 'Elena,Laura' && vacio.shares.Elena === 50 && vacio.shares.Laura === 50);
+check('personas: Elena y Laura, con reparto por horas (40 y 25)', vacio.staff.join() === 'Elena,Laura' && vacio.shares.Elena === 40 && vacio.shares.Laura === 25);
 
 // Alta
 let r = t.run(`addCleaningEntry_({ task: 'bano', who: 'Laura' }, 'c1')`);

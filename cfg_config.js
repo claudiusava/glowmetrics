@@ -30,7 +30,7 @@ const AD_SPEND = Object.freeze({
 // el equipo hacía en el papel. `shares` es la parte justa de cada persona (en %): hasta saber las
 // horas de cada una se reparte a partes iguales; cámbialo aquí cuando se sepan.
 const CLEANING_STAFF = Object.freeze(['Elena', 'Laura']);
-const CLEANING_SHARES = Object.freeze({ Elena: 50, Laura: 50 });
+const CLEANING_SHARES = Object.freeze({ Elena: 40, Laura: 25 });
 const CLEANING_TASKS = Object.freeze([
   { id: 'recepcion', name: 'Polvo recepción', icon: '🛋️', everyDays: 30 },
   { id: 'cabina1', name: 'Polvo cabina 1', icon: '🚪', everyDays: 21 },

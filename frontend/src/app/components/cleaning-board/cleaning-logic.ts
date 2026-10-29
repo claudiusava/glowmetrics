@@ -1,16 +1,20 @@
-// Lógica del registro de limpieza: cuánto hace de cada tarea y a quién le toca.
+// Lógica del registro de limpieza: cuánto falta para cada tarea, cuánto "se ha ensuciado" y a quién le toca.
 // Funciones puras (no tocan la pantalla), para poder probarlas con datos reales.
 
 export interface CleaningTask { id: string; name: string; icon: string; everyDays: number; }
 export interface CleaningEntry { id: string; task: string; who: string; date: string; note: string; createdAt: string; }
 
-export type CleaningLevel = 'none' | 'ok' | 'due' | 'late';
+/** none: sin registros · ok: de sobra · soon: se acerca · due: toca hoy · late: atrasada */
+export type CleaningLevel = 'none' | 'ok' | 'soon' | 'due' | 'late';
 
 export interface TaskState {
   last: CleaningEntry | null;
-  days: number | null;
+  days: number | null;      // días desde la última vez
+  daysLeft: number | null;  // días que faltan para que toque (0 = hoy, negativo = atrasada)
   level: CleaningLevel;
-  ago: string; // "Hoy", "Ayer", "Hace 5 días"...
+  ratio: number;            // 0 = recién limpio, 1 = le toca (o más): lo "sucio" que está
+  ago: string;              // "Hoy", "Ayer", "Hace 5 días"...
+  status: string;           // "Faltan 4 días", "Toca hoy", "Atrasada 3 días"...
 }
 
 /** Hoy en la zona horaria del equipo, como "AAAA-MM-DD". */
@@ -55,13 +59,47 @@ export function agoText(days: number): string {
   return `Hace ${m} ${m === 1 ? 'mes' : 'meses'}`;
 }
 
-/** Estado de una tarea: al cumplirse su plazo "toca" (ámbar) y al pasar 1,5 veces el plazo va "atrasada" (rojo). */
+/** Cuántos días antes de que toque se avisa de que "se acerca" (un cuarto del plazo, mínimo 2). */
+export function soonDays(task: CleaningTask): number {
+  return Math.max(2, Math.round(task.everyDays * 0.25));
+}
+
+export function statusText(daysLeft: number): string {
+  if (daysLeft > 1) return `Faltan ${daysLeft} días`;
+  if (daysLeft === 1) return 'Toca mañana';
+  if (daysLeft === 0) return 'Toca hoy';
+  const late = -daysLeft;
+  return `Atrasada ${late} ${late === 1 ? 'día' : 'días'}`;
+}
+
+/** Estado de una tarea: cuánto falta, qué nivel de aviso y lo "sucia" que está (0 a 1). */
 export function taskState(task: CleaningTask, entries: CleaningEntry[], today: string): TaskState {
   const last = lastEntry(entries, task.id);
-  if (!last) return { last: null, days: null, level: 'none', ago: 'Sin registros' };
+  if (!last) return { last: null, days: null, daysLeft: null, level: 'none', ratio: 0, ago: 'Sin registros', status: 'Sin registros' };
   const days = Math.max(0, daysBetween(last.date, today));
-  const level: CleaningLevel = days >= task.everyDays * 1.5 ? 'late' : days >= task.everyDays ? 'due' : 'ok';
-  return { last, days, level, ago: agoText(days) };
+  const daysLeft = task.everyDays - days;
+  const level: CleaningLevel = daysLeft < 0 ? 'late' : daysLeft === 0 ? 'due' : daysLeft <= soonDays(task) ? 'soon' : 'ok';
+  const ratio = Math.min(1, days / task.everyDays);
+  return { last, days, daysLeft, level, ratio, ago: agoText(days), status: statusText(daysLeft) };
+}
+
+/**
+ * Color de la barra de suciedad: de un verde agua (recién limpio) a amarillo y naranja
+ * a medida que se acerca el día; rojo si ya se ha pasado.
+ */
+export function dirtColor(s: TaskState): string {
+  if (s.level === 'none') return '#cbd5e1';
+  if (s.level === 'late') return '#e11d48';
+  const hue = Math.round(165 - s.ratio * 145); // 165 (agua) -> 20 (naranja)
+  return `hsl(${hue}, 72%, 48%)`;
+}
+
+/** Tareas que hay que hacer ya (hoy toca o van atrasadas), las más atrasadas primero. */
+export function todoNow(tasks: CleaningTask[], entries: CleaningEntry[], today: string): { task: CleaningTask; state: TaskState }[] {
+  return tasks
+    .map(task => ({ task, state: taskState(task, entries, today) }))
+    .filter(x => x.state.level === 'due' || x.state.level === 'late')
+    .sort((a, b) => (a.state.daysLeft ?? 0) - (b.state.daysLeft ?? 0));
 }
 
 /**
@@ -74,7 +112,8 @@ export function suggestWho(
   taskId: string, today: string, windowDays = 90,
 ): string | null {
   if (staff.length === 0) return null;
-  const inWindow = entries.filter(e => staff.includes(e.who) && daysBetween(e.date, today) <= windowDays && daysBetween(e.date, today) >= 0);
+  const inWindow = entries.filter(e => staff.includes(e.who) && VALID_DATE.test(e.date)
+    && daysBetween(e.date, today) <= windowDays && daysBetween(e.date, today) >= 0);
   const total = inWindow.length;
   const sumShares = staff.reduce((s, p) => s + (shares[p] || 0), 0) || staff.length;
 
