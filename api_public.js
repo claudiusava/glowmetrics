@@ -112,7 +112,10 @@ function jsonRoute_(route, callback, params) {
     'waitlist-list': getWaitlist,
     'waitlist-add': () => addWaitItem_(params, params.clientId),
     'waitlist-update': () => updateWaitItem_(params.id, params),
-    'waitlist-delete': () => deleteWaitItem_(params.id)
+    'waitlist-delete': () => deleteWaitItem_(params.id),
+    'cleaning-list': getCleaning,
+    'cleaning-add': () => addCleaningEntry_(params, params.clientId),
+    'cleaning-delete': () => deleteCleaningEntry_(params.id)
   };
 
   const handler = handlers[route];

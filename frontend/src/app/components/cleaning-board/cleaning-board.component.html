@@ -1,0 +1,80 @@
+<div class="scroll">
+  <div class="empty" *ngIf="loading && !loadFailed">Cargando…</div>
+  <div class="empty" *ngIf="loading && loadFailed">
+    No se pudo cargar. Reintentando…
+  </div>
+
+  <div class="cards" *ngIf="!loading">
+    <article
+      class="card"
+      *ngFor="let t of tasks; trackBy: trackTask"
+      [ngClass]="'lvl-' + state(t).level"
+    >
+      <header class="card-top">
+        <div class="task">
+          <span class="icon" aria-hidden="true">{{ t.icon }}</span>
+          <span class="name">{{ t.name }}</span>
+        </div>
+        <div class="when">
+          <span class="ago">{{ state(t).ago }}</span>
+          <span class="who" *ngIf="state(t).last">· {{ state(t).last!.who }}</span>
+        </div>
+      </header>
+
+      <div class="status" *ngIf="levelText(t) || suggestion(t)">
+        <span class="badge" *ngIf="levelText(t)">{{ levelText(t) }}</span>
+        <span class="suggest" *ngIf="suggestion(t) as s">Le toca a <strong>{{ s }}</strong></span>
+      </div>
+
+      <div class="actions">
+        <button
+          type="button"
+          class="done"
+          *ngFor="let p of staff"
+          [class.sug]="p === suggestion(t)"
+          (click)="done(t, p)"
+        >✓ Hecho: {{ p }}</button>
+      </div>
+
+      <div class="options">
+        <button type="button" class="chip" [class.on]="soloSuelo.has(t.id)" [attr.aria-pressed]="soloSuelo.has(t.id)" (click)="toggleSoloSuelo(t)">Solo suelo</button>
+        <button type="button" class="link" (click)="toggleOtherDay(t)">{{ openOtherDay.has(t.id) ? 'Hoy' : 'Otro día' }}</button>
+        <input
+          *ngIf="openOtherDay.has(t.id)"
+          type="date"
+          class="date"
+          [max]="today"
+          [value]="otherDay.get(t.id) || ''"
+          (change)="setOtherDay(t, $any($event.target).value)"
+          aria-label="Día en que se hizo"
+        />
+        <span class="spacer"></span>
+        <button type="button" class="link" (click)="toggleHistory(t)" [attr.aria-expanded]="expanded.has(t.id)">
+          {{ expanded.has(t.id) ? '▾' : '▸' }} Historial
+        </button>
+      </div>
+
+      <ul class="history" *ngIf="expanded.has(t.id)">
+        <li class="none" *ngIf="!history(t).length">Todavía no hay nada apuntado.</li>
+        <li class="entry" *ngFor="let e of history(t); trackBy: trackEntry" [class.saving]="isTemp(e)">
+          <ng-container *ngIf="confirmDeleteId !== e.id; else confirmTpl">
+            <span class="d">{{ entryDate(e.date) }}</span>
+            <span class="p">{{ e.who }}</span>
+            <span class="n" *ngIf="e.note">· {{ e.note }}</span>
+            <span class="a">{{ isTemp(e) ? 'Guardando…' : entryAgo(e) }}</span>
+            <button type="button" class="x" (click)="askDelete(e)" [disabled]="isTemp(e)" aria-label="Borrar este apunte" title="Borrar">✕</button>
+          </ng-container>
+          <ng-template #confirmTpl>
+            <span class="q">¿Borrar el del {{ entryDate(e.date) }} ({{ e.who }})?</span>
+            <span class="spacer"></span>
+            <button type="button" class="no" (click)="askDelete(e)">No</button>
+            <button type="button" class="yes" (click)="confirmDelete(e)">Sí, borrar</button>
+          </ng-template>
+        </li>
+        <li class="more" *ngIf="hasMore(t)">Se muestran los últimos {{ history(t).length }}.</li>
+      </ul>
+    </article>
+  </div>
+</div>
+
+<div class="toast" *ngIf="toast" role="status">{{ toast }}</div>

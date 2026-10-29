@@ -130,3 +130,17 @@ export interface RankingCapture {
   centros_total: number;
   ranking: RankingRow[];
 }
+
+// Registro de limpieza del local (ver svc_cleaning.js).
+export interface CleaningData {
+  tasks: { id: string; name: string; icon: string; everyDays: number }[];
+  staff: string[];
+  shares: Record<string, number>;
+  entries: { id: string; task: string; who: string; date: string; note: string; createdAt: string }[];
+}
+
+export interface CleaningAddResult {
+  ok?: boolean;
+  error?: string;
+  item?: { id: string; task: string; who: string; date: string; note: string; createdAt: string };
+}

@@ -1,0 +1,86 @@
+// Lógica del registro de limpieza: cuánto hace de cada tarea y a quién le toca.
+// Funciones puras (no tocan la pantalla), para poder probarlas con datos reales.
+
+export interface CleaningTask { id: string; name: string; icon: string; everyDays: number; }
+export interface CleaningEntry { id: string; task: string; who: string; date: string; note: string; createdAt: string; }
+
+export type CleaningLevel = 'none' | 'ok' | 'due' | 'late';
+
+export interface TaskState {
+  last: CleaningEntry | null;
+  days: number | null;
+  level: CleaningLevel;
+  ago: string; // "Hoy", "Ayer", "Hace 5 días"...
+}
+
+/** Hoy en la zona horaria del equipo, como "AAAA-MM-DD". */
+export function todayIso(now: Date = new Date()): string {
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())}`;
+}
+
+/** Días enteros entre dos fechas "AAAA-MM-DD" (to - from). */
+export function daysBetween(from: string, to: string): number {
+  const a = Date.UTC(+from.slice(0, 4), +from.slice(5, 7) - 1, +from.slice(8, 10));
+  const b = Date.UTC(+to.slice(0, 4), +to.slice(5, 7) - 1, +to.slice(8, 10));
+  return Math.round((b - a) / 86_400_000);
+}
+
+/** El apunte más reciente de una tarea (por fecha; a igualdad, el último que se apuntó). */
+export function lastEntry(entries: CleaningEntry[], taskId: string): CleaningEntry | null {
+  let best: CleaningEntry | null = null;
+  for (const e of entries) {
+    if (e.task !== taskId) continue;
+    if (!best || e.date > best.date || (e.date === best.date && e.createdAt > best.createdAt)) best = e;
+  }
+  return best;
+}
+
+export function agoText(days: number): string {
+  if (days <= 0) return 'Hoy';
+  if (days === 1) return 'Ayer';
+  if (days <= 14) return `Hace ${days} días`;
+  if (days <= 60) return `Hace ${Math.floor(days / 7)} semanas`;
+  const m = Math.floor(days / 30);
+  return `Hace ${m} ${m === 1 ? 'mes' : 'meses'}`;
+}
+
+/** Estado de una tarea: al cumplirse su plazo "toca" (ámbar) y al pasar 1,5 veces el plazo va "atrasada" (rojo). */
+export function taskState(task: CleaningTask, entries: CleaningEntry[], today: string): TaskState {
+  const last = lastEntry(entries, task.id);
+  if (!last) return { last: null, days: null, level: 'none', ago: 'Sin registros' };
+  const days = Math.max(0, daysBetween(last.date, today));
+  const level: CleaningLevel = days >= task.everyDays * 1.5 ? 'late' : days >= task.everyDays ? 'due' : 'ok';
+  return { last, days, level, ago: agoText(days) };
+}
+
+/**
+ * A quién le toca: quien lleve MENOS de su parte justa en los últimos `windowDays` días
+ * (la parte justa sale de `shares`, p. ej. por horas trabajadas). En caso de empate, quien
+ * lleve más tiempo sin hacer ESA tarea. Si siguen empatadas, no se sugiere a nadie.
+ */
+export function suggestWho(
+  entries: CleaningEntry[], staff: string[], shares: Record<string, number>,
+  taskId: string, today: string, windowDays = 90,
+): string | null {
+  if (staff.length === 0) return null;
+  const inWindow = entries.filter(e => staff.includes(e.who) && daysBetween(e.date, today) <= windowDays && daysBetween(e.date, today) >= 0);
+  const total = inWindow.length;
+  const sumShares = staff.reduce((s, p) => s + (shares[p] || 0), 0) || staff.length;
+
+  const deficit: Record<string, number> = {};
+  for (const p of staff) {
+    const share = (shares[p] || (sumShares === staff.length ? 1 : 0)) / sumShares;
+    const done = inWindow.filter(e => e.who === p).length;
+    deficit[p] = share * total - done;
+  }
+  const max = Math.max(...staff.map(p => deficit[p]));
+  let tied = staff.filter(p => Math.abs(deficit[p] - max) < 1e-9);
+  if (tied.length === 1) return tied[0];
+
+  // Empate: quien más tiempo lleve sin hacer esta tarea (o nunca la ha hecho).
+  const lastOf = (p: string) => lastEntry(entries.filter(e => e.who === p), taskId)?.date ?? '0000-00-00';
+  const oldest = tied.map(lastOf).reduce((a, b) => (a < b ? a : b));
+  tied = tied.filter(p => lastOf(p) === oldest);
+  return tied.length === 1 ? tied[0] : null;
+}

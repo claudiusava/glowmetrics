@@ -3,7 +3,7 @@ import { Observable, catchError, finalize, of, shareReplay, timeout } from 'rxjs
 import { hedgedRequest } from './hedged-request';
 import { jsonpRequest } from './jsonp-request';
 import { environment } from '../../environments/environment';
-import { ReviewsResponse, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry, Note, AddNoteResult, BootstrapResponse, WaitItem, WaitlistResult, ReviewsRefresh } from '../models/review.model';
+import { ReviewsResponse, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry, Note, AddNoteResult, BootstrapResponse, WaitItem, WaitlistResult, ReviewsRefresh, CleaningData, CleaningAddResult } from '../models/review.model';
 
 // Apps Script (ContentService) no manda cabeceras CORS, así que consumimos
 // su API vía JSONP en vez de XHR/fetch normal.
@@ -157,6 +157,27 @@ export class GlowmetricsService {
     let url = `${this.api}?route=waitlist-update&id=${encodeURIComponent(id)}`;
     for (const [k, v] of Object.entries(patch)) url += `&${k}=${encodeURIComponent(String(v ?? ''))}`;
     return this.writeWait<WaitlistResult>(url);
+  }
+
+  // ---- Registro de limpieza ----
+  getCleaning(): Observable<CleaningData | null> {
+    return this.read<CleaningData>('cleaning-list');
+  }
+
+  private writeCleaning<T>(url: string): Observable<T | null> {
+    this.inflight.delete('cleaning-list'); // una lectura en curso podría traer la lista de antes del cambio
+    return this.write<T>(url);
+  }
+
+  addCleaning(e: { task: string; who: string; date: string; note: string }, clientId: string): Observable<CleaningAddResult | null> {
+    const q = (k: string, v: string) => `&${k}=${encodeURIComponent(v)}`;
+    return this.writeCleaning<CleaningAddResult>(
+      `${this.api}?route=cleaning-add` + q('task', e.task) + q('who', e.who) + q('date', e.date) + q('note', e.note) + q('clientId', clientId)
+    );
+  }
+
+  deleteCleaning(id: string): Observable<{ ok?: boolean } | null> {
+    return this.writeCleaning<{ ok?: boolean }>(`${this.api}?route=cleaning-delete&id=${encodeURIComponent(id)}`);
   }
 
   deleteWaitItem(id: string): Observable<WaitlistResult | null> {
