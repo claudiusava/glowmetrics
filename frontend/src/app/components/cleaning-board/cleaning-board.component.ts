@@ -46,6 +46,7 @@ export class CleaningBoardComponent implements OnInit, OnDestroy {
   cards: TaskCard[] = [];
   todo: TaskCard[] = [];             // lo que toca hacer ya (hoy o atrasado)
   nextUp: TaskCard | null = null;    // si no hay nada urgente: lo siguiente que va a tocar
+  nothingYet = true;                 // todavía no se ha apuntado ninguna tarea
   share: { total: number; rows: ShareRow[] } = { total: 0, rows: [] };
   history: CleaningEntry[] = [];     // historial visible (con el filtro aplicado)
   historyTotal = 0;
@@ -129,6 +130,7 @@ export class CleaningBoardComponent implements OnInit, OnDestroy {
     this.nextUp = this.todo.length ? null
       : this.cards.filter(c => c.state.daysLeft !== null)
           .sort((a, b) => (a.state.daysLeft ?? 0) - (b.state.daysLeft ?? 0))[0] ?? null;
+    this.nothingYet = this.cards.every(c => c.state.level === 'none');
     this.share = shareStats(this.entries, this.staff, this.shares, this.today);
 
     const all = this.filter ? this.entries.filter(e => e.task === this.filter) : this.entries;

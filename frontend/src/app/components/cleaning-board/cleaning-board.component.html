@@ -15,7 +15,11 @@
         </span>
       </ng-container>
       <ng-template #allGood>
-        <span class="b-title">✨ Todo al día</span>
+        <ng-container *ngIf="nothingYet; else nothingToday">
+          <span class="b-title">📝 Todavía no hay nada apuntado</span>
+          <span class="b-list">Cuando limpiéis algo, pulsad «Hecho» en su tarjeta.</span>
+        </ng-container>
+        <ng-template #nothingToday><span class="b-title">✨ Hoy no toca nada</span></ng-template>
         <span class="b-list" *ngIf="nextUp">
           Lo próximo: <strong>{{ nextUp.task.icon }} {{ nextUp.task.name }}</strong> · {{ nextUp.state.status.toLowerCase() }}
         </span>
