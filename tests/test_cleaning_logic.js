@@ -7,7 +7,7 @@ const path = require('path');
 const src = fs.readFileSync(path.resolve(__dirname, '../frontend/src/app/components/cleaning-board/cleaning-logic.ts'), 'utf8');
 const m = { exports: {} };
 new Function('module', 'exports', ts.transpileModule(src, { compilerOptions: { module: 'commonjs', target: 'es2019' } }).outputText)(m, m.exports);
-const { todayIso, daysBetween, lastEntry, agoText, taskState, suggestWho } = m.exports;
+const { todayIso, daysBetween, lastEntry, agoText, taskState, suggestWho, normalizeDate, shareStats } = m.exports;
 
 let failed = 0;
 const check = (n, c, x = '') => { console.log((c ? 'OK   ' : 'FALLA') + ' ' + n + (c ? '' : '  ' + JSON.stringify(x))); if (!c) failed++; };
@@ -71,6 +71,23 @@ check('empate en el reparto: le toca a quien lleve más tiempo sin esa tarea',
 check('solo cuentan los últimos 90 días (lo anterior no pesa)',
   suggestWho([E('bano', 'Laura', '2026-01-01'), E('bano', 'Laura', '2026-01-02'), E('bano', 'Elena', '2026-10-20')], STAFF, reparto, 'bano', hoy) === 'Laura');
 check('personas fuera de la lista no cuentan', suggestWho([E('bano', 'Paco', '2026-10-20')], STAFF, reparto, 'bano', hoy) === null);
+
+// ---------- Fechas raras (el fallo "Hace NaN meses") ----------
+check('normalizeDate: texto normal', normalizeDate('2026-10-29') === '2026-10-29');
+check('normalizeDate: con hora', normalizeDate('2026-10-29T00:00:00.000Z') === '2026-10-29');
+check('normalizeDate: fecha larga que mandó el servidor por error', normalizeDate('Thu Oct 29 2026 00:00:00 GMT+0100 (hora estándar de Europa central)') === '2026-10-29', normalizeDate('Thu Oct 29 2026 00:00:00 GMT+0100 (hora estándar de Europa central)'));
+check('normalizeDate: basura -> vacío', normalizeDate('esto no es una fecha') === '' && normalizeDate('') === '' && normalizeDate(null) === '');
+const rota = E('bano', 'Laura', 'fecha rota');
+check('un apunte con fecha rota no cuenta como "última vez" ni da NaN', taskState(TAREAS.bano, [rota], hoy).level === 'none' && taskState(TAREAS.bano, [rota], hoy).ago === 'Sin registros');
+check('con uno roto y otro bueno, se usa el bueno', taskState(TAREAS.bano, [rota, E('bano', 'Elena', '2026-10-27')], hoy).last.who === 'Elena');
+check('la sugerencia no se descontrola con fechas rotas (usa solo los apuntes buenos)', suggestWho([rota, rota, E('bano', 'Laura', '2026-10-20')], STAFF, reparto, 'bano', hoy) === 'Elena');
+
+// ---------- Reparto de los últimos 90 días ----------
+const rp = shareStats(PAPEL, STAFF, reparto, hoy);
+check('reparto con el papel (desde el 31/07): Elena 1 de 8 y Laura 7 de 8', rp.total === 8 && rp.rows[0].count === 1 && rp.rows[1].count === 7, rp);
+check('reparto: porcentajes 13 % y 88 % y le corresponde 50 % a cada una', rp.rows[0].pct === 13 && rp.rows[1].pct === 88 && rp.rows[0].target === 50 && rp.rows[1].target === 50, rp.rows);
+check('reparto por horas (65/35): le corresponde 65 % y 35 %', shareStats(PAPEL, STAFF, { Elena: 65, Laura: 35 }, hoy).rows.map(r => r.target).join() === '65,35');
+check('reparto sin apuntes: total 0', shareStats([], STAFF, reparto, hoy).total === 0 && shareStats([rota], STAFF, reparto, hoy).total === 0);
 
 // Reparto real del papel (para el informe)
 const cuenta = p => PAPEL.filter(e => e.who === p).length;

@@ -44,12 +44,24 @@ function cleanCleaningDate_(v) {
   return s;
 }
 
+/** La fecha de un apunte como "AAAA-MM-DD", venga como texto o como fecha de la hoja
+ * (Google Sheets convierte un "2026-10-29" en una fecha de verdad, aunque se pida texto). */
+function normalizeCleaningDate_(v) {
+  if (v instanceof Date) {
+    return isNaN(v.getTime()) ? '' : Utilities.formatDate(v, 'Europe/Madrid', 'yyyy-MM-dd');
+  }
+  const s = String(v == null ? '' : v).trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? '' : Utilities.formatDate(d, 'Europe/Madrid', 'yyyy-MM-dd');
+}
+
 function rowToCleaningEntry_(r) {
   return {
     id: String(r[0]),
     task: String(r[1] || ''),
     who: String(r[2] || ''),
-    date: String(r[3] || ''),
+    date: normalizeCleaningDate_(r[3]),
     note: String(r[4] || ''),
     createdAt: String(r[5] || '')
   };
@@ -68,6 +80,7 @@ function getCleaning() {
     out.entries = sh.getRange(first, 1, last - first + 1, CLEANING_COLS).getValues()
       .filter(r => r[0])
       .map(rowToCleaningEntry_)
+      .filter(e => e.date)
       .sort((a, b) => (b.date + b.createdAt).localeCompare(a.date + a.createdAt));
   } catch (e) {
     console.error('getCleaning ERROR:', e);
@@ -99,9 +112,14 @@ function addCleaningEntry_(params, clientId) {
 
   if (dedupeKey) cache.put(dedupeKey, '1', 600);
 
-  const sh = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(CLEANING_SHEET_NAME);
   const row = [Utilities.getUuid(), task, who, date, note, new Date().toISOString()];
-  sh.appendRow(row);
+  withLock_(() => {
+    const sh = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(CLEANING_SHEET_NAME);
+    // La fila nueva se escribe como TEXTO PLANO: con appendRow, Sheets convertía "2026-10-29" en una fecha.
+    const rg = sh.getRange(sh.getLastRow() + 1, 1, 1, CLEANING_COLS);
+    rg.setNumberFormat('@');
+    rg.setValues([row]);
+  });
   return { ok: true, item: rowToCleaningEntry_(row) };
 }
 

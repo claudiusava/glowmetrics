@@ -19,6 +19,16 @@ export function todayIso(now: Date = new Date()): string {
   return `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())}`;
 }
 
+const VALID_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Cualquier fecha que llegue (texto "AAAA-MM-DD", fecha larga...) como "AAAA-MM-DD"; vacío si no se entiende. */
+export function normalizeDate(v: string): string {
+  const s = String(v ?? '').trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? '' : todayIso(d);
+}
+
 /** Días enteros entre dos fechas "AAAA-MM-DD" (to - from). */
 export function daysBetween(from: string, to: string): number {
   const a = Date.UTC(+from.slice(0, 4), +from.slice(5, 7) - 1, +from.slice(8, 10));
@@ -30,7 +40,7 @@ export function daysBetween(from: string, to: string): number {
 export function lastEntry(entries: CleaningEntry[], taskId: string): CleaningEntry | null {
   let best: CleaningEntry | null = null;
   for (const e of entries) {
-    if (e.task !== taskId) continue;
+    if (e.task !== taskId || !VALID_DATE.test(e.date)) continue; // un apunte sin fecha legible no cuenta
     if (!best || e.date > best.date || (e.date === best.date && e.createdAt > best.createdAt)) best = e;
   }
   return best;
@@ -83,4 +93,23 @@ export function suggestWho(
   const oldest = tied.map(lastOf).reduce((a, b) => (a < b ? a : b));
   tied = tied.filter(p => lastOf(p) === oldest);
   return tied.length === 1 ? tied[0] : null;
+}
+
+export interface ShareRow { who: string; count: number; pct: number; target: number; }
+
+/** Reparto de los últimos `windowDays` días: lo que ha hecho cada persona y lo que le corresponde. */
+export function shareStats(
+  entries: CleaningEntry[], staff: string[], shares: Record<string, number>, today: string, windowDays = 90,
+): { total: number; rows: ShareRow[] } {
+  const inWindow = entries.filter(e => staff.includes(e.who) && VALID_DATE.test(e.date)
+    && daysBetween(e.date, today) <= windowDays && daysBetween(e.date, today) >= 0);
+  const total = inWindow.length;
+  const sum = staff.reduce((a, p) => a + (shares[p] || 0), 0) || staff.length;
+  const rows = staff.map(who => ({
+    who,
+    count: inWindow.filter(e => e.who === who).length,
+    pct: total ? Math.round((inWindow.filter(e => e.who === who).length / total) * 100) : 0,
+    target: Math.round((((shares[who] || (sum === staff.length ? 1 : 0)) / sum) * 100)),
+  }));
+  return { total, rows };
 }

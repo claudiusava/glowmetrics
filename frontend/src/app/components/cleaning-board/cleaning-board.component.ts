@@ -4,7 +4,7 @@ import { interval, Subscription } from 'rxjs';
 import { GlowmetricsService } from '../../services/glowmetrics.service';
 import { CleaningData } from '../../models/review.model';
 import {
-  CleaningEntry, CleaningTask, TaskState, agoText, daysBetween, suggestWho, taskState, todayIso,
+  CleaningEntry, CleaningTask, ShareRow, TaskState, agoText, daysBetween, normalizeDate, shareStats, suggestWho, taskState, todayIso,
 } from './cleaning-logic';
 
 // El registro lo usan dos personas en el mismo ordenador: se refresca solo mientras está abierto.
@@ -85,7 +85,8 @@ export class CleaningBoardComponent implements OnInit, OnDestroy {
       this.tasks = res.tasks;
       this.staff = res.staff;
       this.shares = res.shares;
-      this.entries = res.entries;
+      // La fecha siempre como "AAAA-MM-DD"; un apunte sin fecha legible se ignora.
+      this.entries = res.entries.map(e => ({ ...e, date: normalizeDate(e.date) })).filter(e => e.date);
       this.today = todayIso();
     }));
   }
@@ -93,6 +94,11 @@ export class CleaningBoardComponent implements OnInit, OnDestroy {
   // ---------- lo que se pinta ----------
 
   state(t: CleaningTask): TaskState { return taskState(t, this.entries, this.today); }
+
+  /** Reparto de los últimos 90 días (lo que ha hecho cada una frente a lo que le corresponde). */
+  get share(): { total: number; rows: ShareRow[] } {
+    return shareStats(this.entries, this.staff, this.shares, this.today);
+  }
 
   /** "Toca a…": solo si la tarea ya toca (o nunca se ha hecho). */
   suggestion(t: CleaningTask): string | null {

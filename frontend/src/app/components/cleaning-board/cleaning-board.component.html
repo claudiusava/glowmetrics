@@ -4,7 +4,7 @@
     No se pudo cargar. Reintentando…
   </div>
 
-  <div class="cards" *ngIf="!loading">
+  <div class="grid" *ngIf="!loading">
     <article
       class="card"
       *ngFor="let t of tasks; trackBy: trackTask"
@@ -31,7 +31,6 @@
           type="button"
           class="done"
           *ngFor="let p of staff"
-          [class.sug]="p === suggestion(t)"
           (click)="done(t, p)"
         >✓ Hecho: {{ p }}</button>
       </div>
@@ -73,6 +72,33 @@
         </li>
         <li class="more" *ngIf="hasMore(t)">Se muestran los últimos {{ history(t).length }}.</li>
       </ul>
+    </article>
+
+    <!-- Reparto de los últimos 90 días: ocupa el hueco que deja la última fila -->
+    <article class="card share" *ngIf="staff.length">
+      <header class="card-top">
+        <div class="task">
+          <span class="icon" aria-hidden="true">⚖️</span>
+          <span class="name">Reparto</span>
+        </div>
+        <div class="when"><span class="ago">últimos 90 días</span></div>
+      </header>
+      <ng-container *ngIf="share.total; else noShare">
+        <div class="bars">
+          <div class="bar-row" *ngFor="let r of share.rows">
+            <div class="bar-label">
+              <strong>{{ r.who }}</strong>
+              <span>{{ r.count }} · {{ r.pct }} %</span>
+            </div>
+            <div class="track" [attr.title]="'Le corresponde el ' + r.target + ' %'">
+              <div class="fill" [style.width.%]="r.pct"></div>
+              <div class="mark" [style.left.%]="r.target"></div>
+            </div>
+          </div>
+        </div>
+        <div class="legend">La raya marca la parte que le corresponde a cada una.</div>
+      </ng-container>
+      <ng-template #noShare><div class="legend">Aún no hay apuntes de los últimos 90 días.</div></ng-template>
     </article>
   </div>
 </div>

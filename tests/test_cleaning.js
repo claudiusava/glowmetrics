@@ -20,16 +20,19 @@ function entorno() {
   const log = { inserted: [], numberFormat: [] };
   const mkSheet = name => {
     const rows = [];
+    const textRows = new Set();
+    // Como Sheets: un texto "AAAA-MM-DD" se guarda como fecha (medianoche de Madrid) si la celda no es de texto plano.
+    const parse = v => (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) ? new Date(Date.UTC(+v.slice(0, 4), +v.slice(5, 7) - 1, +v.slice(8, 10)) - 3600 * 1000) : v;
     return {
       rows,
       getMaxRows: () => 1000,
       getLastRow: () => rows.length,
-      appendRow: r => { rows.push(r.slice()); },
+      appendRow: r => { rows.push(r.map(parse)); }, // appendRow no respeta el formato de texto
       deleteRow: n => { rows.splice(n - 1, 1); },
       getRange: (r, c, nr, nc) => ({
-        setNumberFormat: f => { log.numberFormat.push([name, f]); },
+        setNumberFormat: f => { log.numberFormat.push([name, f]); for (let i = 0; i < (nr || 1); i++) if (f === '@') textRows.add(r + i); },
         getValues: () => rows.slice(r - 1, r - 1 + (nr || 1)).map(x => x.slice(c - 1, c - 1 + (nc || 1))),
-        setValues: v => { v.forEach((row, i) => { rows[r - 1 + i] = rows[r - 1 + i] || []; row.forEach((val, j) => { rows[r - 1 + i][c - 1 + j] = val; }); }); }
+        setValues: v => { v.forEach((row, i) => { rows[r - 1 + i] = rows[r - 1 + i] || []; row.forEach((val, j) => { rows[r - 1 + i][c - 1 + j] = textRows.has(r + i) ? val : parse(val); }); }); }
       })
     };
   };
@@ -102,6 +105,21 @@ const id = lista.entries[0].id;
 check('borrar un apunte', t.run(`deleteCleaningEntry_('${id}')`).ok === true && t.run('getCleaning()').entries.length === 4);
 check('borrar uno que no existe: ok:false y no toca nada', t.run(`deleteCleaningEntry_('no-existe')`).ok === false && t.run('getCleaning()').entries.length === 4);
 check('borrar sin id: ok:false', t.run(`deleteCleaningEntry_('')`).ok === false);
+
+// Fechas: Sheets las convierte en fechas de verdad; la web siempre debe recibir "AAAA-MM-DD"
+check('lo que se apunta se guarda como texto en la hoja (no como fecha)', typeof t.sheets.Limpieza.rows[t.sheets.Limpieza.rows.length - 1][3] === 'string');
+check('todas las fechas llegan a la web como "AAAA-MM-DD"', t.run('getCleaning()').entries.every(e => /^\d{4}-\d{2}-\d{2}$/.test(e.date)), t.run('getCleaning()').entries.map(e => e.date));
+// Apunte "antiguo" ya convertido en fecha por Sheets (como los de las primeras pruebas)
+t.sheets.Limpieza.rows.push(['legacy-1', 'recepcion', 'Laura', new Date(Date.UTC(2026, 9, 22) - 3600 * 1000), '', '2026-10-22T10:00:00.000Z']);
+t.sheets.Limpieza.rows.push(['legacy-2', 'bano', 'Elena', 'Thu Oct 29 2026 00:00:00 GMT+0100 (hora estándar de Europa central)', '', '2026-10-29T10:00:00.000Z']);
+t.sheets.Limpieza.rows.push(['legacy-3', 'bano', 'Elena', 'esto no es una fecha', '', '2026-10-29T10:00:00.000Z']);
+const mezcla = t.run('getCleaning()').entries;
+const porId = id => mezcla.find(e => e.id === id);
+check('un apunte con la fecha ya convertida por Sheets se lee bien', porId('legacy-1') && porId('legacy-1').date === '2026-10-22', porId('legacy-1'));
+check('una fecha escrita como texto largo también se entiende', porId('legacy-2') && /^\d{4}-\d{2}-\d{2}$/.test(porId('legacy-2').date), porId('legacy-2'));
+check('un apunte con fecha ilegible no se muestra (ni rompe la lista)', !porId('legacy-3'));
+// los de prueba se retiran para no alterar las cuentas siguientes
+t.sheets.Limpieza.rows.splice(t.sheets.Limpieza.rows.length - 3, 3);
 
 // Rutas
 const l = t.run(`jsonRoute_('cleaning-list', 'cb', {})`);

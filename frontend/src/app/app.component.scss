@@ -94,6 +94,12 @@
   background: #ffffff;
   border-radius: 20px;
   box-shadow: 0 6px 24px rgba(15, 23, 42, 0.08);
+
+  // Limpieza: cuadrícula de tarjetas, necesita más ancho (y en monitores grandes, más aún).
+  &.wide { max-width: 1500px; }
+  @media (min-width: 1700px) { &.wide { max-width: 1750px; } }
+  @media (min-width: 2300px) { &.wide { max-width: 2300px; } }
+  @media (min-width: 3000px) { &.wide { max-width: 3000px; } }
 }
 
 .bottom {
