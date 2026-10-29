@@ -1,43 +1,28 @@
-import { Component, EventEmitter, Input, Output, HostListener, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, Output, HostListener, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Note } from '../../models/review.model';
-import { WaitlistBoardComponent } from '../waitlist-board/waitlist-board.component';
-import { CleaningBoardComponent } from '../cleaning-board/cleaning-board.component';
 
+// Cuaderno de notas del equipo (una de las secciones de la pantalla principal).
 @Component({
   selector: 'app-notes-board',
   standalone: true,
-  imports: [CommonModule, FormsModule, WaitlistBoardComponent, CleaningBoardComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './notes-board.component.html',
   styleUrls: ['./notes-board.component.scss'],
 })
-export class NotesBoardComponent implements OnChanges, OnDestroy {
-  @Input() open = false;
+export class NotesBoardComponent implements OnChanges {
   @Input() notes: Note[] = [];
   @Input() adding = false;
   @Input() deleting = false;
   @Input() editing = false;
   @Input() editError: string | null = null;
   @Input() addError: string | null = null;
-  // Hay notas sin leer en este dispositivo: el modal se abre directamente en "Notas".
-  @Input() hasUnread = false;
 
-  // Se emite cuando se muestra la pestaña de notas (las da por leídas).
-  @Output() notesViewed = new EventEmitter<void>();
-  @Output() closeRequested = new EventEmitter<void>();
   @Output() addNote = new EventEmitter<{ text: string; clientId: string }>();
   @Output() deleteNote = new EventEmitter<string>();
   @Output() editNote = new EventEmitter<{ id: string; text: string }>();
   @Output() editSessionEnded = new EventEmitter<void>();
-
-  // Mientras el modal está abierto, la página de detrás queda bloqueada: no se
-  // cierra al pulsar fuera (solo con la ✕ o Escape, para no perder lo que se
-  // esté escribiendo) y tampoco se puede hacer scroll de lo que hay detrás.
-  private lockedBody: { overflow: string; paddingRight: string } | null = null;
-
-  tab: 'espera' | 'notas' | 'limpieza' = 'espera';
-  waitFormOpen = false; // la lista de espera tiene un formulario abierto (Escape lo cierra a él, no al modal)
 
   draft = '';
   editingId: string | null = null;
@@ -47,23 +32,7 @@ export class NotesBoardComponent implements OnChanges, OnDestroy {
   private savingAdd = false;
   private addRequestId: string | null = null;
 
-  selectTab(t: 'espera' | 'notas' | 'limpieza'): void {
-    this.tab = t;
-    this.waitFormOpen = false;
-    if (t === 'notas') this.notesViewed.emit();
-  }
-
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['open']) this.setPageLocked(this.open);
-
-    // Al abrir el modal: en la lista de espera, salvo que haya notas sin leer.
-    if (changes['open'] && this.open) {
-      this.tab = this.hasUnread ? 'notas' : 'espera';
-      this.waitFormOpen = false;
-      // En un microtask: emitir durante la detección de cambios modificaría el padre ya comprobado.
-      if (this.tab === 'notas') Promise.resolve().then(() => this.notesViewed.emit());
-    }
-
     // 'editing'/'adding' pasan a false cuando el backend responde. Solo
     // entonces sabemos si el guardado fue bien o mal: si fue bien, cerramos
     // el modo edición o vaciamos el composer; si falló, dejamos el texto
@@ -87,47 +56,14 @@ export class NotesBoardComponent implements OnChanges, OnDestroy {
     }
   }
 
-  private setPageLocked(lock: boolean): void {
-    const body = document.body;
-    if (lock && !this.lockedBody) {
-      this.lockedBody = { overflow: body.style.overflow, paddingRight: body.style.paddingRight };
-      // Al ocultar la barra de scroll de la página la pantalla "salta" a lo ancho: se compensa.
-      const bar = window.innerWidth - document.documentElement.clientWidth;
-      if (bar > 0) body.style.paddingRight = `${bar}px`;
-      body.style.overflow = 'hidden';
-    } else if (!lock && this.lockedBody) {
-      body.style.overflow = this.lockedBody.overflow;
-      body.style.paddingRight = this.lockedBody.paddingRight;
-      this.lockedBody = null;
-    }
-  }
-
-  ngOnDestroy(): void {
-    this.setPageLocked(false);
-  }
-
-  // Rueda y dedo sobre la zona oscura no deben mover nada (ni en iOS, que ignora overflow:hidden del body).
-  blockOutsideScroll(ev: Event): void {
-    if (ev.target === ev.currentTarget) ev.preventDefault();
-  }
-
   private genRequestId(): string {
     return Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
   }
 
+  // Escape cancela la edición de una nota.
   @HostListener('document:keydown.escape')
   onEscape(): void {
-    if (!this.open) return;
-    if (this.tab === 'espera' && this.waitFormOpen) return;
-    if (this.editingId) {
-      this.cancelEdit();
-      return;
-    }
-    this.closeRequested.emit();
-  }
-
-  close(): void {
-    this.closeRequested.emit();
+    if (this.editingId) this.cancelEdit();
   }
 
   submit(): void {

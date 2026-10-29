@@ -1,9 +1,24 @@
-<main class="wrap">
+<div class="app">
+  <!-- Barra de secciones: al pulsar una, toda la pantalla pasa a esa sección -->
+  <nav class="tabbar" role="tablist" aria-label="Secciones" [attr.inert]="rankingOpen ? '' : null">
+    <button
+      type="button"
+      class="tab"
+      role="tab"
+      *ngFor="let t of tabs"
+      [class.on]="view === t.id"
+      [attr.aria-selected]="view === t.id"
+      (click)="go(t.id)"
+    >{{ t.icon }} <span class="long" *ngIf="t.long">{{ t.long }}</span>{{ t.label }}<span class="tab-dot" *ngIf="t.id === 'notas' && hasUnreadNotes && view !== 'notas'" aria-label="Notas nuevas"></span></button>
+  </nav>
+
+  <!-- Inicio: KPI y reseñas (se oculta, no se destruye, para no perder el scroll ni repetir el confeti) -->
+  <main class="wrap" [class.is-hidden]="view !== 'inicio'">
   <!-- KPI superior -->
-  <app-kpi-card [kpi]="kpi" [tip]="currentTip" [showCost]="showCost" [attr.inert]="notesModalOpen || rankingOpen ? '' : null"></app-kpi-card>
+  <app-kpi-card [kpi]="kpi" [tip]="currentTip" [showCost]="showCost" [attr.inert]="rankingOpen ? '' : null"></app-kpi-card>
 
   <!-- Sección inferior -->
-  <section class="bottom" [attr.inert]="notesModalOpen || rankingOpen ? '' : null">
+  <section class="bottom" [attr.inert]="rankingOpen ? '' : null">
     <div class="header" #bottomHeader>
       <div class="head-left">
         <div class="title-row">
@@ -39,34 +54,30 @@
       [loading]="loadingReviews"
     ></app-reviews-feed>
   </section>
+  </main>
 
-  <div class="refresh-toast" *ngIf="refreshToast">{{ refreshToast }}</div>
+  <!-- Resto de secciones -->
+  <main class="page" *ngIf="view !== 'inicio'" [attr.inert]="rankingOpen ? '' : null">
+    <div class="page-card">
+      <app-waitlist-board *ngIf="view === 'espera'"></app-waitlist-board>
+      <app-cleaning-board *ngIf="view === 'limpieza'"></app-cleaning-board>
+      <app-notes-board
+        *ngIf="view === 'notas'"
+        [notes]="notes"
+        [adding]="addingNote"
+        [deleting]="deletingNote"
+        [editing]="editingNote"
+        [editError]="editNoteError"
+        [addError]="addNoteError"
+        (addNote)="onAddNote($event)"
+        (deleteNote)="onDeleteNote($event)"
+        (editNote)="onEditNote($event)"
+        (editSessionEnded)="editNoteError = null"
+      ></app-notes-board>
+    </div>
+  </main>
+</div>
 
-  <button
-    class="notes-pin"
-    [attr.inert]="notesModalOpen || rankingOpen ? '' : null"
-    [class.has-unread]="hasUnreadNotes"
-    (click)="toggleNotesModal()"
-    title="Lista de espera y notas"
-    aria-label="Abrir lista de espera y notas"
-  >📌</button>
+<div class="refresh-toast" *ngIf="refreshToast">{{ refreshToast }}</div>
 
-  <app-ranking-modal [open]="rankingOpen" (closeRequested)="rankingOpen = false"></app-ranking-modal>
-
-  <app-notes-board
-    [open]="notesModalOpen"
-    [notes]="notes"
-    [adding]="addingNote"
-    [deleting]="deletingNote"
-    [editing]="editingNote"
-    [editError]="editNoteError"
-    [addError]="addNoteError"
-    [hasUnread]="hasUnreadNotes"
-    (notesViewed)="onNotesViewed()"
-    (closeRequested)="closeNotesModal()"
-    (addNote)="onAddNote($event)"
-    (deleteNote)="onDeleteNote($event)"
-    (editNote)="onEditNote($event)"
-    (editSessionEnded)="editNoteError = null"
-  ></app-notes-board>
-</main>
+<app-ranking-modal [open]="rankingOpen" (closeRequested)="rankingOpen = false"></app-ranking-modal>

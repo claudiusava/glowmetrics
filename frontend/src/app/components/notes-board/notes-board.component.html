@@ -1,63 +1,42 @@
-<div class="backdrop" *ngIf="open" (wheel)="blockOutsideScroll($event)" (touchmove)="blockOutsideScroll($event)">
-  <div class="modal" role="dialog" aria-modal="true" aria-label="Lista de espera, notas y limpieza">
-    <div class="modal-header">
-      <div class="tabs" role="tablist">
-        <button type="button" class="tab" role="tab" [class.on]="tab === 'espera'" [attr.aria-selected]="tab === 'espera'" (click)="selectTab('espera')">⏳ <span class="long">Lista de </span>espera</button>
-        <button type="button" class="tab" role="tab" [class.on]="tab === 'notas'" [attr.aria-selected]="tab === 'notas'" (click)="selectTab('notas')">
-          📌 Notas<span class="tab-dot" *ngIf="hasUnread && tab !== 'notas'" aria-label="Notas nuevas"></span>
-        </button>
-        <button type="button" class="tab" role="tab" [class.on]="tab === 'limpieza'" [attr.aria-selected]="tab === 'limpieza'" (click)="selectTab('limpieza')">🧹 Limpieza</button>
-      </div>
-      <button class="close-btn" (click)="close()" aria-label="Cerrar">✕</button>
+  <div class="composer">
+    <div class="composer-main">
+      <textarea
+        [(ngModel)]="draft"
+        placeholder="Escribe un recordatorio para el equipo…"
+        rows="2"
+        [disabled]="adding"
+      ></textarea>
+      <button class="add-btn" (click)="submit()" [disabled]="!draft.trim() || adding">
+        <span class="spinner" *ngIf="adding"></span>{{ adding ? 'Guardando…' : (addError ? 'Reintentar' : 'Añadir') }}
+      </button>
     </div>
-
-    <app-waitlist-board *ngIf="tab === 'espera'" (formOpenChange)="waitFormOpen = $event"></app-waitlist-board>
-
-    <app-cleaning-board *ngIf="tab === 'limpieza'"></app-cleaning-board>
-
-    <ng-container *ngIf="tab === 'notas'">
-    <div class="composer">
-      <div class="composer-main">
-        <textarea
-          [(ngModel)]="draft"
-          placeholder="Escribe un recordatorio para el equipo…"
-          rows="2"
-          [disabled]="adding"
-        ></textarea>
-        <button class="add-btn" (click)="submit()" [disabled]="!draft.trim() || adding">
-          <span class="spinner" *ngIf="adding"></span>{{ adding ? 'Guardando…' : (addError ? 'Reintentar' : 'Añadir') }}
-        </button>
-      </div>
-      <div class="edit-error" *ngIf="addError">{{ addError }}</div>
-    </div>
-
-    <div class="notes-list">
-      <div class="empty" *ngIf="!notes.length">No hay notas todavía. ¡Escribe la primera!</div>
-
-      <div class="note" *ngFor="let n of notes">
-        <ng-container *ngIf="editingId === n.id; else viewMode">
-          <textarea class="edit-textarea" [(ngModel)]="editDraft" [rows]="editRows" [disabled]="editing"></textarea>
-          <div class="edit-error" *ngIf="editError">{{ editError }}</div>
-          <div class="note-footer">
-            <button class="edit-cancel" (click)="cancelEdit()" [disabled]="editing">Cancelar</button>
-            <button class="edit-save" (click)="saveEdit()" [disabled]="!editDraft.trim() || editing">
-              <span class="spinner" *ngIf="editing"></span>{{ editing ? 'Guardando…' : (editError ? 'Reintentar' : 'Guardar') }}
-            </button>
-          </div>
-        </ng-container>
-
-        <ng-template #viewMode>
-          <div class="note-text">{{ n.text }}</div>
-          <div class="note-footer">
-            <span class="note-date">{{ fmtDate(n.createdAt) }}</span>
-            <span class="note-actions">
-              <button class="note-edit" (click)="startEdit(n)" [disabled]="editing" aria-label="Editar nota">✎</button>
-              <button class="note-delete" (click)="remove(n.id)" [disabled]="deleting" aria-label="Borrar nota">✕</button>
-            </span>
-          </div>
-        </ng-template>
-      </div>
-    </div>
-    </ng-container>
+    <div class="edit-error" *ngIf="addError">{{ addError }}</div>
   </div>
-</div>
+
+  <div class="notes-list">
+    <div class="empty" *ngIf="!notes.length">No hay notas todavía. ¡Escribe la primera!</div>
+
+    <div class="note" *ngFor="let n of notes">
+      <ng-container *ngIf="editingId === n.id; else viewMode">
+        <textarea class="edit-textarea" [(ngModel)]="editDraft" [rows]="editRows" [disabled]="editing"></textarea>
+        <div class="edit-error" *ngIf="editError">{{ editError }}</div>
+        <div class="note-footer">
+          <button class="edit-cancel" (click)="cancelEdit()" [disabled]="editing">Cancelar</button>
+          <button class="edit-save" (click)="saveEdit()" [disabled]="!editDraft.trim() || editing">
+            <span class="spinner" *ngIf="editing"></span>{{ editing ? 'Guardando…' : (editError ? 'Reintentar' : 'Guardar') }}
+          </button>
+        </div>
+      </ng-container>
+
+      <ng-template #viewMode>
+        <div class="note-text">{{ n.text }}</div>
+        <div class="note-footer">
+          <span class="note-date">{{ fmtDate(n.createdAt) }}</span>
+          <span class="note-actions">
+            <button class="note-edit" (click)="startEdit(n)" [disabled]="editing" aria-label="Editar nota">✎</button>
+            <button class="note-delete" (click)="remove(n.id)" [disabled]="deleting" aria-label="Borrar nota">✕</button>
+          </span>
+        </div>
+      </ng-template>
+    </div>
+  </div>

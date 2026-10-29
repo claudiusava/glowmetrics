@@ -12,6 +12,8 @@ import { KpiCardComponent } from './components/kpi-card/kpi-card.component';
 import { MonthlyGoalComponent } from './components/monthly-goal/monthly-goal.component';
 import { MonthlyHistoryComponent } from './components/monthly-history/monthly-history.component';
 import { RankingModalComponent } from './components/ranking-modal/ranking-modal.component';
+import { WaitlistBoardComponent } from './components/waitlist-board/waitlist-board.component';
+import { CleaningBoardComponent } from './components/cleaning-board/cleaning-board.component';
 import { NotesBoardComponent } from './components/notes-board/notes-board.component';
 import { ReviewsFeedComponent } from './components/reviews-feed/reviews-feed.component';
 import { Review, ReviewsResponse, BootstrapResponse, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry, Note } from './models/review.model';
@@ -45,6 +47,9 @@ const TIP_ROTATE_MS = 60_000;
 // entre pantallas.
 const NOTES_SEEN_KEY = 'glowmetrics_notes_seen_v1';
 
+type View = 'inicio' | 'espera' | 'notas' | 'limpieza';
+const VIEWS: View[] = ['inicio', 'espera', 'notas', 'limpieza'];
+
 // Palabras secretas: se teclean en cualquier momento (con el foco fuera de
 // cualquier campo de texto, para que no salten al escribir una nota o una
 // clienta). "airtable" fuerza un refresco real del porcentaje de Airtable (útil
@@ -63,7 +68,7 @@ const SECRET_BUFFER_LEN = Math.max(...Object.keys(SECRET_CODES).map(k => k.lengt
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, KpiCardComponent, MonthlyGoalComponent, MonthlyHistoryComponent, RankingModalComponent, NotesBoardComponent, ReviewsFeedComponent],
+  imports: [CommonModule, KpiCardComponent, MonthlyGoalComponent, MonthlyHistoryComponent, RankingModalComponent, WaitlistBoardComponent, CleaningBoardComponent, NotesBoardComponent, ReviewsFeedComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
@@ -81,7 +86,14 @@ export class AppComponent implements OnInit, OnDestroy {
   newReviewsCount = 0;
   monthlyHistory: MonthlyHistoryEntry[] = [];
   notes: Note[] = [];
-  notesModalOpen = false;
+  // Secciones de la pantalla principal (barra de pestañas): al pulsar una, cambia toda la pantalla.
+  view: View = this.viewFromHash();
+  readonly tabs: { id: View; icon: string; label: string; long?: string }[] = [
+    { id: 'inicio', icon: '🏠', label: 'Inicio' },
+    { id: 'espera', icon: '⏳', label: 'espera', long: 'Lista de ' },
+    { id: 'notas', icon: '📌', label: 'Notas' },
+    { id: 'limpieza', icon: '🧹', label: 'Limpieza' },
+  ];
   hasUnreadNotes = false;
   addingNote = false;
   deletingNote = false;
@@ -556,6 +568,7 @@ export class AppComponent implements OnInit, OnDestroy {
         if (!res || seq !== this.notesSeq) return; // superada por otra más reciente
         this.notes = res;
         this.refreshUnreadFlag();
+        if (this.view === 'notas') this.markNotesAsSeen(); // las está viendo ahora mismo
       })
     );
   }
@@ -576,22 +589,25 @@ export class AppComponent implements OnInit, OnDestroy {
   // Ranking de reseñas de la franquicia (enlace "Ranking España" bajo los 12 meses).
   rankingOpen = false;
 
-  toggleNotesModal(): void {
-    this.notesModalOpen = !this.notesModalOpen;
-    if (this.notesModalOpen) {
-      // Las notas se dan por leídas cuando se ve su pestaña (onNotesViewed), no
-      // solo por abrir la chincheta: el modal abre en la lista de espera.
+  private viewFromHash(): View {
+    const h = (typeof location !== 'undefined' ? location.hash : '').replace('#', '') as View;
+    return VIEWS.includes(h) ? h : 'inicio';
+  }
+
+  // Cambia de sección. La dirección (#notas, #limpieza…) permite dejar un acceso directo
+  // a una sección concreta en cada ordenador.
+  go(v: View): void {
+    if (v === this.view) return;
+    if (this.view === 'inicio') this.confetti.stopLoop(); // el confeti es de la pantalla de inicio
+    this.view = v;
+    try { history.replaceState(null, '', v === 'inicio' ? location.pathname + location.search : '#' + v); } catch { /* ignorar */ }
+    if (v === 'notas') {
+      // Las notas se dan por leídas al verlas.
       this.loadNotes();
+      this.markNotesAsSeen();
     }
   }
 
-  onNotesViewed(): void {
-    this.markNotesAsSeen();
-  }
-
-  closeNotesModal(): void {
-    this.notesModalOpen = false;
-  }
 
   onAddNote(draft: { text: string; clientId: string }): void {
     // No dejamos que se lance una segunda petición mientras la primera

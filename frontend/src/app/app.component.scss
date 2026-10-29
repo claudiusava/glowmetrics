@@ -8,10 +8,92 @@
   overflow: hidden;
 }
 
+// Barra de secciones arriba y, debajo, la sección activa ocupando el resto de la pantalla.
+.app {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr); // que nada (p. ej. las pestañas) ensanche la pantalla
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100vh;
+}
+
 .wrap {
   display: grid;
   grid-template-rows: 1fr 1fr;
-  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+
+  // Otra sección activa: Inicio se oculta (no se destruye) para conservar su estado.
+  &.is-hidden { display: none; }
+}
+
+.tabbar {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+  overflow-x: auto; // red de seguridad: si no cupieran, se desliza en vez de romper la pantalla
+  gap: 6px;
+  padding: 8px 12px;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  position: relative;
+  z-index: 5;
+}
+
+.tab {
+  position: relative;
+  min-height: 40px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: #64748b;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+
+  &:hover:not(.on) { background: #f1f5f9; }
+  &.on { background: #fde7f1; color: #be185d; }
+}
+
+// Notas nuevas mientras se está en otra sección: el puntito late para verse de lejos.
+.tab-dot {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #f59e0b;
+  box-shadow: 0 0 0 2px #ffffff;
+  animation: dot-attention 1.3s ease-in-out infinite;
+}
+
+@keyframes dot-attention {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 2px #ffffff; }
+  50% { transform: scale(1.35); box-shadow: 0 0 0 2px #ffffff, 0 0 0 7px rgba(245, 158, 11, 0.25); }
+}
+
+// Secciones (lista de espera, notas, limpieza): una tarjeta centrada que ocupa toda la altura.
+.page {
+  min-height: 0;
+  overflow: hidden;
+  padding: 16px 24px 20px;
+  background: #f1f5f9;
+}
+
+.page-card {
+  max-width: 880px;
+  height: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 6px 24px rgba(15, 23, 42, 0.08);
 }
 
 .bottom {
@@ -155,46 +237,6 @@ app-reviews-feed {
   to { opacity: 1; transform: translateY(0); }
 }
 
-.notes-pin {
-  position: fixed;
-  top: 16px;
-  right: 16px;
-  z-index: 20;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
-  font-size: 22px;
-  line-height: 1;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-
-  &:hover {
-    transform: scale(1.08);
-  }
-
-  // Aviso de nota nueva: la propia chincheta crece y brilla, en vez de
-  // un puntito aparte — más fácil de ver de un vistazo desde lejos.
-  &.has-unread {
-    animation: pin-attention 1.3s ease-in-out infinite;
-  }
-}
-
-@keyframes pin-attention {
-  0%, 100% {
-    transform: scale(1);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
-  }
-  50% {
-    transform: scale(1.25);
-    box-shadow: 0 6px 24px rgba(245, 158, 11, 0.8), 0 0 0 8px rgba(245, 158, 11, 0.18);
-  }
-}
-
 @include bp.compact {
   // 100dvh = altura visible real (en el iPhone 100vh incluye la barra de
   // Safari y se comía el final de la lista). La fila de arriba se ajusta a su
@@ -204,11 +246,18 @@ app-reviews-feed {
     height: 100dvh;
   }
 
-  .wrap {
+  .app {
     height: 100vh;
     height: 100dvh;
-    grid-template-rows: auto minmax(0, 1fr);
   }
+
+  .wrap { grid-template-rows: auto minmax(0, 1fr); }
+
+  .tabbar { padding: 6px 8px; gap: 2px; }
+  .tab { padding: 0 11px; font-size: 14px; min-height: 38px; }
+
+  .page { padding: 10px 10px 10px; }
+  .page-card { border-radius: 16px; }
 
   .bottom { padding: 12px 12px 0; }
 
@@ -250,11 +299,10 @@ app-reviews-feed {
     .badge-today { font-size: 11px; padding: 2px 8px; }
   }
 
-  .notes-pin {
-    top: 10px;
-    right: 10px;
-    width: 44px;
-    height: 44px;
-    font-size: 20px;
+  // Móvil: "Lista de espera" pasa a "Espera" para que quepan las cuatro secciones.
+  .tab .long { display: none; }
+
+  @media (max-width: 380px) {
+    .tab { padding: 0 6px; font-size: 12.5px; }
   }
 }
