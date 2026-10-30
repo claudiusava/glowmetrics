@@ -25,17 +25,16 @@ const AD_SPEND = Object.freeze({
   WINDOW_DAYS: 30
 });
 
-// Limpieza del local (ver svc_cleaning.js). Cada tarea avisa cuando pasan `everyDays` días desde
-// la última vez (y se marca "atrasada" al pasar 1,5 veces ese plazo). Los plazos salen de lo que
-// el equipo hacía en el papel. `shares` es la parte justa de cada persona (en %): hasta saber las
-// horas de cada una se reparte a partes iguales; cámbialo aquí cuando se sepan.
+// Limpieza del local (ver svc_cleaning.js). Cada tarea "toca" cuando pasan `everyDays` días desde
+// la última vez, y se marca atrasada si se pasa de ahí. `shares` son las horas semanales de cada
+// persona: de ahí sale su parte justa del reparto.
 const CLEANING_STAFF = Object.freeze(['Elena', 'Laura']);
 const CLEANING_SHARES = Object.freeze({ Elena: 40, Laura: 25 });
 const CLEANING_TASKS = Object.freeze([
-  { id: 'recepcion', name: 'Polvo recepción', icon: '🛋️', everyDays: 30 },
-  { id: 'cabina1', name: 'Polvo cabina 1', icon: '🚪', everyDays: 21 },
-  { id: 'cabina2', name: 'Polvo cabina 2', icon: '🚪', everyDays: 21 },
-  { id: 'bano', name: 'Baño', icon: '🚽', everyDays: 15 },
+  { id: 'recepcion', name: 'Polvo recepción', icon: '🛋️', everyDays: 5 },
+  { id: 'cabina1', name: 'Polvo cabina 1', icon: '🚪', everyDays: 3 },
+  { id: 'cabina2', name: 'Polvo cabina 2', icon: '🚪', everyDays: 3 },
+  { id: 'bano', name: 'Baño', icon: '🚽', everyDays: 10 },
   { id: 'cristales', name: 'Cristales', icon: '🪟', everyDays: 60 }
 ]);
 

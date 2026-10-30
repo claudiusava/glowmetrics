@@ -59,9 +59,9 @@ export function agoText(days: number): string {
   return `Hace ${m} ${m === 1 ? 'mes' : 'meses'}`;
 }
 
-/** Cuántos días antes de que toque se avisa de que "se acerca" (un cuarto del plazo, mínimo 2). */
+/** Cuántos días antes de que toque se avisa de que "se acerca" (un cuarto del plazo, mínimo 1). */
 export function soonDays(task: CleaningTask): number {
-  return Math.max(2, Math.round(task.everyDays * 0.25));
+  return Math.max(1, Math.round(task.everyDays * 0.25));
 }
 
 export function statusText(daysLeft: number): string {

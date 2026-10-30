@@ -2,6 +2,7 @@ import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/co
 import { CommonModule } from '@angular/common';
 import { interval, Subscription } from 'rxjs';
 import { GlowmetricsService } from '../../services/glowmetrics.service';
+import { CleaningAlertService } from '../../services/cleaning-alert.service';
 import {
   CleaningEntry, CleaningTask, ShareRow, TaskState, agoText, daysBetween, dirtColor, normalizeDate,
   shareStats, suggestWho, taskState, todayIso, todoNow,
@@ -69,9 +70,10 @@ export class CleaningBoardComponent implements OnInit, OnDestroy {
   private retryTimer: ReturnType<typeof setTimeout> | null = null;
   private subs = new Subscription();
 
-  constructor(private svc: GlowmetricsService) {}
+  constructor(private svc: GlowmetricsService, private alert: CleaningAlertService) {}
 
   ngOnInit(): void {
+    this.alert.setBoardOpen(true);
     this.load();
     this.subs.add(interval(POLL_MS).subscribe(() => {
       const t = todayIso(); // la pantalla puede pasar la noche abierta
@@ -84,6 +86,7 @@ export class CleaningBoardComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.destroyed = true;
+    this.alert.setBoardOpen(false);
     this.subs.unsubscribe();
     if (this.toastTimer) clearTimeout(this.toastTimer);
     if (this.retryTimer) clearTimeout(this.retryTimer);
@@ -130,6 +133,7 @@ export class CleaningBoardComponent implements OnInit, OnDestroy {
     this.nextUp = this.todo.length ? null
       : this.cards.filter(c => c.state.daysLeft !== null)
           .sort((a, b) => (a.state.daysLeft ?? 0) - (b.state.daysLeft ?? 0))[0] ?? null;
+    this.alert.publish(this.tasks, this.entries); // el aviso de la pestaña se actualiza al instante
     this.nothingYet = this.cards.every(c => c.state.level === 'none');
     this.share = shareStats(this.entries, this.staff, this.shares, this.today);
 

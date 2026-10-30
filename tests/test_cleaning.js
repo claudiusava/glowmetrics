@@ -71,7 +71,7 @@ const vacio = t.run('getCleaning()');
 check('la hoja Limpieza se crea sola, con formato de texto y cabecera', t.log.inserted.includes('Limpieza') && t.log.numberFormat.some(x => x[0] === 'Limpieza' && x[1] === '@') && t.sheets.Limpieza.rows[0].join() === 'id,task,who,date,note,createdAt');
 check('sin apuntes al principio', vacio.entries.length === 0);
 check('tareas: recepción, cabina 1, cabina 2, baño y cristales', vacio.tasks.map(x => x.id).join() === 'recepcion,cabina1,cabina2,bano,cristales', vacio.tasks);
-check('plazos: 30, 21, 21, 15 y 60 días', vacio.tasks.map(x => x.everyDays).join() === '30,21,21,15,60');
+check('plazos: 5, 3, 3, 10 y 60 días', vacio.tasks.map(x => x.everyDays).join() === '5,3,3,10,60');
 check('personas: Elena y Laura, con reparto por horas (40 y 25)', vacio.staff.join() === 'Elena,Laura' && vacio.shares.Elena === 40 && vacio.shares.Laura === 25);
 
 // Alta

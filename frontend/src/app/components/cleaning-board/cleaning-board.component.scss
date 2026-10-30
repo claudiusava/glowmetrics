@@ -124,6 +124,7 @@
   border-left: 0.36em solid var(--accent);
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
   min-width: 0;
+  position: relative;
 
   &.lvl-ok { --accent: #34d399; }
   &.lvl-soon { --accent: #fbbf24; }
@@ -151,7 +152,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .card.lvl-due, .card.flash { animation: none; }
+  .card.lvl-due, .card.flash, .alert-dot { animation: none; }
   .meter .fill { transition: none; }
   .lvl-late .meter .fill { animation: none; }
 }
@@ -176,6 +177,23 @@
   font-size: 0.8em;
   font-weight: 900;
   letter-spacing: 0.06em;
+}
+
+// Pilotito rojo en la esquina de la tarjeta que toca limpiar: late hasta que se apunta.
+.alert-dot {
+  position: absolute;
+  top: -0.4em;
+  right: -0.4em;
+  width: 1.1em;
+  height: 1.1em;
+  border-radius: 50%;
+  background: #e11d48;
+  box-shadow: 0 0 0 0.2em #ffffff;
+  animation: dot-pulse 1.3s ease-in-out infinite;
+}
+@keyframes dot-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0.2em #ffffff, 0 0 0 0.2em rgba(225, 29, 72, 0); }
+  50% { transform: scale(1.2); box-shadow: 0 0 0 0.2em #ffffff, 0 0 0 0.65em rgba(225, 29, 72, 0.28); }
 }
 
 .status {

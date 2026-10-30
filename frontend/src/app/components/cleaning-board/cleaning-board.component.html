@@ -37,6 +37,7 @@
           <span class="icon" aria-hidden="true">{{ c.task.icon }}</span>
           <span class="name">{{ c.task.name }}</span>
           <span class="today-tag" *ngIf="c.state.level === 'due'">HOY</span>
+          <span class="alert-dot" *ngIf="c.state.level === 'due' || c.state.level === 'late'" aria-label="Toca limpiar"></span>
         </header>
 
         <div class="status">

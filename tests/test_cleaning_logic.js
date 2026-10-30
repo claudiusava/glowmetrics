@@ -14,10 +14,10 @@ const check = (n, c, x = '') => { console.log((c ? 'OK   ' : 'FALLA') + ' ' + n 
 
 const E = (task, who, date, note = '', n = 0) => ({ id: task + who + date + n, task, who, date, note, createdAt: date + 'T10:00:00Z' + n });
 const TAREAS = {
-  recepcion: { id: 'recepcion', name: 'Polvo recepción', icon: '', everyDays: 30 },
-  cabina1: { id: 'cabina1', name: 'Polvo cabina 1', icon: '', everyDays: 21 },
-  cabina2: { id: 'cabina2', name: 'Polvo cabina 2', icon: '', everyDays: 21 },
-  bano: { id: 'bano', name: 'Baño', icon: '', everyDays: 15 },
+  recepcion: { id: 'recepcion', name: 'Polvo recepción', icon: '', everyDays: 5 },
+  cabina1: { id: 'cabina1', name: 'Polvo cabina 1', icon: '', everyDays: 3 },
+  cabina2: { id: 'cabina2', name: 'Polvo cabina 2', icon: '', everyDays: 3 },
+  bano: { id: 'bano', name: 'Baño', icon: '', everyDays: 10 },
   cristales: { id: 'cristales', name: 'Cristales', icon: '', everyDays: 60 },
 };
 const LISTA = Object.values(TAREAS);
@@ -31,19 +31,21 @@ check('todayIso en formato AAAA-MM-DD', todayIso(new Date(2026, 0, 5)) === '2026
 check('textos: hoy, ayer, días, semanas, meses', [0, 1, 5, 21, 70].map(agoText).join('|') === 'Hoy|Ayer|Hace 5 días|Hace 3 semanas|Hace 2 meses', [0, 1, 5, 21, 70].map(agoText));
 
 // ---------- Cuánto falta y qué aviso toca (baño: plazo 15 días, "se acerca" a los 4 días) ----------
-check('"se acerca": un cuarto del plazo, mínimo 2 días', soonDays(TAREAS.bano) === 4 && soonDays(TAREAS.recepcion) === 8 && soonDays(TAREAS.cristales) === 15 && soonDays({ everyDays: 4 }) === 2);
+check('"se acerca": un cuarto del plazo, mínimo 1 día', soonDays(TAREAS.bano) === 3 && soonDays(TAREAS.recepcion) === 1 && soonDays(TAREAS.cabina1) === 1 && soonDays(TAREAS.cristales) === 15 && soonDays({ everyDays: 1 }) === 1);
 check('textos de estado', [6, 2, 1, 0, -1, -3].map(statusText).join('|') === 'Faltan 6 días|Faltan 2 días|Toca mañana|Toca hoy|Atrasada 1 día|Atrasada 3 días', [6, 2, 1, 0, -1, -3].map(statusText));
 
 const bano = n => taskState(TAREAS.bano, [E('bano', 'Laura', haceDias(n))], hoy);
 check('sin registros: nivel "none", sin barra', taskState(TAREAS.bano, [], hoy).level === 'none' && taskState(TAREAS.bano, [], hoy).ratio === 0 && taskState(TAREAS.bano, [], hoy).status === 'Sin registros');
-check('baño limpio hoy: ok, barra vacía y faltan 15 días', bano(0).level === 'ok' && bano(0).ratio === 0 && bano(0).daysLeft === 15 && bano(0).status === 'Faltan 15 días');
-check('baño hace 5 días: ok, faltan 10, barra a un tercio', bano(5).level === 'ok' && bano(5).daysLeft === 10 && Math.abs(bano(5).ratio - 1 / 3) < 1e-9);
-check('baño: faltan 6 días (hecho hace 9): todavía ok', bano(9).level === 'ok' && bano(9).daysLeft === 6);
-check('baño: faltan 4 días (hecho hace 11): se acerca', bano(11).level === 'soon' && bano(11).daysLeft === 4);
-check('baño: faltan 2 días (hecho hace 13): se acerca, la barra casi llena', bano(13).level === 'soon' && bano(13).ratio > 0.86);
-check('baño: toca mañana (hecho hace 14)', bano(14).level === 'soon' && bano(14).status === 'Toca mañana');
-check('baño: toca hoy (hecho hace 15): barra llena', bano(15).level === 'due' && bano(15).ratio === 1 && bano(15).status === 'Toca hoy');
-check('baño: atrasado 3 días (hecho hace 18): barra llena y en rojo', bano(18).level === 'late' && bano(18).daysLeft === -3 && bano(18).ratio === 1 && bano(18).status === 'Atrasada 3 días');
+check('baño limpio hoy: ok, barra vacía y faltan 10 días', bano(0).level === 'ok' && bano(0).ratio === 0 && bano(0).daysLeft === 10 && bano(0).status === 'Faltan 10 días');
+check('baño hace 3 días: ok, faltan 7, barra a un tercio', bano(3).level === 'ok' && bano(3).daysLeft === 7 && Math.abs(bano(3).ratio - 0.3) < 1e-9);
+check('baño: faltan 4 días (hecho hace 6): todavía ok', bano(6).level === 'ok' && bano(6).daysLeft === 4);
+check('baño: faltan 3 días (hecho hace 7): se acerca', bano(7).level === 'soon' && bano(7).daysLeft === 3);
+check('baño: faltan 2 días (hecho hace 8): se acerca, la barra casi llena', bano(8).level === 'soon' && bano(8).ratio > 0.79);
+check('baño: toca mañana (hecho hace 9)', bano(9).level === 'soon' && bano(9).status === 'Toca mañana');
+check('baño: toca hoy (hecho hace 10): barra llena', bano(10).level === 'due' && bano(10).ratio === 1 && bano(10).status === 'Toca hoy');
+check('baño: atrasado 3 días (hecho hace 13): barra llena y en rojo', bano(13).level === 'late' && bano(13).daysLeft === -3 && bano(13).ratio === 1 && bano(13).status === 'Atrasada 3 días');
+check('cabina (cada 3 días): hecha ayer -> toca mañana... faltan 2; hecha hace 3 -> toca hoy',
+  taskState(TAREAS.cabina1, [E('cabina1', 'Elena', haceDias(1))], hoy).status === 'Faltan 2 días' && taskState(TAREAS.cabina1, [E('cabina1', 'Elena', haceDias(3))], hoy).level === 'due');
 check('se usa el apunte MÁS RECIENTE aunque se apuntara antes', taskState(TAREAS.bano, [E('bano', 'Laura', haceDias(2)), E('bano', 'Elena', haceDias(40))], hoy).last.who === 'Laura');
 check('a igual fecha manda el último que se apuntó', lastEntry([E('bano', 'Laura', '2026-10-27', '', 1), E('bano', 'Elena', '2026-10-27', '', 2)], 'bano').who === 'Elena');
 check('una fecha futura (reloj desfasado) no da días negativos', taskState(TAREAS.bano, [E('bano', 'Laura', '2026-11-02')], hoy).days === 0);
@@ -51,16 +53,16 @@ check('cristales (60 días): hecho hace 19, faltan 41', taskState(TAREAS.cristal
 
 // Color de la barra: del agua al naranja y rojo si está atrasada
 const hue = s => Number(dirtColor(s).match(/hsl\((\d+)/)[1]);
-check('color: sin registros gris, atrasada roja', dirtColor(taskState(TAREAS.bano, [], hoy)) === '#cbd5e1' && dirtColor(bano(18)) === '#e11d48');
-check('color: limpio verde-agua y casi tocando naranja', hue(bano(0)) === 165 && hue(bano(14)) < 40, [dirtColor(bano(0)), dirtColor(bano(14))]);
-check('color: el tono baja a medida que se ensucia', hue(bano(0)) > hue(bano(5)) && hue(bano(5)) > hue(bano(11)) && hue(bano(11)) > hue(bano(14)), [0, 5, 11, 14].map(n => hue(bano(n))));
+check('color: sin registros gris, atrasada roja', dirtColor(taskState(TAREAS.bano, [], hoy)) === '#cbd5e1' && dirtColor(bano(13)) === '#e11d48');
+check('color: limpio verde-agua y casi tocando naranja', hue(bano(0)) === 165 && hue(bano(9)) < 40, [dirtColor(bano(0)), dirtColor(bano(9))]);
+check('color: el tono baja a medida que se ensucia', hue(bano(0)) > hue(bano(3)) && hue(bano(3)) > hue(bano(7)) && hue(bano(7)) > hue(bano(9)), [0, 3, 7, 9].map(n => hue(bano(n))));
 
 // ---------- Qué hay que hacer ahora ----------
 const mezcla = [
-  E('recepcion', 'Laura', haceDias(5)),   // faltan 25
-  E('cabina1', 'Laura', haceDias(21)),    // toca hoy
-  E('cabina2', 'Elena', haceDias(26)),    // atrasada 5
-  E('bano', 'Elena', haceDias(11)),       // se acerca
+  E('recepcion', 'Laura', haceDias(2)),   // faltan 3
+  E('cabina1', 'Laura', haceDias(3)),     // toca hoy
+  E('cabina2', 'Elena', haceDias(8)),     // atrasada 5
+  E('bano', 'Elena', haceDias(8)),        // se acerca
 ];
 const urgente = todoNow(LISTA, mezcla, hoy);
 check('"toca ahora": las de hoy y las atrasadas, la más atrasada primero', urgente.map(x => x.task.id).join() === 'cabina2,cabina1', urgente.map(x => x.task.id));
@@ -80,9 +82,9 @@ const PAPEL = [
   E('cabina1', 'Elena', '2026-05-05'), E('cabina1', 'Elena', '2026-06-22'), E('cabina1', 'Laura', '2026-08-17'), E('cabina1', 'Laura', '2026-09-03'), E('cabina1', 'Laura', '2026-09-21'),
 ];
 const estado = id => taskState(TAREAS[id], PAPEL, hoy);
-check('papel: baño, última vez el 21/09 (38 días): atrasado 23 días', estado('bano').days === 38 && estado('bano').level === 'late' && estado('bano').status === 'Atrasada 23 días' && estado('bano').last.who === 'Laura');
-check('papel: recepción, última vez el 21/09 (38 días, plazo 30): atrasada 8 días', estado('recepcion').level === 'late' && estado('recepcion').status === 'Atrasada 8 días');
-check('papel: cabina 1 (plazo 21): atrasada 17 días', estado('cabina1').status === 'Atrasada 17 días');
+check('papel: baño, última vez el 21/09 (38 días): atrasado 28 días', estado('bano').days === 38 && estado('bano').level === 'late' && estado('bano').status === 'Atrasada 28 días' && estado('bano').last.who === 'Laura');
+check('papel: recepción, última vez el 21/09 (38 días, plazo 5): atrasada 33 días', estado('recepcion').level === 'late' && estado('recepcion').status === 'Atrasada 33 días');
+check('papel: cabina 1 (plazo 3): atrasada 35 días', estado('cabina1').status === 'Atrasada 35 días');
 check('papel: cristales sin registros', estado('cristales').level === 'none');
 
 // ---------- A quién le toca (por horas: Elena 40 h, Laura 25 h) ----------
