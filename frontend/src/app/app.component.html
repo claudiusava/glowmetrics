@@ -58,7 +58,7 @@
 
   <!-- Resto de secciones -->
   <main class="page" *ngIf="view !== 'inicio'" [attr.inert]="rankingOpen ? '' : null">
-    <div class="page-card" [class.wide]="view === 'limpieza'">
+    <div class="page-card">
       <app-waitlist-board *ngIf="view === 'espera'"></app-waitlist-board>
       <app-cleaning-board *ngIf="view === 'limpieza'"></app-cleaning-board>
       <app-notes-board

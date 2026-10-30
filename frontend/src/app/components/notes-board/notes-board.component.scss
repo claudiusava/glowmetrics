@@ -3,6 +3,11 @@
   flex-direction: column;
   flex: 1;
   min-height: 0;
+
+  // Monitores grandes: todo crece, igual que en Limpieza.
+  @media (min-width: 1700px) { zoom: 1.25; }
+  @media (min-width: 2300px) { zoom: 1.6; }
+  @media (min-width: 3000px) { zoom: 2.1; }
 }
 
 .composer {
@@ -88,6 +93,17 @@
   color: #6b7280;
   text-align: center;
   padding: 40px 0;
+}
+
+// Pantalla ancha (la tarjeta mide lo mismo que en Limpieza): las notas en dos columnas.
+@media (min-width: 901px) {
+  .notes-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-content: start;
+    align-items: start;
+  }
+  .notes-list .empty { grid-column: 1 / -1; }
 }
 
 .note {

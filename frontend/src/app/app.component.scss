@@ -114,7 +114,8 @@
 }
 
 .page-card {
-  max-width: 880px;
+  // Mismo ancho en las tres secciones (lista de espera, notas y limpieza), y más en monitores grandes.
+  max-width: 1500px;
   height: 100%;
   margin: 0 auto;
   display: flex;
@@ -124,11 +125,9 @@
   border-radius: 20px;
   box-shadow: 0 6px 24px rgba(15, 23, 42, 0.08);
 
-  // Limpieza: cuadrícula de tarjetas, necesita más ancho (y en monitores grandes, más aún).
-  &.wide { max-width: 1500px; }
-  @media (min-width: 1700px) { &.wide { max-width: 1750px; } }
-  @media (min-width: 2300px) { &.wide { max-width: 2300px; } }
-  @media (min-width: 3000px) { &.wide { max-width: 3000px; } }
+  @media (min-width: 1700px) { max-width: 1750px; }
+  @media (min-width: 2300px) { max-width: 2300px; }
+  @media (min-width: 3000px) { max-width: 3000px; }
 }
 
 .bottom {

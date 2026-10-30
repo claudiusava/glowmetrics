@@ -8,6 +8,11 @@
   flex: 1;
   min-height: 0;
   position: relative;
+
+  // Monitores grandes: todo crece, igual que en Limpieza.
+  @media (min-width: 1700px) { zoom: 1.25; }
+  @media (min-width: 2300px) { zoom: 1.6; }
+  @media (min-width: 3000px) { zoom: 2.1; }
 }
 
 .scroll {
@@ -402,6 +407,35 @@
 @keyframes toast-in {
   from { opacity: 0; transform: translate(-50%, 6px); }
   to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+// Pantalla ancha (la tarjeta mide lo mismo que en Limpieza): buscador de huecos a la izquierda,
+// contador y "Añadir" a la derecha, y las personas en dos columnas.
+@media (min-width: 901px) {
+  .topbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 16px;
+    padding-bottom: 14px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #eef1f5;
+  }
+
+  .addbar {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+    gap: 20px;
+  }
+
+  .list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+  .list .empty { grid-column: 1 / -1; }
+
+  .form { max-width: 760px; margin-left: auto; margin-right: auto; }
 }
 
 @media (max-width: 480px) {
