@@ -64,7 +64,8 @@
   &.on { background: #fde7f1; color: #be185d; }
 }
 
-// Notas nuevas mientras se está en otra sección: el puntito late para verse de lejos.
+// Avisos en las pestañas (notas nuevas, personas nuevas en la lista de espera, limpieza pendiente):
+// siempre el mismo rojo rosado, y el puntito late para verse de lejos.
 .tab-dot {
   position: absolute;
   top: 6px;
@@ -72,9 +73,9 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #f59e0b;
+  background: #e11d48;
   box-shadow: 0 0 0 2px #ffffff;
-  animation: dot-attention 1.3s ease-in-out infinite;
+  animation: dot-alert 1.3s ease-in-out infinite;
 }
 
 // Limpieza pendiente: rojo y con el número de tareas que tocan. No se quita hasta que se apuntan.
@@ -86,23 +87,16 @@
   height: 18px;
   padding: 0 5px;
   box-sizing: border-box;
-  background: #e11d48;
   color: #ffffff;
   font-size: 11px;
   font-weight: 900;
   line-height: 18px;
   text-align: center;
-  animation-name: dot-alert;
 }
 
 @keyframes dot-alert {
   0%, 100% { transform: scale(1); box-shadow: 0 0 0 2px #ffffff; }
   50% { transform: scale(1.18); box-shadow: 0 0 0 2px #ffffff, 0 0 0 7px rgba(225, 29, 72, 0.28); }
-}
-
-@keyframes dot-attention {
-  0%, 100% { transform: scale(1); box-shadow: 0 0 0 2px #ffffff; }
-  50% { transform: scale(1.35); box-shadow: 0 0 0 2px #ffffff, 0 0 0 7px rgba(245, 158, 11, 0.25); }
 }
 
 // Secciones (lista de espera, notas, limpieza): una tarjeta centrada que ocupa toda la altura.
