@@ -19,8 +19,6 @@
 .wrap {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
-  gap: 16px;
-  padding: 16px 24px 0;
   background: #f1f5f9;
   min-height: 0;
   overflow: hidden;
@@ -134,7 +132,7 @@
 }
 
 .bottom {
-  padding: 0 0 20px;
+  padding: 16px 24px 20px;
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -151,15 +149,8 @@ app-reviews-feed {
   grid-template-columns: minmax(max-content, 1fr) minmax(320px, 760px) minmax(max-content, 1fr);
   align-items: center;
   gap: 12px;
-  margin-bottom: 14px;
-  padding: 12px 20px;
-  border-radius: 16px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
-  transition: box-shadow .25s ease, background-color .25s ease;
-
-  &.elevated { box-shadow: 0 6px 14px rgba(15, 23, 42, .10); }
+  margin-bottom: 12px;
+  padding: 0 4px;
 }
 
 .head-left { align-self: center; }
@@ -289,7 +280,7 @@ app-reviews-feed {
     height: 100dvh;
   }
 
-  .wrap { gap: 10px; padding: 10px 12px 0; }
+  .wrap { gap: 0; }
 
   .tabbar { padding: 6px 8px; gap: 2px; }
   .tab { padding: 0 11px; font-size: 14px; min-height: 38px; }
@@ -297,7 +288,7 @@ app-reviews-feed {
   .page { padding: 10px 10px 10px; }
   .page-card { border-radius: 16px; }
 
-  .bottom { padding: 0; }
+  .bottom { padding: 10px 12px 0; }
 
   // Cabecera en 2 columnas: título/contador a la izquierda y el objetivo
   // (pastilla "5/20 reseñas") a la derecha. El histórico de 12 meses no cabe.
@@ -307,12 +298,6 @@ app-reviews-feed {
     gap: 10px;
     margin-bottom: 10px;
     padding: 0;
-    border: none;
-    border-radius: 0;
-    box-shadow: none;
-    background: #f1f5f9;
-
-    &.elevated { box-shadow: 0 6px 12px rgba(0,0,0,.08); background: #f8fafc; }
   }
 
   .head-center app-monthly-goal { width: auto; }

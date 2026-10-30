@@ -11,45 +11,47 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding-right: 4px;
+  // Todas las reseñas en una sola tarjeta, separadas por líneas finas (como las listas de Notas).
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.18) transparent;
 
-  &::-webkit-scrollbar {
-    width: 8px;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.18);
-    border-radius: 999px;
-  }
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
+  &::-webkit-scrollbar { width: 8px; }
+  &::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.18); border-radius: 999px; }
+  &::-webkit-scrollbar-track { background: transparent; }
 }
 
 .cards {
   display: flex;
   flex-direction: column;
-  gap: 14px;
 }
 
 .card {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 6px 12px;
-  padding: 14px 18px;
-  border-radius: 16px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-left: 5px solid #f7307d;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
-  width: 100%;
-  transition: transform .18s ease, box-shadow .18s ease;
+  padding: 14px 20px 14px 22px;
+  border-top: 1px solid #eef1f5;
+  transition: background-color .15s ease;
 
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+  &:first-child { border-top: none; }
+  &:hover { background: #fafbfd; }
+
+  // Barrita rosa a la izquierda, como las tarjetas de la lista de espera.
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 10px;
+    bottom: 10px;
+    width: 4px;
+    border-radius: 0 3px 3px 0;
+    background: #f7307d;
   }
 }
 
@@ -106,21 +108,17 @@
 @include bp.compact {
   // Pantalla pequeña: las mismas tarjetas, más compactas y a todo el ancho, con el texto completo.
   .strip {
-    padding-right: 0;
-    padding-bottom: calc(14px + env(safe-area-inset-bottom));
+    border-radius: 14px;
+    margin-bottom: calc(10px + env(safe-area-inset-bottom));
     -webkit-overflow-scrolling: touch;
   }
 
-  .cards { gap: 8px; align-items: stretch; }
-
   .card {
-    padding: 10px 12px 8px 14px;
+    padding: 10px 14px 8px 16px;
     gap: 3px 8px;
-    border-radius: 14px;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
 
-    // Sin "levantar" la tarjeta al tocar: en pantallas táctiles el hover se queda pegado.
-    &:hover { transform: none; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06); }
+    // Sin cambio de fondo al tocar: en pantallas táctiles el hover se queda pegado.
+    &:hover { background: transparent; }
   }
 
   .pill { padding: 1px 8px; font-size: 11px; }
