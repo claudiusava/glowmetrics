@@ -25,7 +25,7 @@
   min-height: 0;
   overflow-y: auto; // solo aparece si el contenido no cabe (pantallas pequeñas)
   overscroll-behavior: contain;
-  padding: 1.1em 1.4em 1.4em;
+  padding: 1.4em;
   display: flex;
   flex-direction: column;
 }
@@ -53,7 +53,7 @@
     grid-template-rows: auto auto;
     grid-template-areas: 'banner banner' 'cards hist';
     gap: 1.1em 1.2em;
-    align-content: center; // si sobra altura, todo el conjunto queda centrado
+    align-content: start; // pegado arriba, con el mismo margen que Lista de espera y Notas
   }
 }
 

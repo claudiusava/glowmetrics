@@ -21,7 +21,7 @@
   overflow-y: auto;
   // Al llegar al final de la lista, el scroll no pasa a la página de detrás.
   overscroll-behavior: contain;
-  padding: 0 22px 22px;
+  padding: 0 20px 20px;
 }
 
 // ---- Barra fija ----
@@ -30,7 +30,7 @@
   top: 0;
   z-index: 2;
   background: #ffffff;
-  padding: 14px 0 10px;
+  padding: 8px 0 10px; // el título mide 24 px de alto: arriba queda el mismo aire que a los lados
   margin-bottom: 4px;
 }
 
