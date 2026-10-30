@@ -1,33 +1,43 @@
-<section class="top" [style.background-color]="bgColor">
+<section class="top">
   <div class="kpi-card">
-    <div class="kpi-layout">
-      <div class="kpi-left">
-        <div class="kpi-title">Leads citados (Airtable)</div>
-        <div class="kpi-value-row">
-          <div class="kpi-value">{{ displayValue }}</div>
-          <div class="kpi-trend" *ngIf="trend" [class.up]="trend === 'up'" [class.down]="trend === 'down'">
-            <span class="trend-arrow">{{ trend === 'up' ? '▲' : '▼' }}</span>
-            <span class="trend-delta">{{ trendDeltaLabel }}</span>
-          </div>
-        </div>
-        <div class="kpi-sub">{{ subText }}</div>
-        <div class="kpi-cost" *ngIf="cost && showCost">
-          <div class="cost-line">
-            <span class="cost-label">Coste por lead</span>
-            <span class="cost-net">{{ cost.lead }}</span>
-            <span class="cost-vat">· con IVA <strong>{{ cost.leadVat }}</strong></span>
-          </div>
-          <div class="cost-line">
-            <span class="cost-label">Coste por cita</span>
-            <span class="cost-net">{{ cost.cita }}</span>
-            <span class="cost-vat">· con IVA <strong>{{ cost.citaVat }}</strong></span>
-          </div>
-        </div>
+    <div class="kpi-title">Leads citados (Airtable)</div>
+    <div class="kpi-value-row">
+      <div class="kpi-value">{{ displayValue }}</div>
+      <div class="kpi-trend" *ngIf="trend" [class.up]="trend === 'up'" [class.down]="trend === 'down'">
+        <span class="trend-arrow">{{ trend === 'up' ? '▲' : '▼' }}</span>
+        <span class="trend-delta">{{ trendDeltaLabel }}</span>
       </div>
-      <div class="kpi-right">
-        <div class="tip-title"><span class="tip-emoji">💡</span> CONSEJOS RÁPIDOS DE VENTAS:</div>
-        <div class="tip-text">{{ tip }}</div>
+    </div>
+    <div class="kpi-sub">{{ subText }}</div>
+    <div class="kpi-cost" *ngIf="cost && showCost">
+      <div class="cost-line">
+        <span class="cost-label">Coste por lead</span>
+        <span class="cost-net">{{ cost.lead }}</span>
+        <span class="cost-vat">· con IVA <strong>{{ cost.leadVat }}</strong></span>
       </div>
+      <div class="cost-line">
+        <span class="cost-label">Coste por cita</span>
+        <span class="cost-net">{{ cost.cita }}</span>
+        <span class="cost-vat">· con IVA <strong>{{ cost.citaVat }}</strong></span>
+      </div>
+    </div>
+
+    <!-- Escala del indicador: de rojo (menos de 30 %) a verde (40 % o más), con una marca donde estamos -->
+    <div class="scale-wrap" *ngIf="kpi" aria-hidden="true">
+      <div class="scale"><i *ngFor="let c of scaleColors" [style.background]="c"></i></div>
+      <span class="pin" [style.left.%]="markerPct"></span>
+      <div class="scale-labels">
+        <span [style.left.%]="lowPct">30 %</span>
+        <span [style.left.%]="highPct">40 %</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip-card">
+    <span class="tip-emoji" aria-hidden="true">💡</span>
+    <div>
+      <div class="tip-title">Consejo rápido</div>
+      <div class="tip-text">{{ tip }}</div>
     </div>
   </div>
 </section>

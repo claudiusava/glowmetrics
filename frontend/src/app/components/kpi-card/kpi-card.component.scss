@@ -1,88 +1,70 @@
 @use '../../../styles/breakpoints' as bp;
 
+// Arriba del inicio: la tarjeta del indicador (número y escala de color) y el consejo de ventas.
+// Mismo lenguaje que el resto de la app: tarjetas blancas sobre el gris claro de la pantalla.
+
 :host {
   display: block;
-  height: 100%;
 }
 
 .top {
-  height: 100%;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.8s ease-in-out;
-  padding: 26px;
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 16px;
 }
 
 .kpi-card {
-  width: 100%;
-  height: 100%;
-  border-radius: 22px;
-  display: grid;
-  place-items: center;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12), 0 1px 0 rgba(255, 255, 255, 0.4) inset;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  background: rgba(255, 255, 255, 0.22);
-  backdrop-filter: blur(6px);
-  padding: 0 40px;
-}
-
-.kpi-layout {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: clamp(40px, 8vw, 200px);
-  width: 100%;
-}
-
-.kpi-left {
-  flex: 0 0 40%;
+  justify-content: center;
   text-align: center;
+  padding: clamp(16px, 2.4vh, 28px) 28px;
+  border-radius: 18px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
 }
 
 .kpi-title {
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: #1f2937;
-  margin-bottom: 6px;
+  color: #64748b;
 }
 
 .kpi-value-row {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
+  margin-top: 2px;
 }
 
 .kpi-value {
-  font-size: clamp(46px, 7vw, 80px);
-  line-height: 1;
+  font-size: clamp(46px, 6vw, 76px);
+  line-height: 1.05;
   font-weight: 800;
   letter-spacing: -1px;
-  margin-bottom: 4px;
+  color: #0f172a;
 }
 
 .kpi-trend {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  padding: 4px 9px;
+  padding: 4px 10px;
   border-radius: 999px;
   font-size: 14px;
   font-weight: 700;
-  background: rgba(255, 255, 255, 0.4);
   animation: trend-in 0.3s ease;
 
-  &.up { color: #047857; }
-  &.down { color: #b91c1c; }
+  &.up { color: #047857; background: #d1fae5; }
+  &.down { color: #b91c1c; background: #fee2e2; }
 }
 
-.trend-arrow {
-  font-size: 11px;
-}
+.trend-arrow { font-size: 11px; }
 
 @keyframes trend-in {
   from { opacity: 0; transform: translateY(3px) scale(.9); }
@@ -91,8 +73,8 @@
 
 .kpi-sub {
   font-size: 14px;
-  color: #111827;
-  opacity: 0.92;
+  color: #64748b;
+  margin-top: 2px;
 }
 
 // Coste de publicidad: discreto, bajo el "260 citados de 712 leads".
@@ -104,100 +86,125 @@
 
   .cost-line { display: flex; align-items: baseline; justify-content: center; gap: 5px; white-space: nowrap; }
   // Se atenúa con el color (no con opacity, que también atenuaría el importe en negrita).
-  .cost-label, .cost-net, .cost-vat { color: rgba(17, 24, 39, 0.72); }
+  .cost-label, .cost-net, .cost-vat { color: rgba(17, 24, 39, 0.62); }
   strong { font-weight: 800; color: #111827; }
 }
 
-.kpi-right {
-  flex: 2;
-  text-align: left;
+// ---- escala de color: de rojo (menos de 30 %) a verde (40 % o más) ----
+.scale-wrap {
+  position: relative;
+  width: min(100%, 460px);
+  margin-top: 16px;
+  padding-bottom: 20px;
 }
 
-.tip-title {
-  font-weight: 700;
-  font-size: 20px;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  color: #ffffff;
-  margin-bottom: 6px;
+.scale {
+  display: flex;
+  gap: 3px;
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+
+  i { flex: 1; }
+}
+
+.pin {
+  position: absolute;
+  top: -5px;
+  width: 5px;
+  height: 20px;
+  border-radius: 3px;
+  background: #0f172a;
+  box-shadow: 0 0 0 2px #ffffff;
+  transform: translateX(-50%);
+  transition: left 0.8s cubic-bezier(.22, .61, .36, 1);
+}
+
+.scale-labels {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+
+  span {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+}
+
+// ---- consejo rápido ----
+.tip-card {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 20px;
+  padding: clamp(16px, 2.4vh, 28px) 32px;
+  border-radius: 18px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
 }
 
 .tip-emoji {
-  display: inline-block;
-  font-size: 2.2em;
+  font-size: 44px;
   line-height: 1;
   animation: bulb-glow 2.6s ease-in-out infinite;
   transform-origin: center 65%;
 }
 
 @keyframes bulb-glow {
-  0%, 100% {
-    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.2));
-    transform: scale(1) rotate(0deg);
-  }
-  50% {
-    filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.85));
-    transform: scale(1.08) rotate(-3deg);
-  }
+  0%, 100% { filter: drop-shadow(0 0 2px rgba(245, 158, 11, 0.2)); transform: scale(1) rotate(0deg); }
+  50% { filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.6)); transform: scale(1.08) rotate(-3deg); }
+}
+
+.tip-title {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #b45309;
+  margin-bottom: 4px;
 }
 
 .tip-text {
-  font-size: 18px;
-  color: #ffffff;
-  line-height: 1.6;
-  max-width: 660px;
+  font-size: clamp(17px, 1.5vw, 24px);
+  line-height: 1.5;
+  color: #334155;
+  max-width: 760px;
   transition: opacity 0.3s ease;
 }
 
-@include bp.compact {
-  // Pantalla pequeña: solo el porcentaje de leads (con su título y detalle).
-  // El consejo de ventas no cabe y se oculta; la chincheta sigue arriba a la derecha.
-  :host { height: auto; }
+@media (prefers-reduced-motion: reduce) {
+  .tip-emoji { animation: none; }
+  .pin { transition: none; }
+}
 
-  .top {
-    height: auto;
-    padding: 12px 12px 10px;
-  }
+@include bp.compact {
+  // Pantalla pequeña: solo el indicador (con su escala). El consejo no cabe y se oculta.
+  .top { grid-template-columns: minmax(0, 1fr); }
+  .tip-card { display: none; }
 
   .kpi-card {
-    height: auto;
-    padding: 14px 16px 12px;
-    border-radius: 18px;
+    padding: 12px 16px 10px;
+    border-radius: 16px;
   }
 
-  .kpi-layout {
-    justify-content: center;
-    gap: 0;
-  }
-
-  .kpi-left { flex: 0 1 auto; }
-  .kpi-right { display: none; }
-
-  .kpi-title {
-    font-size: 13px;
-    letter-spacing: 0.05em;
-    margin-bottom: 4px;
-  }
-
-  .kpi-value { font-size: clamp(44px, 15vw, 64px); }
-
-  .kpi-trend {
-    font-size: 12px;
-    padding: 3px 8px;
-  }
-
+  .kpi-title { font-size: 12px; }
+  .kpi-value { font-size: clamp(42px, 14vw, 60px); }
+  .kpi-trend { font-size: 12px; padding: 3px 8px; }
   .kpi-sub { font-size: 12px; }
+  .scale-wrap { margin-top: 10px; padding-bottom: 20px; }
 
   // En pantallas pequeñas solo el porcentaje de leads (el coste queda para el ordenador).
   .kpi-cost { display: none; }
 
   // Móvil en horizontal: la altura es muy poca, todo más bajo.
   @media (max-height: 520px) {
-    .top { padding: 8px 12px 6px; }
-    .kpi-card { padding: 8px 16px; }
-    .kpi-value { font-size: 40px; }
+    .kpi-card { padding: 8px 16px 4px; }
+    .kpi-value { font-size: 38px; }
+    .scale-wrap { display: none; }
   }
 }
