@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { interval, Subscription } from 'rxjs';
 import { GlowmetricsService } from '../../services/glowmetrics.service';
 import { WaitItem } from '../../models/review.model';
+import { WaitlistAlertService } from '../../services/waitlist-alert.service';
 
 // El centro abre de lunes a viernes. X = miércoles (como en un calendario).
 const DAYS = [
@@ -77,7 +78,7 @@ export class WaitlistBoardComponent implements OnInit, OnDestroy {
   private retryTimer: ReturnType<typeof setTimeout> | null = null;
   private subs = new Subscription();
 
-  constructor(private svc: GlowmetricsService) {}
+  constructor(private svc: GlowmetricsService, private alert: WaitlistAlertService) {}
 
   // Escape cierra el formulario, no el modal. Se hace un instante después para
   // que el modal (que escucha lo mismo) vea todavía el formulario abierto.
@@ -87,6 +88,7 @@ export class WaitlistBoardComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.alert.setViewing(true);
     this.load();
     this.subs.add(interval(POLL_MS).subscribe(() => {
       if (document.hidden || this.pendingWrites > 0) return;
@@ -97,6 +99,7 @@ export class WaitlistBoardComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.destroyed = true;
+    this.alert.setViewing(false);
     this.subs.unsubscribe();
     if (this.toastTimer) clearTimeout(this.toastTimer);
     if (this.retryTimer) clearTimeout(this.retryTimer);
@@ -129,6 +132,7 @@ export class WaitlistBoardComponent implements OnInit, OnDestroy {
     // Por orden de registro (la que se apuntó antes, arriba: tiene preferencia).
     // Con un hueco marcado, las que encajan van primero y mantienen ese orden.
     const ordered = [...this.items].sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
+    this.alert.publish(this.items); // la pestaña de la app se entera al instante
     this.matchCount = ordered.filter(matches).length;
     this.list = this.gapActive
       ? [...ordered.filter(matches), ...ordered.filter(i => !matches(i))]

@@ -16,6 +16,7 @@ import { WaitlistBoardComponent } from './components/waitlist-board/waitlist-boa
 import { CleaningBoardComponent } from './components/cleaning-board/cleaning-board.component';
 import { NotesBoardComponent } from './components/notes-board/notes-board.component';
 import { CleaningAlertService } from './services/cleaning-alert.service';
+import { WaitlistAlertService } from './services/waitlist-alert.service';
 import { ReviewsFeedComponent } from './components/reviews-feed/reviews-feed.component';
 import { Review, ReviewsResponse, BootstrapResponse, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry, Note } from './models/review.model';
 
@@ -140,6 +141,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private confetti: ConfettiService,
     private cache: SnapshotCacheService,
     public cleaningAlert: CleaningAlertService,
+    public waitlistAlert: WaitlistAlertService,
   ) {}
 
   ngOnInit(): void {
