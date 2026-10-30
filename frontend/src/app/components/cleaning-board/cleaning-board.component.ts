@@ -55,7 +55,6 @@ export class CleaningBoardComponent implements OnInit, OnDestroy {
   // Estado de la pantalla
   filter = '';                           // tarea filtrada en el historial ('' = todas)
   historyOpen = false;                   // en pantallas pequeñas el historial va plegado
-  soloSuelo = new Set<string>();         // nota rápida "solo suelo" marcada
   otherDay = new Map<string, string>();  // "otro día": fecha elegida
   openOtherDay = new Set<string>();
   flash = new Set<string>();             // tarjetas recién apuntadas
@@ -179,10 +178,6 @@ export class CleaningBoardComponent implements OnInit, OnDestroy {
 
   // ---------- acciones de cada tarjeta ----------
 
-  toggleSoloSuelo(t: CleaningTask): void {
-    if (this.soloSuelo.has(t.id)) this.soloSuelo.delete(t.id); else this.soloSuelo.add(t.id);
-  }
-
   toggleOtherDay(t: CleaningTask): void {
     if (this.openOtherDay.has(t.id)) { this.openOtherDay.delete(t.id); this.otherDay.delete(t.id); }
     else this.openOtherDay.add(t.id);
@@ -196,13 +191,11 @@ export class CleaningBoardComponent implements OnInit, OnDestroy {
   done(t: CleaningTask, who: string): void {
     const date = this.otherDay.get(t.id) || this.today;
     if (date > this.today) { this.say('Esa fecha todavía no ha llegado.'); return; }
-    const note = this.soloSuelo.has(t.id) ? 'Solo suelo' : '';
     const clientId = Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
-    const temp: CleaningEntry = { id: TEMP_PREFIX + clientId, task: t.id, who, date, note, createdAt: new Date().toISOString() };
+    const temp: CleaningEntry = { id: TEMP_PREFIX + clientId, task: t.id, who, date, note: '', createdAt: new Date().toISOString() };
     this.entries = [temp, ...this.entries].sort((a, b) => (b.date + b.createdAt).localeCompare(a.date + a.createdAt));
 
-    // Tras apuntar, la tarjeta vuelve a su estado normal (sin la nota ni el día elegidos).
-    this.soloSuelo.delete(t.id);
+    // Tras apuntar, la tarjeta vuelve a su estado normal (sin el día elegido).
     this.otherDay.delete(t.id);
     this.openOtherDay.delete(t.id);
     this.refresh();
@@ -212,7 +205,7 @@ export class CleaningBoardComponent implements OnInit, OnDestroy {
 
     this.pendingWrites++;
     ++this.seq;
-    this.subs.add(this.svc.addCleaning({ task: t.id, who, date, note }, clientId).subscribe(res => {
+    this.subs.add(this.svc.addCleaning({ task: t.id, who, date, note: '' }, clientId).subscribe(res => {
       this.pendingWrites--;
       this.lastWriteAt = Date.now();
       if (this.destroyed) return;

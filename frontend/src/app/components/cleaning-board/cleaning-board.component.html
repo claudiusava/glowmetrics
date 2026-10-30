@@ -67,7 +67,6 @@
         </div>
 
         <div class="options">
-          <button type="button" class="chip" [class.on]="soloSuelo.has(c.task.id)" [attr.aria-pressed]="soloSuelo.has(c.task.id)" (click)="toggleSoloSuelo(c.task)">Solo suelo</button>
           <ng-container *ngIf="!openOtherDay.has(c.task.id); else dayPicker">
             <button type="button" class="link" (click)="toggleOtherDay(c.task)">Otro día</button>
             <span class="spacer"></span>

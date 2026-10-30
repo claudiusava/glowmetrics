@@ -284,22 +284,6 @@
   .spacer { flex: 1; }
 }
 
-.chip {
-  min-height: 2.4em;
-  padding: 0 0.9em;
-  border-radius: 999px;
-  border: 1px solid #dbe2ea;
-  background: #f8fafc;
-  color: #334155;
-  font: inherit;
-  font-size: 0.93em;
-  font-weight: 600;
-  white-space: nowrap;
-  cursor: pointer;
-
-  &.on { background: #f7307d; border-color: #f7307d; color: #ffffff; }
-}
-
 .link {
   border: none;
   background: transparent;
