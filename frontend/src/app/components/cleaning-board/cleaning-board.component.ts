@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { interval, Subscription } from 'rxjs';
 import { GlowmetricsService } from '../../services/glowmetrics.service';
@@ -33,8 +33,6 @@ export interface TaskCard {
   styleUrls: ['./cleaning-board.component.scss'],
 })
 export class CleaningBoardComponent implements OnInit, OnDestroy {
-  @ViewChild('historyPanel') historyPanel?: ElementRef<HTMLElement>;
-
   tasks: CleaningTask[] = [];
   staff: string[] = [];
   shares: Record<string, number> = {};
@@ -166,15 +164,6 @@ export class CleaningBoardComponent implements OnInit, OnDestroy {
   }
 
   toggleHistory(): void { this.historyOpen = !this.historyOpen; this.confirmDeleteId = null; }
-
-  /** "Historial" de una tarjeta: filtra el historial por esa tarea y lo enseña. */
-  showHistoryOf(t: CleaningTask): void {
-    this.filter = t.id;
-    this.historyOpen = true;
-    this.confirmDeleteId = null;
-    this.refresh();
-    setTimeout(() => this.historyPanel?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
-  }
 
   // ---------- acciones de cada tarjeta ----------
 

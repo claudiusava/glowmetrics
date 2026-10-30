@@ -69,8 +69,6 @@
         <div class="options">
           <ng-container *ngIf="!openOtherDay.has(c.task.id); else dayPicker">
             <button type="button" class="link" (click)="toggleOtherDay(c.task)">Otro día</button>
-            <span class="spacer"></span>
-            <button type="button" class="link" (click)="showHistoryOf(c.task)">Historial</button>
           </ng-container>
           <ng-template #dayPicker>
             <input
@@ -113,7 +111,7 @@
     </div>
 
     <!-- Historial: a la derecha en pantallas grandes, plegable debajo en las pequeñas -->
-    <aside class="history-panel" [class.open]="historyOpen" #historyPanel>
+    <aside class="history-panel" [class.open]="historyOpen">
       <button type="button" class="hist-toggle" (click)="toggleHistory()" [attr.aria-expanded]="historyOpen">
         <span>{{ historyOpen ? '▾' : '▸' }} Historial</span>
         <span class="count">{{ historyTotal }}</span>
