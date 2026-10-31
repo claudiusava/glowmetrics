@@ -96,10 +96,30 @@
 }
 
 // ---- escala de color: de rojo (menos de 30 %) a verde (40 % o más) ----
+// En una sola línea:  < 30 %  [barra de colores]  40 % >   y debajo el mensaje.
 .scale-wrap {
-  position: relative;
-  width: min(100%, 460px);
+  width: min(100%, 540px);
   margin-top: 16px;
+}
+
+.scale-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lbl {
+  flex: none;
+  font-size: 12px;
+  font-weight: 700;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.scale-track {
+  position: relative;
+  flex: 1;
+  min-width: 0;
 }
 
 .scale {
@@ -124,28 +144,9 @@
   transition: left 0.8s cubic-bezier(.22, .61, .36, 1);
 }
 
-.scale-labels {
-  position: relative;
-  margin-top: 6px;
-  min-height: 18px;
-  font-size: 11px;
-  font-weight: 600;
-  color: #94a3b8;
-
-  // Los extremos de la escala (menos de 30 % y 40 % o más), a su altura y en las esquinas de la barra
-  .lbl {
-    position: absolute;
-    top: 0;
-    white-space: nowrap;
-    &.lo { left: 0; }
-    &.hi { right: 0; }
-  }
-}
-
-// El mensaje va en su propia línea, centrado bajo la escala (los extremos quedan en la línea de arriba)
-// y cambia con el tramo de color.
+// El mensaje va en su propia línea, centrado bajo la escala, y cambia con el tramo de color.
 .scale-msg {
-  padding-top: 20px;
+  margin-top: 12px;
   text-align: center;
   font-size: 14px;
   font-weight: 700;
@@ -211,7 +212,9 @@
   .kpi-trend { font-size: 12px; padding: 3px 8px; }
   .kpi-sub { font-size: 12px; }
   .scale-wrap { margin-top: 10px; }
-  .scale-msg { font-size: 12px; }
+  .scale-row { gap: 8px; }
+  .lbl { font-size: 11px; }
+  .scale-msg { margin-top: 8px; font-size: 12px; }
 
   // En pantallas pequeñas solo el porcentaje de leads (el coste queda para el ordenador).
   .kpi-cost { display: none; }

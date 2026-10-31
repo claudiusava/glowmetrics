@@ -23,14 +23,16 @@
     </div>
 
     <!-- Escala del indicador: de rojo (menos de 30 %) a verde (40 % o más), con una marca donde estamos -->
-    <div class="scale-wrap" *ngIf="kpi" aria-hidden="true">
-      <div class="scale"><i *ngFor="let c of scaleColors" [style.background]="c"></i></div>
-      <span class="pin" [style.left.%]="markerPct"></span>
-      <div class="scale-labels">
-        <span class="lbl lo">&lt; 30 %</span>
-        <span class="lbl hi">&ge; 40 %</span>
-        <div class="scale-msg" *ngIf="message" [style.color]="message.color">{{ message.text }}</div>
+    <div class="scale-wrap" *ngIf="kpi">
+      <div class="scale-row" aria-hidden="true">
+        <span class="lbl">&lt; 30 %</span>
+        <div class="scale-track">
+          <div class="scale"><i *ngFor="let c of scaleColors" [style.background]="c"></i></div>
+          <span class="pin" [style.left.%]="markerPct"></span>
+        </div>
+        <span class="lbl">40 % &gt;</span>
       </div>
+      <div class="scale-msg" *ngIf="message" [style.color]="message.color">{{ message.text }}</div>
     </div>
   </div>
 
