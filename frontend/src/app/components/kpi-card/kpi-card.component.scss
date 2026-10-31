@@ -132,18 +132,19 @@
   font-weight: 600;
   color: #94a3b8;
 
-  // 30 % y 40 % bajo el principio y el final de sus tramos
+  // Los extremos de la escala (menos de 30 % y 40 % o más), a su altura y en las esquinas de la barra
   .lbl {
     position: absolute;
     top: 0;
-    transform: translateX(-50%);
     white-space: nowrap;
+    &.lo { left: 0; }
+    &.hi { right: 0; }
   }
 }
 
-// El mensaje va centrado entre los dos números y cambia con el tramo de color.
+// El mensaje va centrado entre los dos extremos y cambia con el tramo de color.
 .scale-msg {
-  max-width: 68%;
+  max-width: 74%;
   margin: 0 auto;
   text-align: center;
   font-size: 13px;

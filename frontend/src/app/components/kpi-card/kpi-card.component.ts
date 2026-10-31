@@ -31,8 +31,6 @@ export class KpiCardComponent implements OnChanges {
   subText = 'Calculando…';
   // Escala del indicador, en tramos iguales de 2 puntos: menos de 30 % ... 40 % o más.
   readonly scaleColors = ['#a93a3a', '#c84f3f', '#d97a3a', '#e0a24f', '#c9c36b', '#6fbf8f', '#3fa66b'];
-  readonly lowPct = ((30 - SCALE_MIN) / (SCALE_MAX - SCALE_MIN)) * 100;
-  readonly highPct = ((40 - SCALE_MIN) / (SCALE_MAX - SCALE_MIN)) * 100;
   markerPct = 0;
   message: KpiMessage | null = null; // lo que se dice según el tramo (motivar a mejorar)
   trend: 'up' | 'down' | null = null;
