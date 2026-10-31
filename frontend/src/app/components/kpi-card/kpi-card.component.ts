@@ -1,6 +1,7 @@
 import { Component, Input, OnChanges, SimpleChanges, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AirtableKpi } from '../../models/review.model';
+import { KpiMessage, kpiMessage } from './kpi-message';
 
 const EUR = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
 
@@ -33,6 +34,7 @@ export class KpiCardComponent implements OnChanges {
   readonly lowPct = ((30 - SCALE_MIN) / (SCALE_MAX - SCALE_MIN)) * 100;
   readonly highPct = ((40 - SCALE_MIN) / (SCALE_MAX - SCALE_MIN)) * 100;
   markerPct = 0;
+  message: KpiMessage | null = null; // lo que se dice según el tramo (motivar a mejorar)
   trend: 'up' | 'down' | null = null;
   trendDeltaLabel = '';
 
@@ -46,6 +48,7 @@ export class KpiCardComponent implements OnChanges {
       this.subText = `${this.kpi.citadas} citados de ${this.kpi.total} leads`;
       this.cost = this.buildCost(this.kpi);
       this.markerPct = Math.min(100, Math.max(0, ((this.kpi.pct - SCALE_MIN) / (SCALE_MAX - SCALE_MIN)) * 100));
+      this.message = kpiMessage(this.kpi.pct, this.kpi.total);
       if (this.kpi.total > 0) this.updateTrend(this.kpi.pct);
       this.animateValue(this.lastPct ?? this.kpi.pct, this.kpi.pct, 600);
     }

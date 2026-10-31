@@ -27,8 +27,9 @@
       <div class="scale"><i *ngFor="let c of scaleColors" [style.background]="c"></i></div>
       <span class="pin" [style.left.%]="markerPct"></span>
       <div class="scale-labels">
-        <span [style.left.%]="lowPct">30 %</span>
-        <span [style.left.%]="highPct">40 %</span>
+        <span class="lbl" [style.left.%]="lowPct">30 %</span>
+        <span class="lbl" [style.left.%]="highPct">40 %</span>
+        <div class="scale-msg" *ngIf="message" [style.color]="message.color">{{ message.text }}</div>
       </div>
     </div>
   </div>
