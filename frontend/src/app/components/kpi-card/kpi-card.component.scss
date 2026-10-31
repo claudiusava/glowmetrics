@@ -142,12 +142,12 @@
   }
 }
 
-// El mensaje va centrado entre los dos extremos y cambia con el tramo de color.
+// El mensaje va en su propia línea, centrado bajo la escala (los extremos quedan en la línea de arriba)
+// y cambia con el tramo de color.
 .scale-msg {
-  max-width: 74%;
-  margin: 0 auto;
+  padding-top: 20px;
   text-align: center;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   line-height: 1.3;
   transition: color 0.4s ease;
@@ -211,8 +211,7 @@
   .kpi-trend { font-size: 12px; padding: 3px 8px; }
   .kpi-sub { font-size: 12px; }
   .scale-wrap { margin-top: 10px; }
-  // En el móvil no cabe entre el 30 % y el 40 %: va en su propia línea, debajo.
-  .scale-msg { max-width: 100%; padding-top: 18px; font-size: 12px; }
+  .scale-msg { font-size: 12px; }
 
   // En pantallas pequeñas solo el porcentaje de leads (el coste queda para el ordenador).
   .kpi-cost { display: none; }
