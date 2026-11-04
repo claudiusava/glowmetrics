@@ -196,6 +196,44 @@ class CombinarParcial(unittest.TestCase):
         self.assertEqual(estado["a"]["resenas"], 120)
 
 
+class Comparacion(unittest.TestCase):
+    def fila(self, puesto, slug, resenas):
+        return {"puesto": puesto, "nombre": slug, "slug": slug, "reseñas": resenas, "nota": 5.0, "es_nuestro": False}
+
+    def test_puesto_y_resenas_de_la_captura_anterior(self):
+        antes = [self.fila(1, "a", 100), self.fila(2, "b", 90)]
+        ahora = [self.fila(1, "b", 105), self.fila(2, "a", 101)]
+        sr.comparar(ahora, antes, {}, "2026-12-01")
+        self.assertEqual((ahora[0]["puesto_anterior"], ahora[0]["reseñas_anterior"]), (2, 90))
+        self.assertEqual((ahora[1]["puesto_anterior"], ahora[1]["reseñas_anterior"]), (1, 100))
+
+    def test_centro_nuevo_en_el_top_no_tiene_puesto_anterior_y_usa_su_ultimo_valor(self):
+        antes = [self.fila(1, "a", 100)]
+        ahora = [self.fila(1, "a", 101), self.fila(2, "nuevo", 99)]
+        estado = {"nuevo": {"resenas": 95, "ultimo_ok": "2026-11-01"}}
+        sr.comparar(ahora, antes, estado, "2026-12-01")
+        self.assertEqual((ahora[1]["puesto_anterior"], ahora[1]["reseñas_anterior"]), (None, 95))
+
+    def test_si_el_ultimo_valor_es_de_hoy_no_vale_como_anterior(self):
+        ahora = [self.fila(1, "a", 101), self.fila(2, "nuevo", 99)]
+        sr.comparar(ahora, [self.fila(1, "a", 100)], {"nuevo": {"resenas": 99, "ultimo_ok": "2026-12-01"}}, "2026-12-01")
+        self.assertIsNone(ahora[1]["reseñas_anterior"])
+
+    def test_sin_captura_anterior_no_se_anade_nada(self):
+        ahora = [self.fila(1, "a", 101)]
+        sr.comparar(ahora, [], {}, "2026-12-01")
+        self.assertNotIn("puesto_anterior", ahora[0])
+
+    def test_la_base_es_la_captura_mas_reciente_anterior_a_hoy(self):
+        with tempfile.TemporaryDirectory() as d:
+            for fecha, n in (("2026-10-01", 10), ("2026-11-01", 20), ("2026-12-01", 30)):
+                sr.guardar_json(Path(d) / "capturas" / f"{fecha}.json", {"fecha": fecha, "ranking": [self.fila(1, "a", n)]})
+            self.assertEqual(sr.base_anterior(d, "2026-12-01")[0], "2026-11-01")   # relanzar el mismo día no la pisa
+            self.assertEqual(sr.base_anterior(d, "2026-12-15")[0], "2026-12-01")
+            self.assertEqual(sr.base_anterior(d, "2026-10-01"), (None, []))
+            self.assertEqual(sr.base_anterior(Path(d) / "no_existe", "2026-12-01"), (None, []))
+
+
 class ProcesoCompleto(unittest.TestCase):
     """Todo el flujo con la red y Google Maps simulados."""
 
@@ -273,6 +311,9 @@ class ProcesoCompleto(unittest.TestCase):
         self.assertEqual(latest["centros_total"], 152)
         self.assertEqual(len(latest["ranking"]), 51)              # top 50 + el propio (puesto real) al final
         self.assertEqual(latest["ranking"][-1]["slug"], "madrid-alcorcon")
+        self.assertEqual(latest["desde"], "2026-10-01")           # se compara con la captura anterior
+        self.assertEqual(latest["ranking"][0]["puesto_anterior"], 1)
+        self.assertEqual(latest["ranking"][0]["reseñas_anterior"], latest["ranking"][0]["reseñas"])   # no cambió nada
 
     def test_demasiados_fallos_no_publican_y_mantienen_el_anterior(self):
         with tempfile.TemporaryDirectory() as d:

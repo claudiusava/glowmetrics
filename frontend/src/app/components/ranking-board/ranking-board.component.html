@@ -8,19 +8,27 @@
   <ng-container *ngIf="data && !loading">
     <div class="head">
       <div class="head-sub">Franquicia SinVello! · top 50 por número total de reseñas de Google</div>
+      <div class="head-sub" *ngIf="comparing">Cambios de puesto y reseñas nuevas desde el {{ desde }}</div>
     </div>
 
-    <ol class="rows">
+    <ol class="rows" [class.cmp]="comparing">
       <ng-container *ngFor="let r of data.ranking; trackBy: trackSlug">
         <li class="gap" *ngIf="ourOutside && r.es_nuestro" aria-hidden="true">···</li>
         <li class="row" [id]="r.es_nuestro ? 'rk-ours' : null" [class.ours]="r.es_nuestro" [class.top]="r.puesto <= 3">
           <span class="bar" [style.width.%]="barWidth(r)"></span>
           <span class="pos">{{ medal(r.puesto) || r.puesto }}</span>
+          <ng-container *ngIf="comparing">
+            <span class="move" *ngIf="move(r) as m" [ngClass]="m.kind" [attr.title]="m.text" [attr.aria-label]="m.text">{{ m.label }}</span>
+          </ng-container>
           <span class="name">
             {{ r.nombre }}
             <span class="tag" *ngIf="r.es_nuestro">Nuestro centro</span>
           </span>
           <span class="reviews">{{ num(r['reseñas']) }}</span>
+          <ng-container *ngIf="comparing">
+            <span class="gain" *ngIf="gain(r) as g; else noGain" [attr.title]="g + ' reseñas nuevas desde el ' + desde">+{{ g }}</span>
+            <ng-template #noGain><span class="gain none" [attr.title]="gain(r) === 0 ? 'Sin reseñas nuevas desde el ' + desde : null">{{ gain(r) === 0 ? '+0' : '' }}</span></ng-template>
+          </ng-container>
           <span class="note">★ {{ nota(r.nota) }}</span>
         </li>
       </ng-container>

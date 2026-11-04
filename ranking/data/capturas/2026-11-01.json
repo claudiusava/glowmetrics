@@ -6,6 +6,7 @@
   "centros_consultados": 82,
   "centros_total": 204,
   "publicado": true,
+  "desde": "2026-10-26",
   "centros_desactualizados": [],
   "ranking": [
     {
@@ -14,7 +15,9 @@
       "slug": "malaga-teatinos",
       "reseñas": 2035,
       "nota": 4.9,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 1,
+      "reseñas_anterior": 2026
     },
     {
       "puesto": 2,
@@ -22,7 +25,9 @@
       "slug": "islas-baleares-palma-de-mallorca-son-dameto",
       "reseñas": 1913,
       "nota": 4.9,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 2,
+      "reseñas_anterior": 1906
     },
     {
       "puesto": 3,
@@ -30,7 +35,9 @@
       "slug": "cordoba-republica-argentina",
       "reseñas": 1725,
       "nota": 5.0,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 3,
+      "reseñas_anterior": 1719
     },
     {
       "puesto": 4,
@@ -38,7 +45,9 @@
       "slug": "granada-granada-gran-capitan",
       "reseñas": 1321,
       "nota": 5.0,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 4,
+      "reseñas_anterior": 1319
     },
     {
       "puesto": 5,
@@ -46,7 +55,9 @@
       "slug": "huelva-huelva-centro",
       "reseñas": 1193,
       "nota": 5.0,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 5,
+      "reseñas_anterior": 1188
     },
     {
       "puesto": 6,
@@ -54,7 +65,9 @@
       "slug": "sevilla-pino-montano",
       "reseñas": 1136,
       "nota": 4.9,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 6,
+      "reseñas_anterior": 1134
     },
     {
       "puesto": 7,
@@ -62,7 +75,9 @@
       "slug": "barcelona-gracia",
       "reseñas": 1135,
       "nota": 4.9,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 7,
+      "reseñas_anterior": 1124
     },
     {
       "puesto": 8,
@@ -70,7 +85,9 @@
       "slug": "palencia-palencia",
       "reseñas": 1085,
       "nota": 4.9,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 8,
+      "reseñas_anterior": 1072
     },
     {
       "puesto": 9,
@@ -78,7 +95,9 @@
       "slug": "sevilla-nervion",
       "reseñas": 1078,
       "nota": 4.9,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 9,
+      "reseñas_anterior": 1067
     },
     {
       "puesto": 10,
@@ -86,7 +105,9 @@
       "slug": "islas-baleares-palma-de-mallorca-plaza-espana",
       "reseñas": 1063,
       "nota": 4.9,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 10,
+      "reseñas_anterior": 1051
     },
     {
       "puesto": 11,
@@ -94,7 +115,9 @@
       "slug": "madrid-hortaleza",
       "reseñas": 977,
       "nota": 5.0,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 11,
+      "reseñas_anterior": 974
     },
     {
       "puesto": 12,
@@ -102,7 +125,9 @@
       "slug": "cadiz-cadiz-centro",
       "reseñas": 960,
       "nota": 5.0,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 12,
+      "reseñas_anterior": 957
     },
     {
       "puesto": 13,
@@ -110,7 +135,9 @@
       "slug": "granada-granada-la-caleta",
       "reseñas": 951,
       "nota": 5.0,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 13,
+      "reseñas_anterior": 941
     },
     {
       "puesto": 14,
@@ -118,7 +145,9 @@
       "slug": "madrid-parla",
       "reseñas": 941,
       "nota": 5.0,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 14,
+      "reseñas_anterior": 936
     },
     {
       "puesto": 15,
@@ -126,7 +155,9 @@
       "slug": "cordoba-lucena",
       "reseñas": 925,
       "nota": 4.9,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 15,
+      "reseñas_anterior": 925
     },
     {
       "puesto": 16,
@@ -134,7 +165,9 @@
       "slug": "sevilla-alcala-de-guadaira",
       "reseñas": 918,
       "nota": 5.0,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 16,
+      "reseñas_anterior": 916
     },
     {
       "puesto": 17,
@@ -142,7 +175,9 @@
       "slug": "sevilla-el-viso-del-alcor",
       "reseñas": 913,
       "nota": 5.0,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 17,
+      "reseñas_anterior": 908
     },
     {
       "puesto": 18,
@@ -150,7 +185,9 @@
       "slug": "madrid-alcorcon",
       "reseñas": 911,
       "nota": 5.0,
-      "es_nuestro": true
+      "es_nuestro": true,
+      "puesto_anterior": 18,
+      "reseñas_anterior": 902
     },
     {
       "puesto": 19,
@@ -158,7 +195,9 @@
       "slug": "cordoba-manolete",
       "reseñas": 903,
       "nota": 4.9,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 19,
+      "reseñas_anterior": 902
     },
     {
       "puesto": 20,
@@ -166,7 +205,9 @@
       "slug": "sevilla-san-jose-de-la-rinconada",
       "reseñas": 898,
       "nota": 4.9,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 20,
+      "reseñas_anterior": 896
     },
     {
       "puesto": 21,
@@ -174,7 +215,9 @@
       "slug": "las-palmas-las-palmas-de-gran-canaria",
       "reseñas": 877,
       "nota": 5.0,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 21,
+      "reseñas_anterior": 870
     },
     {
       "puesto": 22,
@@ -182,7 +225,9 @@
       "slug": "valladolid-valladolid-centro",
       "reseñas": 865,
       "nota": 4.9,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 22,
+      "reseñas_anterior": 865
     },
     {
       "puesto": 23,
@@ -190,7 +235,9 @@
       "slug": "tarragona-el-vendrell",
       "reseñas": 864,
       "nota": 4.9,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 23,
+      "reseñas_anterior": 861
     },
     {
       "puesto": 24,
@@ -198,7 +245,9 @@
       "slug": "alicante-alicante-centro",
       "reseñas": 851,
       "nota": 4.9,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 24,
+      "reseñas_anterior": 849
     },
     {
       "puesto": 25,
@@ -206,7 +255,9 @@
       "slug": "madrid-goya",
       "reseñas": 842,
       "nota": 4.8,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 25,
+      "reseñas_anterior": 842
     },
     {
       "puesto": 26,
@@ -214,7 +265,9 @@
       "slug": "sevilla-sevilla-este",
       "reseñas": 811,
       "nota": 4.9,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 26,
+      "reseñas_anterior": 808
     },
     {
       "puesto": 27,
@@ -222,7 +275,9 @@
       "slug": "cordoba-vinuela",
       "reseñas": 803,
       "nota": 4.9,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 27,
+      "reseñas_anterior": 802
     },
     {
       "puesto": 28,
@@ -230,7 +285,9 @@
       "slug": "granada-motril",
       "reseñas": 796,
       "nota": 5.0,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 28,
+      "reseñas_anterior": 794
     },
     {
       "puesto": 29,
@@ -238,7 +295,9 @@
       "slug": "murcia-cartagena",
       "reseñas": 787,
       "nota": 4.9,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 30,
+      "reseñas_anterior": 785
     },
     {
       "puesto": 30,
@@ -246,7 +305,9 @@
       "slug": "barcelona-mataro",
       "reseñas": 787,
       "nota": 4.9,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 29,
+      "reseñas_anterior": 786
     },
     {
       "puesto": 31,
@@ -254,7 +315,9 @@
       "slug": "caceres-caceres",
       "reseñas": 740,
       "nota": 5.0,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 33,
+      "reseñas_anterior": 726
     },
     {
       "puesto": 32,
@@ -262,7 +325,9 @@
       "slug": "guipuzkoa-san-sebastian",
       "reseñas": 739,
       "nota": 4.6,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 32,
+      "reseñas_anterior": 737
     },
     {
       "puesto": 33,
@@ -270,7 +335,9 @@
       "slug": "barcelona-el-clot",
       "reseñas": 737,
       "nota": 5.0,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 31,
+      "reseñas_anterior": 737
     },
     {
       "puesto": 34,
@@ -278,7 +345,9 @@
       "slug": "sevilla-montequinto",
       "reseñas": 725,
       "nota": 5.0,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 34,
+      "reseñas_anterior": 721
     },
     {
       "puesto": 35,
@@ -286,7 +355,9 @@
       "slug": "sevilla-los-remedios",
       "reseñas": 724,
       "nota": 4.9,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 37,
+      "reseñas_anterior": 717
     },
     {
       "puesto": 36,
@@ -294,7 +365,9 @@
       "slug": "barcelona-provenca",
       "reseñas": 722,
       "nota": 5.0,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 35,
+      "reseñas_anterior": 720
     },
     {
       "puesto": 37,
@@ -302,7 +375,9 @@
       "slug": "sevilla-mairena-del-aljarafe",
       "reseñas": 720,
       "nota": 4.9,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 36,
+      "reseñas_anterior": 718
     },
     {
       "puesto": 38,
@@ -310,7 +385,9 @@
       "slug": "jaen-andujar",
       "reseñas": 714,
       "nota": 4.9,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 38,
+      "reseñas_anterior": 714
     },
     {
       "puesto": 39,
@@ -318,7 +395,9 @@
       "slug": "jaen-jaen-centro",
       "reseñas": 712,
       "nota": 4.9,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 39,
+      "reseñas_anterior": 710
     },
     {
       "puesto": 40,
@@ -326,7 +405,9 @@
       "slug": "cordoba-puente-genil",
       "reseñas": 710,
       "nota": 4.9,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 40,
+      "reseñas_anterior": 710
     },
     {
       "puesto": 41,
@@ -334,7 +415,9 @@
       "slug": "a-coruna-santiago-de-compostela",
       "reseñas": 699,
       "nota": 4.9,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 41,
+      "reseñas_anterior": 697
     },
     {
       "puesto": 42,
@@ -342,7 +425,9 @@
       "slug": "toledo-toledo-centro",
       "reseñas": 689,
       "nota": 5.0,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 43,
+      "reseñas_anterior": 674
     },
     {
       "puesto": 43,
@@ -350,7 +435,9 @@
       "slug": "madrid-boadilla-del-monte",
       "reseñas": 688,
       "nota": 4.9,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 42,
+      "reseñas_anterior": 684
     },
     {
       "puesto": 44,
@@ -358,7 +445,9 @@
       "slug": "guadalajara-guadalajara-centro",
       "reseñas": 667,
       "nota": 4.9,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 44,
+      "reseñas_anterior": 665
     },
     {
       "puesto": 45,
@@ -366,7 +455,9 @@
       "slug": "valencia-canovas",
       "reseñas": 656,
       "nota": 4.9,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 45,
+      "reseñas_anterior": 656
     },
     {
       "puesto": 46,
@@ -374,7 +465,9 @@
       "slug": "la-rioja-logrono",
       "reseñas": 652,
       "nota": 4.9,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 46,
+      "reseñas_anterior": 652
     },
     {
       "puesto": 47,
@@ -382,7 +475,9 @@
       "slug": "malaga-carretera-de-cadiz",
       "reseñas": 645,
       "nota": 4.9,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 48,
+      "reseñas_anterior": 644
     },
     {
       "puesto": 48,
@@ -390,7 +485,9 @@
       "slug": "cordoba-sierra",
       "reseñas": 644,
       "nota": 4.9,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 47,
+      "reseñas_anterior": 644
     },
     {
       "puesto": 49,
@@ -398,7 +495,9 @@
       "slug": "sevilla-dos-hermanas",
       "reseñas": 617,
       "nota": 4.9,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 49,
+      "reseñas_anterior": 617
     },
     {
       "puesto": 50,
@@ -406,7 +505,9 @@
       "slug": "barcelona-sants",
       "reseñas": 613,
       "nota": 5.0,
-      "es_nuestro": false
+      "es_nuestro": false,
+      "puesto_anterior": 50,
+      "reseñas_anterior": 610
     }
   ],
   "incidencias": [

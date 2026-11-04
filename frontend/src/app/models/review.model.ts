@@ -122,10 +122,14 @@ export interface RankingRow {
   reseñas: number;
   nota: number | null;
   es_nuestro: boolean;
+  // Lo que tenía en la captura anterior (ausente si no hubo captura anterior; puesto null = centro nuevo en el top).
+  puesto_anterior?: number | null;
+  reseñas_anterior?: number | null;
 }
 
 export interface RankingCapture {
   fecha: string; // AAAA-MM-DD
+  desde?: string | null; // fecha de la captura con la que se compara
   centros_leidos: number;
   centros_total: number;
   ranking: RankingRow[];

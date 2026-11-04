@@ -5,6 +5,12 @@ import { RankingCapture, RankingRow } from '../../models/review.model';
 
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 
+export interface Move {
+  kind: 'up' | 'down' | 'same' | 'new';
+  label: string;
+  text: string;
+}
+
 @Component({
   selector: 'app-ranking-board',
   standalone: true,
@@ -67,8 +73,35 @@ export class RankingBoardComponent implements OnInit {
   }
 
   get fecha(): string {
-    if (!this.data) return '';
-    const [y, m, d] = this.data.fecha.split('-').map(Number);
-    return y && m && d ? `${d} ${MESES[m - 1]} ${y}` : this.data.fecha;
+    return this.data ? this.dia(this.data.fecha, true) : '';
   }
+
+  // Fecha de la captura con la que se comparan los cambios ("26 oct").
+  get desde(): string {
+    return this.data?.desde ? this.dia(this.data.desde, false) : '';
+  }
+
+  private dia(iso: string, conAnio: boolean): string {
+    const [y, m, d] = iso.split('-').map(Number);
+    if (!y || !m || !d) return iso;
+    return `${d} ${MESES[m - 1]}${conAnio ? ' ' + y : ''}`;
+  }
+
+  // Cambio de puesto respecto a la captura anterior (las flechitas de una clasificación).
+  move(r: RankingRow): Move | null {
+    if (!this.data?.desde) return null;
+    if (r.puesto_anterior == null) return { kind: 'new', label: 'nuevo', text: 'Entra en el top 50' };
+    const n = r.puesto_anterior - r.puesto;
+    if (n > 0) return { kind: 'up', label: `▲${n}`, text: `Sube ${n} ${n === 1 ? 'puesto' : 'puestos'}` };
+    if (n < 0) return { kind: 'down', label: `▼${-n}`, text: `Baja ${-n} ${n === -1 ? 'puesto' : 'puestos'}` };
+    return { kind: 'same', label: '=', text: 'Mantiene el puesto' };
+  }
+
+  // Reseñas ganadas desde la captura anterior (null si no se sabe).
+  gain(r: RankingRow): number | null {
+    const antes = r['reseñas_anterior'];
+    return this.data?.desde && antes != null ? r['reseñas'] - antes : null;
+  }
+
+  get comparing(): boolean { return !!this.data?.desde; }
 }

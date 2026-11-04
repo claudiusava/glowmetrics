@@ -196,6 +196,37 @@ def construir_ranking(estado, slugs_actuales, top=TOP_N, nuestro=SLUG_NUESTRO):
     return ranking
 
 
+def base_anterior(directorio, hoy):
+    """(fecha, ranking) de la captura publicada más reciente ANTERIOR a hoy: con lo que se compara.
+    Si se relanza el mismo día, la base sigue siendo la de antes, no la de hoy."""
+    carpeta = Path(directorio) / "capturas"
+    fechas = sorted(p.stem for p in carpeta.glob("*.json") if p.stem < hoy) if carpeta.exists() else []
+    for fecha in reversed(fechas):
+        ranking = cargar_json(carpeta / f"{fecha}.json", {}).get("ranking")
+        if ranking:
+            return fecha, ranking
+    return None, []
+
+
+def comparar(ranking, ranking_previo, estado_previo, hoy):
+    """Añade a cada fila el puesto y las reseñas que tenía en la captura anterior (None si no
+    tenía: centro nuevo en el top). La pantalla calcula con ello las flechas y las reseñas ganadas.
+    Las reseñas de un centro que no estaba en el top anterior salen del último valor guardado
+    de antes de hoy. Sin captura anterior no se añade nada."""
+    if not ranking_previo:
+        return ranking
+    previas = {r["slug"]: r for r in ranking_previo}
+    for fila in ranking:
+        antes = previas.get(fila["slug"])
+        fila["puesto_anterior"] = antes["puesto"] if antes else None
+        if antes:
+            fila["reseñas_anterior"] = antes["reseñas"]
+        else:
+            e = estado_previo.get(fila["slug"])
+            fila["reseñas_anterior"] = e["resenas"] if e and e.get("ultimo_ok", "") < hoy else None
+    return ranking
+
+
 def decidir_publicacion(total, leidos, umbral=UMBRAL_FALLOS):
     """(publicar, fraccion_de_fallos). Sin centros o con demasiados fallos: no."""
     if total <= 0:
@@ -336,13 +367,15 @@ def ejecutar(canal=None, limite=None, directorio=DIR_DATOS, concurrencia=CONCURR
         return 2
 
     ranking = construir_ranking(estado, [t["slug"] for t in tiendas])
+    desde, ranking_previo = base_anterior(directorio, hoy)
+    comparar(ranking, ranking_previo, estado_previo, hoy)
     if SLUG_NUESTRO not in {r["slug"] for r in ranking}:
         incidencias.append({"slug": SLUG_NUESTRO, "motivo": "no hay dato del centro propio", "accion": "no aparece en el ranking"})
         entrada_log["incidencias"] = incidencias
 
     captura = {"fecha": hoy, "capturado_en": ahora.isoformat(timespec="seconds"), "modo": modo,
                "centros_leidos": leidos, "centros_consultados": consultados, "centros_total": len(tiendas),
-               "publicado": True,
+               "publicado": True, "desde": desde,
                "centros_desactualizados": desactualizados, "ranking": ranking, "incidencias": incidencias}
     guardar_json(Path(directorio) / "latest.json", captura)
     guardar_json(Path(directorio) / "capturas" / f"{hoy}.json", captura)

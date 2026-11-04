@@ -75,6 +75,13 @@ Formato de `latest.json`:
 
 `es_nuestro` es `true` solo para `madrid-alcorcon`. `modo` es `completo` o `candidatos`.
 
+**Comparación con la captura anterior.** `desde` es la fecha de la captura publicada inmediatamente
+anterior (la más reciente de `capturas/` con fecha menor que hoy; relanzar el mismo día no la pisa).
+Cada fila lleva `puesto_anterior` (`null` = centro que entra por primera vez en el top) y
+`reseñas_anterior` (`null` si no hay valor previo). La app calcula con ellos las flechas de puesto
+(▲2, ▼1, =) y las reseñas ganadas (+14). Sin captura anterior estos campos no existen y la app no
+pinta nada. Un centro cuya lectura falla conserva su último valor y aparece con +0.
+
 ## Archivos
 
 - `sinvello_ranking.py` — el proceso completo (sitemap → fichas → lectura → ranking → guardado).
