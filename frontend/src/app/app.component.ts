@@ -46,13 +46,6 @@ const KPI_POLL_MS = 10 * 60_000;
 const NOTES_POLL_MS = 60_000;
 const TIP_ROTATE_MS = 60_000;
 
-// El cuaderno es compartido sin autor (varias personas usan el mismo
-// ordenador del centro). Guardamos en este navegador el id de la última
-// nota vista para saber si hay algo nuevo desde la última vez — es un
-// aviso "para mí, en este dispositivo", no un dato que deba coincidir
-// entre pantallas.
-const NOTES_SEEN_KEY = 'glowmetrics_notes_seen_v1';
-
 type View = 'inicio' | 'espera' | 'notas' | 'limpieza';
 const VIEWS: View[] = ['inicio', 'espera', 'notas', 'limpieza'];
 
@@ -100,7 +93,6 @@ export class AppComponent implements OnInit, OnDestroy {
     { id: 'notas', icon: '📌', label: 'Notas' },
     { id: 'limpieza', icon: '🧹', label: 'Limpieza' },
   ];
-  hasUnreadNotes = false;
   addingNote = false;
   deletingNote = false;
   editingNote = false;
@@ -579,23 +571,8 @@ export class AppComponent implements OnInit, OnDestroy {
       this.svc.getNotes().subscribe(res => {
         if (!res || seq !== this.notesSeq) return; // superada por otra más reciente
         this.notes = res;
-        this.refreshUnreadFlag();
-        if (this.view === 'notas') this.markNotesAsSeen(); // las está viendo ahora mismo
       })
     );
-  }
-
-  private refreshUnreadFlag(): void {
-    const latestId = this.notes.length ? this.notes[0].id : null;
-    let seen: string | null = null;
-    try { seen = localStorage.getItem(NOTES_SEEN_KEY); } catch { /* ignorar */ }
-    this.hasUnreadNotes = !!latestId && latestId !== seen;
-  }
-
-  private markNotesAsSeen(): void {
-    const latestId = this.notes.length ? this.notes[0].id : '';
-    try { localStorage.setItem(NOTES_SEEN_KEY, latestId); } catch { /* ignorar */ }
-    this.hasUnreadNotes = false;
   }
 
   // Ranking de reseñas de la franquicia (enlace "Ranking España" bajo los 12 meses).
@@ -613,11 +590,7 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.view === 'inicio') this.confetti.stopLoop(); // el confeti es de la pantalla de inicio
     this.view = v;
     try { history.replaceState(null, '', v === 'inicio' ? location.pathname + location.search : '#' + v); } catch { /* ignorar */ }
-    if (v === 'notas') {
-      // Las notas se dan por leídas al verlas.
-      this.loadNotes();
-      this.markNotesAsSeen();
-    }
+    if (v === 'notas') this.loadNotes();
   }
 
 
@@ -634,7 +607,6 @@ export class AppComponent implements OnInit, OnDestroy {
         if (res && res.notes && seq === this.notesSeq) {
           this.notes = res.notes;
           this.lastNotesWriteAt = Date.now();
-          this.markNotesAsSeen(); // lo acabamos de escribir, no es "sin leer"
           if (res.error) this.addNoteError = res.error;
         } else {
           // Sin respuesta válida: no sabemos si llegó a guardarse, así que
@@ -657,7 +629,6 @@ export class AppComponent implements OnInit, OnDestroy {
         if (res && res.notes && seq === this.notesSeq) {
           this.notes = res.notes;
           this.lastNotesWriteAt = Date.now();
-          this.markNotesAsSeen();
           if (res.error) this.editNoteError = res.error;
         } else {
           // Sin respuesta válida (timeout, red, o una escritura más
@@ -680,7 +651,6 @@ export class AppComponent implements OnInit, OnDestroy {
         if (res && res.notes && seq === this.notesSeq) {
           this.notes = res.notes;
           this.lastNotesWriteAt = Date.now();
-          this.markNotesAsSeen();
         }
       })
     );
