@@ -17,6 +17,7 @@ import { CleaningBoardComponent } from './components/cleaning-board/cleaning-boa
 import { NotesBoardComponent } from './components/notes-board/notes-board.component';
 import { CleaningAlertService } from './services/cleaning-alert.service';
 import { WaitlistAlertService } from './services/waitlist-alert.service';
+import { UpdateService } from './services/update.service';
 import { ReviewsFeedComponent } from './components/reviews-feed/reviews-feed.component';
 import { Review, ReviewsResponse, BootstrapResponse, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry, Note } from './models/review.model';
 
@@ -39,6 +40,9 @@ function currentMonthKey(): string {
 const POLL_MS = 60_000;
 const MONTHLY_GOAL_POLL_MS = 60 * 60 * 1_000; // cada hora
 const MONTHLY_HISTORY_POLL_MS = 60 * 60 * 1_000; // cada hora
+// El porcentaje de Airtable se lee de la copia guardada en la hoja (no llama a Airtable, no gasta cuota):
+// los avisos de las 13:00 y las 19:00 lo actualizan y la pantalla lo recoge sin recargar.
+const KPI_POLL_MS = 10 * 60_000;
 const NOTES_POLL_MS = 60_000;
 const TIP_ROTATE_MS = 60_000;
 
@@ -142,6 +146,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private cache: SnapshotCacheService,
     public cleaningAlert: CleaningAlertService,
     public waitlistAlert: WaitlistAlertService,
+    private updates: UpdateService, // solo hay que crearlo: se ocupa él de recargar si hay versión nueva
   ) {}
 
   ngOnInit(): void {
@@ -162,6 +167,9 @@ export class AppComponent implements OnInit, OnDestroy {
     );
     this.subs.add(
       interval(MONTHLY_HISTORY_POLL_MS).subscribe(() => this.loadMonthlyHistory())
+    );
+    this.subs.add(
+      interval(KPI_POLL_MS).subscribe(() => { if (!document.hidden) this.loadAirtableKpi(); })
     );
     this.subs.add(
       interval(NOTES_POLL_MS).subscribe(() => { if (!document.hidden) this.pollNotesIfIdle(); })
