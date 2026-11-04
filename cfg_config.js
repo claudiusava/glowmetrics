@@ -11,7 +11,7 @@
 const AIRTABLE = Object.freeze({
   BASE_ID: 'appkC8oRh7XtpKEVN',
   TABLE_ID: 'tblVS5CHe2Vjb5HRv',
-  VIEW_ID: 'viw43MlTmyROPwIXD', // vista
+  VIEW_ID: 'viwzqHTMsQhRwftYc', // vista "NO TOCAR - MARKETING": nadie la filtra (la API respeta los filtros de la vista)
   FIELD_NAME: 'Field 5',        // campo que contiene "CITADA"
   CACHE_SECS: 900
 });
