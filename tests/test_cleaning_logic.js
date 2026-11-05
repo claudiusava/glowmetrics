@@ -7,7 +7,7 @@ const path = require('path');
 const src = fs.readFileSync(path.resolve(__dirname, '../frontend/src/app/components/cleaning-board/cleaning-logic.ts'), 'utf8');
 const m = { exports: {} };
 new Function('module', 'exports', ts.transpileModule(src, { compilerOptions: { module: 'commonjs', target: 'es2019' } }).outputText)(m, m.exports);
-const { todayIso, daysBetween, lastEntry, agoText, soonDays, statusText, taskState, dirtColor, todoNow, suggestWho, normalizeDate, shareStats } = m.exports;
+const { todayIso, daysBetween, lastEntry, agoText, soonDays, statusText, taskState, dirtColor, todoNow, suggestWho, normalizeDate, shareStats, activeEntries, START_WHO } = m.exports;
 
 let failed = 0;
 const check = (n, c, x = '') => { console.log((c ? 'OK   ' : 'FALLA') + ' ' + n + (c ? '' : '  ' + JSON.stringify(x))); if (!c) failed++; };
@@ -117,6 +117,32 @@ check('reparto con el papel (desde el 31/07): Elena 1 de 8 y Laura 7 de 8', rp.t
 check('reparto: porcentajes 13 % y 88 %', rp.rows[0].pct === 13 && rp.rows[1].pct === 88, rp.rows);
 check('reparto por horas (40/25): le corresponde 62 % a Elena y 38 % a Laura', shareStats(PAPEL, STAFF, porHoras, hoy).rows.map(r => r.target).join() === '62,38', shareStats(PAPEL, STAFF, porHoras, hoy).rows);
 check('reparto sin apuntes: total 0', shareStats([], STAFF, reparto, hoy).total === 0 && shareStats([rota], STAFF, reparto, hoy).total === 0);
+
+// --- Arranque programado de una tarea (apunte "Inicio" con fecha futura) ---
+const cr = TAREAS.cristales;
+const inicio = E('cristales', 'Inicio', '2026-12-01', 'contador iniciado');
+const cab = E('cabina2', 'Elena', '2026-11-04');
+check('START_WHO es "Inicio"', START_WHO === 'Inicio');
+const hoy5 = '2026-11-05';
+check('antes del día: el apunte programado no cuenta (cristales "Sin registros")', taskState(cr, activeEntries([inicio, cab], hoy5), hoy5).level === 'none');
+check('antes del día: tampoco sale en el historial (el resto sí)', activeEntries([inicio, cab], hoy5).map(e => e.id).join() === cab.id);
+const dic1 = '2026-12-01';
+const st1 = taskState(cr, activeEntries([inicio, cab], dic1), dic1);
+check('el día 1: empieza la cuenta (faltan 60 días)', st1.level === 'ok' && st1.daysLeft === 60 && st1.status === 'Faltan 60 días', st1);
+const ene = '2027-01-30';
+check('el 30 de enero toca', taskState(cr, activeEntries([inicio, cab], ene), ene).level === 'due');
+check('el 15 de enero "se acerca"', taskState(cr, activeEntries([inicio, cab], '2027-01-15'), '2027-01-15').level === 'soon');
+check('el 4 de enero todavía no avisa', taskState(cr, activeEntries([inicio, cab], '2027-01-04'), '2027-01-04').level === 'ok');
+check('"Inicio" no cuenta en el reparto', shareStats(activeEntries([inicio, cab], dic1), STAFF, { Elena: 40, Laura: 25 }, dic1).total === 1);
+
+// Si las chicas limpian antes, la cuenta empieza con lo que hicieron
+const real = E('cristales', 'Laura', '2026-11-20');
+const antes = activeEntries([inicio, real, cab], '2026-11-25');
+check('si lo hacen antes del día, cuenta lo que hicieron', taskState(cr, antes, '2026-11-25').last.who === 'Laura' && taskState(cr, antes, '2026-11-25').daysLeft === 55);
+check('y el "Inicio" ya no pisa su apunte cuando llega el 1 de diciembre', taskState(cr, activeEntries([inicio, real, cab], dic1), dic1).last.who === 'Laura');
+check('ni aparece en el historial', !activeEntries([inicio, real, cab], dic1).some(e => e.who === 'Inicio'));
+check('el "Inicio" de una tarea no se ve afectado por apuntes de otras', activeEntries([inicio, cab], dic1).some(e => e.who === 'Inicio'));
+check('un apunte con fecha futura de una persona tampoco cuenta', activeEntries([E('bano', 'Elena', '2026-12-31')], hoy5).length === 0);
 
 console.log(failed ? '\n' + failed + ' comprobaciones FALLAN' : '\nLógica de limpieza OK');
 process.exit(failed ? 1 : 0);

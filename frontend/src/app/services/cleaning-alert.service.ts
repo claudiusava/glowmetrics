@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { interval } from 'rxjs';
 import { GlowmetricsService } from './glowmetrics.service';
-import { CleaningEntry, CleaningTask, normalizeDate, taskState, todayIso, todoNow } from '../components/cleaning-board/cleaning-logic';
+import { CleaningEntry, CleaningTask, activeEntries, normalizeDate, taskState, todayIso, todoNow } from '../components/cleaning-board/cleaning-logic';
 
 const POLL_MS = 60_000;
 const BLINK_MS = 1200;
@@ -58,7 +58,7 @@ export class CleaningAlertService {
 
   private recalc(): void {
     const today = todayIso();
-    const names = todoNow(this.tasks, this.entries, today).map(x => x.task.name);
+    const names = todoNow(this.tasks, activeEntries(this.entries, today), today).map(x => x.task.name);
     const changed = names.join('|') !== this.pending.join('|');
     this.pending = names;
     if (changed) this.paint();

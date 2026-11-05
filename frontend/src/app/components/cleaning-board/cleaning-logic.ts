@@ -40,6 +40,20 @@ export function daysBetween(from: string, to: string): number {
   return Math.round((b - a) / 86_400_000);
 }
 
+/** Quien firma el apunte con que se programa el arranque de una tarea (no es una persona del equipo). */
+export const START_WHO = 'Inicio';
+
+/**
+ * Los apuntes que cuentan hoy. Un apunte con fecha futura todavía no existe (así se programa que una
+ * tarea empiece un día concreto), y un apunte de "Inicio" solo vale si nadie ha apuntado esa tarea de
+ * verdad: si las chicas la hacen antes, la cuenta empieza con lo que hicieron.
+ */
+export function activeEntries(entries: CleaningEntry[], today: string): CleaningEntry[] {
+  const started = entries.filter(e => e.who !== START_WHO && e.date <= today);
+  const done = new Set(started.map(e => e.task));
+  return entries.filter(e => e.date <= today && (e.who !== START_WHO || !done.has(e.task)));
+}
+
 /** El apunte más reciente de una tarea (por fecha; a igualdad, el último que se apuntó). */
 export function lastEntry(entries: CleaningEntry[], taskId: string): CleaningEntry | null {
   let best: CleaningEntry | null = null;

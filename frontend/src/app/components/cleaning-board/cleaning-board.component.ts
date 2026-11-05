@@ -4,7 +4,7 @@ import { interval, Subscription } from 'rxjs';
 import { GlowmetricsService } from '../../services/glowmetrics.service';
 import { CleaningAlertService } from '../../services/cleaning-alert.service';
 import {
-  CleaningEntry, CleaningTask, ShareRow, TaskState, agoText, daysBetween, dirtColor, normalizeDate,
+  CleaningEntry, CleaningTask, ShareRow, TaskState, activeEntries, agoText, daysBetween, dirtColor, normalizeDate,
   shareStats, suggestWho, taskState, todayIso, todoNow,
 } from './cleaning-logic';
 
@@ -117,13 +117,14 @@ export class CleaningBoardComponent implements OnInit, OnDestroy {
 
   /** Recalcula todo lo que se pinta a partir de los apuntes. */
   private refresh(): void {
+    const entries = activeEntries(this.entries, this.today); // sin los apuntes programados para más adelante
     const cardOf = (task: CleaningTask): TaskCard => {
-      const state = taskState(task, this.entries, this.today);
-      const who = state.level === 'ok' ? null : suggestWho(this.entries, this.staff, this.shares, task.id, this.today);
+      const state = taskState(task, entries, this.today);
+      const who = state.level === 'ok' ? null : suggestWho(entries, this.staff, this.shares, task.id, this.today);
       return { task, state, color: dirtColor(state), who };
     };
     this.cards = this.tasks.map(cardOf);
-    const urgent = new Set(todoNow(this.tasks, this.entries, this.today).map(x => x.task.id));
+    const urgent = new Set(todoNow(this.tasks, entries, this.today).map(x => x.task.id));
     this.todo = this.cards
       .filter(c => urgent.has(c.task.id))
       .sort((a, b) => (a.state.daysLeft ?? 0) - (b.state.daysLeft ?? 0));
@@ -132,9 +133,9 @@ export class CleaningBoardComponent implements OnInit, OnDestroy {
           .sort((a, b) => (a.state.daysLeft ?? 0) - (b.state.daysLeft ?? 0))[0] ?? null;
     this.alert.publish(this.tasks, this.entries); // el aviso de la pestaña se actualiza al instante
     this.nothingYet = this.cards.every(c => c.state.level === 'none');
-    this.share = shareStats(this.entries, this.staff, this.shares, this.today);
+    this.share = shareStats(entries, this.staff, this.shares, this.today);
 
-    const all = this.filter ? this.entries.filter(e => e.task === this.filter) : this.entries;
+    const all = this.filter ? entries.filter(e => e.task === this.filter) : entries;
     this.historyTotal = all.length;
     this.history = all.slice(0, HISTORY_SHOWN);
   }
