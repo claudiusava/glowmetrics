@@ -68,6 +68,7 @@ export interface AirtableKpi {
   stale: boolean;
   updatedAt: string;
   refreshed?: boolean;
+  rejected?: boolean; // true = la lectura nueva no era creíble (menos leads que antes) y se conservó la anterior
 }
 
 export interface MonthlyHistoryEntry {

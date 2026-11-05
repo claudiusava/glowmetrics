@@ -444,7 +444,9 @@ export class AppComponent implements OnInit, OnDestroy {
         }
         this.kpi = res;
         this.showRefreshToast(
-          res.refreshed ? 'Airtable actualizado ✓' : 'Ya se actualizó hace poco, espera unos minutos'
+          res.rejected ? 'Airtable devolvió menos leads que antes (¿hay un filtro?). Se mantiene el dato anterior'
+            : res.refreshed ? 'Airtable actualizado ✓' : 'Ya se actualizó hace poco, espera unos minutos',
+          res.rejected ? 6000 : 2500
         );
       })
     );

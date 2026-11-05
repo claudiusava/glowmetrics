@@ -28,13 +28,11 @@ function setupAirtableKpiTriggers() {
 function airtableKpiJob() {
   var centerId = 'ALCORCON';
 
-  // Evitar que el job se coma un cache malo
-  try { CacheService.getScriptCache().remove('airtable_stats'); } catch (e) {}
-
   try {
-    var stats = getAirtableStats(); // si Airtable funciona, aquí total>0
-    saveAirtableSnapshot_(centerId, stats);
-    console.log('airtableKpiJob OK:', JSON.stringify(stats));
+    // Lee Airtable (sin usar la caché) y guarda el snapshot, salvo que la lectura no sea creíble
+    var r = refreshAirtableSnapshot_(centerId);
+    console.log(r.saved ? 'airtableKpiJob OK:' : 'airtableKpiJob: lectura descartada, se conserva el dato anterior:',
+      JSON.stringify(r.stats));
     return;
   } catch (e) {
     console.error('airtableKpiJob ERROR:', e);

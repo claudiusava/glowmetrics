@@ -159,16 +159,46 @@ function manualRefreshAirtableKpi() {
       return Object.assign(getAirtablePercentage(centerId), { refreshed: false });
     }
 
+    let rejected = false;
     try {
-      CacheService.getScriptCache().remove('airtable_stats');
-      const stats = getAirtableStats();
-      saveAirtableSnapshot_(centerId, stats);
+      rejected = !refreshAirtableSnapshot_(centerId).saved;
     } catch (e) {
       console.error('manualRefreshAirtableKpi ERROR:', e);
     }
 
-    return Object.assign(getAirtablePercentage(centerId), { refreshed: true });
+    return Object.assign(getAirtablePercentage(centerId), { refreshed: !rejected, rejected: rejected });
   });
+}
+
+/**
+ * Red de seguridad: los leads totales solo suben con el tiempo. Si la lectura nueva trae claramente
+ * menos que la guardada (p. ej. alguien tiene un filtro puesto en la vista de Airtable), no es creíble
+ * y no se guarda: se conserva el último dato bueno.
+ */
+const KPI_GUARD = Object.freeze({ MIN_PREV_TOTAL: 50, MIN_TOTAL_RATIO: 0.9 });
+
+function readingLooksWrong_(prev, stats) {
+  if (!prev || !(prev.total >= KPI_GUARD.MIN_PREV_TOTAL)) return false; // sin referencia fiable: se acepta
+  return Number(stats.total) < prev.total * KPI_GUARD.MIN_TOTAL_RATIO;
+}
+
+/** Lee Airtable y guarda el snapshot, salvo que la lectura no sea creíble. Devuelve { saved, stats }. */
+function refreshAirtableSnapshot_(centerId) {
+  const cache = CacheService.getScriptCache();
+  cache.remove('airtable_stats'); // que no se reutilice una lectura anterior
+  const stats = getAirtableStats();
+
+  let prev = null;
+  try { prev = readAirtableSnapshot_(centerId); } catch (e) { /* sin referencia: se acepta */ }
+
+  if (readingLooksWrong_(prev, stats)) {
+    cache.remove('airtable_stats'); // y tampoco esta
+    console.error('Lectura de Airtable descartada (¿filtro en la vista?): total ' + stats.total +
+      ' frente a ' + prev.total + ' guardado.');
+    return { saved: false, stats: stats };
+  }
+  saveAirtableSnapshot_(centerId, stats);
+  return { saved: true, stats: stats };
 }
 
 function saveAirtableSnapshot_(centerId, stats) {
