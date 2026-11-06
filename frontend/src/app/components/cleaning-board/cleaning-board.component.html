@@ -57,7 +57,8 @@
 
         <div class="last">
           <ng-container *ngIf="c.state.last; else never">
-            Última vez: <strong>{{ c.state.ago.toLowerCase() }}</strong> · {{ c.state.last.who }}<span *ngIf="c.state.last.note"> · {{ c.state.last.note.toLowerCase() }}</span>
+            <ng-container *ngIf="c.state.last.who === startWho; else hecho">Contando desde <strong>{{ c.state.ago.toLowerCase() }}</strong></ng-container>
+            <ng-template #hecho>Última vez: <strong>{{ c.state.ago.toLowerCase() }}</strong> · {{ c.state.last.who }}<span *ngIf="c.state.last.note"> · {{ c.state.last.note.toLowerCase() }}</span></ng-template>
           </ng-container>
           <ng-template #never>Todavía sin apuntar</ng-template>
         </div>

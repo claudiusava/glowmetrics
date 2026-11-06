@@ -5,7 +5,7 @@ import { GlowmetricsService } from '../../services/glowmetrics.service';
 import { CleaningAlertService } from '../../services/cleaning-alert.service';
 import {
   CleaningEntry, CleaningTask, ShareRow, TaskState, activeEntries, agoText, daysBetween, dirtColor, normalizeDate,
-  shareStats, suggestWho, taskState, todayIso, todoNow,
+  shareStats, suggestWho, taskState, todayIso, todoNow, START_WHO,
 } from './cleaning-logic';
 
 // El registro lo usan dos personas en el mismo ordenador: se refresca solo mientras está abierto.
@@ -40,6 +40,7 @@ export class CleaningBoardComponent implements OnInit, OnDestroy {
   loading = true;
   loadFailed = false;
   today = todayIso();
+  readonly startWho = START_WHO;
 
   // Lo que se pinta (se recalcula en refresh(), nunca en la plantilla)
   cards: TaskCard[] = [];
@@ -135,7 +136,9 @@ export class CleaningBoardComponent implements OnInit, OnDestroy {
     this.nothingYet = this.cards.every(c => c.state.level === 'none');
     this.share = shareStats(entries, this.staff, this.shares, this.today);
 
-    const all = this.filter ? entries.filter(e => e.task === this.filter) : entries;
+    // El apunte de "Inicio" solo pone en marcha la cuenta: no es una limpieza y no sale en el historial.
+    const visible = entries.filter(e => e.who !== START_WHO);
+    const all = this.filter ? visible.filter(e => e.task === this.filter) : visible;
     this.historyTotal = all.length;
     this.history = all.slice(0, HISTORY_SHOWN);
   }
