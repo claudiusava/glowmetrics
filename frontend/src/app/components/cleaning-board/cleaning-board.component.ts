@@ -5,7 +5,7 @@ import { GlowmetricsService } from '../../services/glowmetrics.service';
 import { CleaningAlertService } from '../../services/cleaning-alert.service';
 import {
   CleaningEntry, CleaningTask, ShareRow, TaskState, activeEntries, agoText, daysBetween, dirtColor, normalizeDate,
-  shareStats, suggestWho, taskState, todayIso, todoNow, START_WHO,
+  shareStats, suggestWho, taskState, todayIso, todoNow, START_WHO, isRotating,
 } from './cleaning-logic';
 
 // El registro lo usan dos personas en el mismo ordenador: se refresca solo mientras está abierto.
@@ -41,6 +41,7 @@ export class CleaningBoardComponent implements OnInit, OnDestroy {
   loadFailed = false;
   today = todayIso();
   readonly startWho = START_WHO;
+  readonly isRotating = isRotating;
 
   // Lo que se pinta (se recalcula en refresh(), nunca en la plantilla)
   cards: TaskCard[] = [];

@@ -7,7 +7,7 @@ const path = require('path');
 const src = fs.readFileSync(path.resolve(__dirname, '../frontend/src/app/components/cleaning-board/cleaning-logic.ts'), 'utf8');
 const m = { exports: {} };
 new Function('module', 'exports', ts.transpileModule(src, { compilerOptions: { module: 'commonjs', target: 'es2019' } }).outputText)(m, m.exports);
-const { todayIso, daysBetween, lastEntry, agoText, soonDays, statusText, taskState, dirtColor, todoNow, suggestWho, normalizeDate, shareStats, activeEntries, START_WHO } = m.exports;
+const { todayIso, daysBetween, lastEntry, agoText, soonDays, statusText, taskState, dirtColor, todoNow, suggestWho, normalizeDate, shareStats, activeEntries, START_WHO, isRotating, ROTATING_TASKS } = m.exports;
 
 let failed = 0;
 const check = (n, c, x = '') => { console.log((c ? 'OK   ' : 'FALLA') + ' ' + n + (c ? '' : '  ' + JSON.stringify(x))); if (!c) failed++; };
@@ -143,6 +143,31 @@ check('y el "Inicio" ya no pisa su apunte cuando llega el 1 de diciembre', taskS
 check('ni aparece en el historial', !activeEntries([inicio, real, cab], dic1).some(e => e.who === 'Inicio'));
 check('el "Inicio" de una tarea no se ve afectado por apuntes de otras', activeEntries([inicio, cab], dic1).some(e => e.who === 'Inicio'));
 check('un apunte con fecha futura de una persona tampoco cuenta', activeEntries([E('bano', 'Elena', '2026-12-31')], hoy5).length === 0);
+
+// --- Tareas por turnos (cristales): una vez cada una, fuera del reparto del día a día ---
+const POR_HORAS = { Elena: 40, Laura: 25 };
+const hoyT = '2026-12-20';
+const diarios = (quien, n) => Array.from({ length: n }, (_, i) => E('recepcion', quien, `2026-12-${String(1 + i).padStart(2, '0')}`, '', i));
+check('los cristales van por turnos y el polvo no', isRotating('cristales') && !isRotating('recepcion') && ROTATING_TASKS.length === 1);
+
+// Primera vez: la que menos reparto diario lleve en ese momento
+check('primera vez: le toca a quien menos reparto lleva (Laura, que no ha hecho nada)', suggestWho(diarios('Elena', 3), STAFF, POR_HORAS, 'cristales', hoyT) === 'Laura');
+check('primera vez: si Elena va por detrás, le toca a Elena', suggestWho(diarios('Laura', 5), STAFF, POR_HORAS, 'cristales', hoyT) === 'Elena');
+check('primera vez sin apuntes de nadie: empate, no se sugiere a nadie', suggestWho([], ['Elena', 'Laura'], { Elena: 1, Laura: 1 }, 'cristales', hoyT) === null);
+
+// Después: por turnos
+const ele = E('cristales', 'Elena', '2026-12-10');
+check('si Elena los hizo la última vez, le toca a Laura (aunque Laura lleve más reparto diario)', suggestWho([ele, ...diarios('Laura', 8)], STAFF, POR_HORAS, 'cristales', hoyT) === 'Laura');
+const lau = E('cristales', 'Laura', '2026-12-10');
+check('si Laura los hizo la última vez, le toca a Elena', suggestWho([lau, ...diarios('Elena', 8)], STAFF, POR_HORAS, 'cristales', hoyT) === 'Elena');
+const dosSeguidas = [E('cristales', 'Laura', '2026-09-01'), E('cristales', 'Laura', '2026-11-10'), E('cristales', 'Elena', '2026-06-01')];
+check('si una los hizo dos veces seguidas (vacaciones), se reajusta: le toca a quien lleva más sin hacerlos', suggestWho(dosSeguidas, STAFF, POR_HORAS, 'cristales', hoyT) === 'Elena');
+check('el apunte de "Inicio" no cuenta como turno de nadie', suggestWho([E('cristales', 'Inicio', '2026-12-01'), ...diarios('Elena', 3)], STAFF, POR_HORAS, 'cristales', hoyT) === 'Laura');
+
+// No cuentan en el reparto diario
+const conCristales = [...diarios('Elena', 3), E('cristales', 'Laura', '2026-12-10')];
+check('los cristales no suman en el reparto del día a día', shareStats(conCristales, STAFF, POR_HORAS, hoyT).total === 3 && shareStats(conCristales, STAFF, POR_HORAS, hoyT).rows[1].count === 0, shareStats(conCristales, STAFF, POR_HORAS, hoyT));
+check('y hacerlos no cambia a quién le toca el polvo', suggestWho(conCristales, STAFF, POR_HORAS, 'recepcion', hoyT) === suggestWho(diarios('Elena', 3), STAFF, POR_HORAS, 'recepcion', hoyT));
 
 console.log(failed ? '\n' + failed + ' comprobaciones FALLAN' : '\nLógica de limpieza OK');
 process.exit(failed ? 1 : 0);

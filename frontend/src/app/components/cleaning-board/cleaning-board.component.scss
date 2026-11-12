@@ -168,6 +168,48 @@
 .name { font-size: 1.15em; font-weight: 800; color: #0f172a; overflow-wrap: anywhere; }
 .sub { margin-left: auto; font-size: 0.86em; font-weight: 600; color: #94a3b8; white-space: nowrap; }
 
+// Circulito de información: al pasar el ratón (o tocarlo) explica la tarea. El globo se coloca respecto a la tarjeta.
+.info {
+  flex: none;
+  width: 1.45em;
+  height: 1.45em;
+  border-radius: 50%;
+  border: 1.5px solid #94a3b8;
+  color: #64748b;
+  font-size: 0.82em;
+  font-weight: 800;
+  line-height: 1.3em;
+  text-align: center;
+  cursor: help;
+  outline: none;
+  user-select: none;
+
+  .glyph { font-style: italic; font-family: Georgia, 'Times New Roman', serif; }
+
+  &:hover, &:focus { border-color: #db2777; color: #db2777; }
+  &:focus-visible { box-shadow: 0 0 0 0.18em rgba(219, 39, 119, 0.25); }
+
+  .tip {
+    display: none;
+    position: absolute;
+    left: 0.8em;
+    right: 0.8em;
+    top: 3.2em;
+    z-index: 20;
+    padding: 0.7em 0.9em;
+    border-radius: 0.8em;
+    background: #0f172a;
+    color: #f8fafc;
+    font-size: 1.15em;
+    font-weight: 500;
+    line-height: 1.4;
+    text-align: left;
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.3);
+    strong { font-weight: 800; color: #fbcfe8; }
+  }
+  &:hover .tip, &:focus .tip { display: block; }
+}
+
 .today-tag {
   margin-left: auto;
   padding: 0.12em 0.7em;

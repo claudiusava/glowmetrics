@@ -44,6 +44,16 @@ export function daysBetween(from: string, to: string): number {
 export const START_WHO = 'Inicio';
 
 /**
+ * Tareas largas que se reparten POR TURNOS (una vez cada persona) y no cuentan en el reparto del día a día:
+ * una hora de cristales no se compara con cinco minutos de polvo.
+ */
+export const ROTATING_TASKS: readonly string[] = ['cristales'];
+
+export function isRotating(taskId: string): boolean {
+  return ROTATING_TASKS.includes(taskId);
+}
+
+/**
  * Los apuntes que cuentan hoy. Un apunte con fecha futura todavía no existe (así se programa que una
  * tarea empiece un día concreto), y un apunte de "Inicio" solo vale si nadie ha apuntado esa tarea de
  * verdad: si las chicas la hacen antes, la cuenta empieza con lo que hicieron.
@@ -116,36 +126,56 @@ export function todoNow(tasks: CleaningTask[], entries: CleaningEntry[], today: 
     .sort((a, b) => (a.state.daysLeft ?? 0) - (b.state.daysLeft ?? 0));
 }
 
+/** Apuntes del reparto del día a día: los últimos `windowDays` días, de personas del equipo y sin las tareas por turnos. */
+function dailyEntries(entries: CleaningEntry[], staff: string[], today: string, windowDays: number): CleaningEntry[] {
+  return entries.filter(e => staff.includes(e.who) && !isRotating(e.task) && VALID_DATE.test(e.date)
+    && daysBetween(e.date, today) <= windowDays && daysBetween(e.date, today) >= 0);
+}
+
+/** Cuánto le falta a cada persona para llegar a su parte justa del reparto diario (positivo = va por detrás). */
+function deficits(entries: CleaningEntry[], staff: string[], shares: Record<string, number>, today: string, windowDays: number): Record<string, number> {
+  const inWindow = dailyEntries(entries, staff, today, windowDays);
+  const sumShares = staff.reduce((s, p) => s + (shares[p] || 0), 0) || staff.length;
+  const out: Record<string, number> = {};
+  for (const p of staff) {
+    const share = (shares[p] || (sumShares === staff.length ? 1 : 0)) / sumShares;
+    out[p] = share * inWindow.length - inWindow.filter(e => e.who === p).length;
+  }
+  return out;
+}
+
+/** De entre `people`, los que más por detrás van en el reparto diario (más de uno si hay empate). */
+function mostBehind(people: string[], def: Record<string, number>): string[] {
+  const max = Math.max(...people.map(p => def[p]));
+  return people.filter(p => Math.abs(def[p] - max) < 1e-9);
+}
+
 /**
- * A quién le toca: quien lleve MENOS de su parte justa en los últimos `windowDays` días
- * (la parte justa sale de `shares`, p. ej. por horas trabajadas). En caso de empate, quien
- * lleve más tiempo sin hacer ESA tarea. Si siguen empatadas, no se sugiere a nadie.
+ * A quién le toca. Tareas del día a día: quien lleve MENOS de su parte justa en los últimos `windowDays`
+ * días (la parte justa sale de `shares`, p. ej. por horas trabajadas); en caso de empate, quien lleve más
+ * tiempo sin hacer ESA tarea; si siguen empatadas, no se sugiere a nadie.
+ * Tareas por turnos (cristales): quien lleve más tiempo sin hacerla (si una la hace dos veces seguidas, la
+ * siguiente es de la otra); en caso de empate (nadie la ha hecho aún), la que menos reparto diario lleve.
  */
 export function suggestWho(
   entries: CleaningEntry[], staff: string[], shares: Record<string, number>,
   taskId: string, today: string, windowDays = 90,
 ): string | null {
   if (staff.length === 0) return null;
-  const inWindow = entries.filter(e => staff.includes(e.who) && VALID_DATE.test(e.date)
-    && daysBetween(e.date, today) <= windowDays && daysBetween(e.date, today) >= 0);
-  const total = inWindow.length;
-  const sumShares = staff.reduce((s, p) => s + (shares[p] || 0), 0) || staff.length;
-
-  const deficit: Record<string, number> = {};
-  for (const p of staff) {
-    const share = (shares[p] || (sumShares === staff.length ? 1 : 0)) / sumShares;
-    const done = inWindow.filter(e => e.who === p).length;
-    deficit[p] = share * total - done;
-  }
-  const max = Math.max(...staff.map(p => deficit[p]));
-  let tied = staff.filter(p => Math.abs(deficit[p] - max) < 1e-9);
-  if (tied.length === 1) return tied[0];
-
-  // Empate: quien más tiempo lleve sin hacer esta tarea (o nunca la ha hecho).
+  const def = deficits(entries, staff, shares, today, windowDays);
   const lastOf = (p: string) => lastEntry(entries.filter(e => e.who === p), taskId)?.date ?? '0000-00-00';
-  const oldest = tied.map(lastOf).reduce((a, b) => (a < b ? a : b));
-  tied = tied.filter(p => lastOf(p) === oldest);
-  return tied.length === 1 ? tied[0] : null;
+  const longestWithout = (people: string[]) => {
+    const oldest = people.map(lastOf).reduce((a, b) => (a < b ? a : b));
+    return people.filter(p => lastOf(p) === oldest);
+  };
+
+  const [first, second] = isRotating(taskId)
+    ? [longestWithout, (people: string[]) => mostBehind(people, def)]
+    : [(people: string[]) => mostBehind(people, def), longestWithout];
+  const a = first(staff);
+  if (a.length === 1) return a[0];
+  const b = second(a);
+  return b.length === 1 ? b[0] : null;
 }
 
 export interface ShareRow { who: string; count: number; pct: number; target: number; }
@@ -154,8 +184,7 @@ export interface ShareRow { who: string; count: number; pct: number; target: num
 export function shareStats(
   entries: CleaningEntry[], staff: string[], shares: Record<string, number>, today: string, windowDays = 90,
 ): { total: number; rows: ShareRow[] } {
-  const inWindow = entries.filter(e => staff.includes(e.who) && VALID_DATE.test(e.date)
-    && daysBetween(e.date, today) <= windowDays && daysBetween(e.date, today) >= 0);
+  const inWindow = dailyEntries(entries, staff, today, windowDays);
   const total = inWindow.length;
   const sum = staff.reduce((a, p) => a + (shares[p] || 0), 0) || staff.length;
   const rows = staff.map(who => ({

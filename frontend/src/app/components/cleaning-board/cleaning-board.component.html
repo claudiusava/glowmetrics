@@ -36,6 +36,10 @@
         <header class="card-top">
           <span class="icon" aria-hidden="true">{{ c.task.icon }}</span>
           <span class="name">{{ c.task.name }}</span>
+          <span class="info" *ngIf="isRotating(c.task.id)" tabindex="0" role="note"
+                aria-label="Esta tarea lleva mucho más tiempo, así que se reparte por turnos: una vez cada una, sin contar en el reparto diario."><span class="glyph" aria-hidden="true">i</span>
+            <span class="tip" aria-hidden="true">Esta tarea lleva mucho más tiempo que las demás, así que se reparte <strong>una vez cada una</strong>, por turnos, y <strong>no cuenta en el reparto diario</strong>.</span>
+          </span>
           <span class="today-tag" *ngIf="c.state.level === 'due'">HOY</span>
           <span class="alert-dot" *ngIf="c.state.level === 'due' || c.state.level === 'late'" aria-label="Toca limpiar"></span>
         </header>
@@ -105,7 +109,7 @@
               </div>
             </div>
           </div>
-          <div class="legend">La raya marca la parte que le corresponde según sus horas.</div>
+          <div class="legend">La raya marca la parte que le corresponde según sus horas. Los cristales se reparten aparte, por turnos.</div>
         </ng-container>
         <ng-template #noShare><div class="legend">Aún no hay apuntes de los últimos 90 días.</div></ng-template>
       </article>
