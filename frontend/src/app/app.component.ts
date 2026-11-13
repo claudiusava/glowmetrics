@@ -14,12 +14,15 @@ import { MonthlyHistoryComponent } from './components/monthly-history/monthly-hi
 import { RankingModalComponent } from './components/ranking-modal/ranking-modal.component';
 import { WaitlistBoardComponent } from './components/waitlist-board/waitlist-board.component';
 import { CleaningBoardComponent } from './components/cleaning-board/cleaning-board.component';
-import { NotesBoardComponent } from './components/notes-board/notes-board.component';
+import { FollowupBoardComponent } from './components/followup-board/followup-board.component';
 import { CleaningAlertService } from './services/cleaning-alert.service';
+import { FollowupAlertService } from './services/followup-alert.service';
+import { AuthService } from './services/auth.service';
+import { KeyGateComponent } from './components/key-gate/key-gate.component';
 import { WaitlistAlertService } from './services/waitlist-alert.service';
 import { UpdateService } from './services/update.service';
 import { ReviewsFeedComponent } from './components/reviews-feed/reviews-feed.component';
-import { Review, ReviewsResponse, BootstrapResponse, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry, Note } from './models/review.model';
+import { Review, ReviewsResponse, BootstrapResponse, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry } from './models/review.model';
 
 // Esperas entre reintentos tras un fallo REAL (error o timeout de 60 s), cada
 // vez más largas: reintentar deprisa solo satura más a un backend que ya va
@@ -43,14 +46,13 @@ const MONTHLY_HISTORY_POLL_MS = 60 * 60 * 1_000; // cada hora
 // El porcentaje de Airtable se lee de la copia guardada en la hoja (no llama a Airtable, no gasta cuota):
 // los avisos de las 13:00 y las 19:00 lo actualizan y la pantalla lo recoge sin recargar.
 const KPI_POLL_MS = 10 * 60_000;
-const NOTES_POLL_MS = 60_000;
 const TIP_ROTATE_MS = 60_000;
 
-type View = 'inicio' | 'espera' | 'notas' | 'limpieza';
-const VIEWS: View[] = ['inicio', 'espera', 'notas', 'limpieza'];
+type View = 'inicio' | 'espera' | 'contactar' | 'limpieza';
+const VIEWS: View[] = ['inicio', 'espera', 'contactar', 'limpieza'];
 
 // Palabras secretas: se teclean en cualquier momento (con el foco fuera de
-// cualquier campo de texto, para que no salten al escribir una nota o una
+// cualquier campo de texto, para que no salten al escribir el nombre de una
 // clienta). "airtable" fuerza un refresco real del porcentaje de Airtable (útil
 // si el trigger de las 13:00/19:00 coincidió con un filtro puesto a mano en la
 // tabla) y "reseñas" lanza ya el sync de reseñas en vez de esperar al diario.
@@ -67,7 +69,7 @@ const SECRET_BUFFER_LEN = Math.max(...Object.keys(SECRET_CODES).map(k => k.lengt
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, KpiCardComponent, MonthlyGoalComponent, MonthlyHistoryComponent, RankingModalComponent, WaitlistBoardComponent, CleaningBoardComponent, NotesBoardComponent, ReviewsFeedComponent],
+  imports: [CommonModule, KpiCardComponent, MonthlyGoalComponent, MonthlyHistoryComponent, RankingModalComponent, WaitlistBoardComponent, CleaningBoardComponent, FollowupBoardComponent, ReviewsFeedComponent, KeyGateComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
@@ -84,41 +86,14 @@ export class AppComponent implements OnInit, OnDestroy {
   refreshToast: string | null = null;
   newReviewsCount = 0;
   monthlyHistory: MonthlyHistoryEntry[] = [];
-  notes: Note[] = [];
   // Secciones de la pantalla principal (barra de pestañas): al pulsar una, cambia toda la pantalla.
   view: View = this.viewFromHash();
   readonly tabs: { id: View; icon: string; label: string; long?: string }[] = [
     { id: 'inicio', icon: '🏠', label: 'Inicio' },
     { id: 'espera', icon: '⏳', label: 'espera', long: 'Lista de ' },
-    { id: 'notas', icon: '📌', label: 'Notas' },
+    { id: 'contactar', icon: '📞', label: 'Contactar' },
     { id: 'limpieza', icon: '🧹', label: 'Limpieza' },
   ];
-  addingNote = false;
-  deletingNote = false;
-  editingNote = false;
-  editNoteError: string | null = null;
-  addNoteError: string | null = null;
-
-  // Varias fuentes piden notas a la vez (sondeo, abrir el modal, volver de
-  // otra pestaña, y las propias respuestas de añadir/borrar/editar). Si dos
-  // peticiones se cruzan y la más lenta llega DESPUÉS de una más reciente,
-  // pisaba el resultado bueno con uno viejo (una nota recién añadida podía
-  // "desaparecer" unos segundos). Este contador asegura que solo se aplica
-  // la respuesta de la petición más reciente, gane quien gane la carrera.
-  private notesSeq = 0;
-
-  // Justo después de escribir (añadir/editar/borrar), el sondeo automático
-  // de notas puede lanzar su propia lectura mientras esa escritura aún no
-  // ha terminado de confirmarse en el backend (las rutas de notas no usan
-  // lock compartido, a propósito, para no ralentizar el resto de la app).
-  // Si esa lectura "vieja" resuelve después de la respuesta de la propia
-  // escritura, gana la carrera por dispatch-order y pisa el resultado bueno
-  // con uno desactualizado — se autocorregía en el siguiente sondeo, pero
-  // tardaba hasta 60s. Pausamos el sondeo pasivo un rato tras cada escritura
-  // para no competir contra ella (las lecturas explícitas, como abrir el
-  // cuaderno, no se ven afectadas).
-  private lastNotesWriteAt = 0;
-  private readonly NOTES_WRITE_COOLDOWN_MS = 5000;
 
   private tips: string[] = [];
   private tipTimer: ReturnType<typeof setInterval> | null = null;
@@ -138,6 +113,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private cache: SnapshotCacheService,
     public cleaningAlert: CleaningAlertService,
     public waitlistAlert: WaitlistAlertService,
+    public followupAlert: FollowupAlertService,
+    public auth: AuthService,
     private updates: UpdateService, // solo hay que crearlo: se ocupa él de recargar si hay versión nueva
   ) {}
 
@@ -163,9 +140,6 @@ export class AppComponent implements OnInit, OnDestroy {
     this.subs.add(
       interval(KPI_POLL_MS).subscribe(() => { if (!document.hidden) this.loadAirtableKpi(); })
     );
-    this.subs.add(
-      interval(NOTES_POLL_MS).subscribe(() => { if (!document.hidden) this.pollNotesIfIdle(); })
-    );
   }
 
   ngOnDestroy(): void {
@@ -190,7 +164,6 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private loadEverything(): void {
     this.loadBootstrap(true);
-    this.loadNotes();
   }
 
   // Reseñas, KPI, objetivo, histórico y consejos en UNA petición. Con
@@ -392,12 +365,6 @@ export class AppComponent implements OnInit, OnDestroy {
       setTimeout(() => this.loadAirtableKpi(), 450);
       setTimeout(() => this.loadSalesTips(), 600);
     }
-    setTimeout(() => this.pollNotesIfIdle(), 750);
-  }
-
-  private pollNotesIfIdle(): void {
-    if (Date.now() - this.lastNotesWriteAt < this.NOTES_WRITE_COOLDOWN_MS) return;
-    this.loadNotes();
   }
 
   @HostListener('document:keydown', ['$event'])
@@ -567,16 +534,6 @@ export class AppComponent implements OnInit, OnDestroy {
     );
   }
 
-  private loadNotes(): void {
-    const seq = ++this.notesSeq;
-    this.subs.add(
-      this.svc.getNotes().subscribe(res => {
-        if (!res || seq !== this.notesSeq) return; // superada por otra más reciente
-        this.notes = res;
-      })
-    );
-  }
-
   // Ranking de reseñas de la franquicia (enlace "Ranking España" bajo los 12 meses).
   rankingOpen = false;
 
@@ -585,77 +542,13 @@ export class AppComponent implements OnInit, OnDestroy {
     return VIEWS.includes(h) ? h : 'inicio';
   }
 
-  // Cambia de sección. La dirección (#notas, #limpieza…) permite dejar un acceso directo
+  // Cambia de sección. La dirección (#contactar, #limpieza…) permite dejar un acceso directo
   // a una sección concreta en cada ordenador.
   go(v: View): void {
     if (v === this.view) return;
     if (this.view === 'inicio') this.confetti.stopLoop(); // el confeti es de la pantalla de inicio
     this.view = v;
     try { history.replaceState(null, '', v === 'inicio' ? location.pathname + location.search : '#' + v); } catch { /* ignorar */ }
-    if (v === 'notas') this.loadNotes();
-  }
-
-
-  onAddNote(draft: { text: string; clientId: string }): void {
-    // No dejamos que se lance una segunda petición mientras la primera
-    // sigue en el aire (evita más carreras de las que ya cubre notesSeq).
-    if (this.addingNote) return;
-    this.addingNote = true;
-    this.addNoteError = null;
-    const seq = ++this.notesSeq;
-    this.subs.add(
-      this.svc.addNote(draft.text, draft.clientId).subscribe(res => {
-        this.addingNote = false;
-        if (res && res.notes && seq === this.notesSeq) {
-          this.notes = res.notes;
-          this.lastNotesWriteAt = Date.now();
-          if (res.error) this.addNoteError = res.error;
-        } else {
-          // Sin respuesta válida: no sabemos si llegó a guardarse, así que
-          // no perdemos el texto — "Reintentar" reenvía el mismo clientId,
-          // que el backend deduplica si el intento anterior sí se guardó.
-          this.addNoteError = 'No se pudo confirmar el guardado. Inténtalo de nuevo.';
-        }
-      })
-    );
-  }
-
-  onEditNote(edit: { id: string; text: string }): void {
-    if (this.editingNote) return;
-    this.editingNote = true;
-    this.editNoteError = null;
-    const seq = ++this.notesSeq;
-    this.subs.add(
-      this.svc.editNote(edit.id, edit.text).subscribe(res => {
-        this.editingNote = false;
-        if (res && res.notes && seq === this.notesSeq) {
-          this.notes = res.notes;
-          this.lastNotesWriteAt = Date.now();
-          if (res.error) this.editNoteError = res.error;
-        } else {
-          // Sin respuesta válida (timeout, red, o una escritura más
-          // reciente ganó la carrera): no sabemos si se guardó, así que no
-          // tocamos this.notes y dejamos el texto editado listo para
-          // reintentar en vez de darlo por perdido en silencio.
-          this.editNoteError = 'No se pudo confirmar el guardado. Inténtalo de nuevo.';
-        }
-      })
-    );
-  }
-
-  onDeleteNote(id: string): void {
-    if (this.deletingNote) return;
-    this.deletingNote = true;
-    const seq = ++this.notesSeq;
-    this.subs.add(
-      this.svc.deleteNote(id).subscribe(res => {
-        this.deletingNote = false;
-        if (res && res.notes && seq === this.notesSeq) {
-          this.notes = res.notes;
-          this.lastNotesWriteAt = Date.now();
-        }
-      })
-    );
   }
 
   private loadSalesTips(): void {

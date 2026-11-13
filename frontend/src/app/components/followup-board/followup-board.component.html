@@ -1,0 +1,108 @@
+<div class="scroll">
+  <!-- Barra fija: contador a la izquierda, añadir a la derecha (se oculta mientras hay un formulario abierto) -->
+  <div class="topbar" *ngIf="!formOpen">
+    <span class="count">
+      <strong>{{ items.length }}</strong> {{ items.length === 1 ? 'contacto' : 'contactos' }}<span class="count-due" *ngIf="dueCount"> · <strong>{{ dueCount }}</strong> {{ dueCount === 1 ? 'toca contactar' : 'tocan contactar' }}</span>
+    </span>
+    <button type="button" class="primary" (click)="openAdd()">＋ Añadir</button>
+  </div>
+
+  <!-- Formulario de alta / edición -->
+  <form class="form" *ngIf="formOpen" (ngSubmit)="submit()">
+    <div class="form-title">{{ editingId ? 'Editar contacto' : 'Añadir un contacto' }}</div>
+
+    <label class="field">
+      <span>Nombre y apellidos</span>
+      <input name="name" [(ngModel)]="form.name" maxlength="60" autocomplete="off" placeholder="Ej. MARTA GARCÍA LÓPEZ" />
+    </label>
+
+    <div class="field">
+      <span>¿Cuándo hay que contactarle?</span>
+      <div class="chips">
+        <button type="button" class="chip" *ngFor="let p of presets" [class.on]="formPresetOn(p)" [attr.aria-pressed]="formPresetOn(p)" (click)="setFormPreset(p)">{{ p.label }}</button>
+        <input type="date" name="due" class="date" [(ngModel)]="form.due" aria-label="Día en que hay que contactarle" />
+      </div>
+    </div>
+
+    <label class="field">
+      <span>Nota <em>(opcional)</em></span>
+      <input name="note" [(ngModel)]="form.note" maxlength="80" autocomplete="off" placeholder="Ej. repaso anual, vuelve de vacaciones" />
+    </label>
+
+    <div class="hint">El teléfono no se guarda aquí: se busca en flowww cuando toca contactar.</div>
+
+    <div class="err" *ngIf="formError">{{ formError }}</div>
+
+    <div class="form-actions">
+      <button type="button" class="ghost" (click)="closeForm()">Cancelar</button>
+      <button type="submit" class="primary" [disabled]="!canSave">{{ formError ? 'Reintentar' : (editingId ? 'Guardar' : 'Añadir') }}</button>
+    </div>
+  </form>
+
+  <!-- Lista (se oculta mientras hay un formulario abierto, para no confundirlos) -->
+  <div class="list" *ngIf="!formOpen">
+    <div class="empty" *ngIf="loading && !loadFailed">Cargando…</div>
+    <div class="empty" *ngIf="loading && loadFailed">No se pudo cargar. Reintentando…</div>
+    <div class="empty" *ngIf="!loading && !rows.length">
+      Todavía no hay nadie apuntado.<br />Aquí van los clientes que necesitan un repaso y los leads o clientes que piden que les contactéis más adelante.<br />Pulsa <strong>＋ Añadir</strong> y pon cuándo hay que contactarles.
+    </div>
+
+    <article
+      class="card"
+      *ngFor="let r of rows; trackBy: trackId"
+      [id]="'fu-' + r.item.id"
+      [ngClass]="'lv-' + r.state.level"
+      [class.flash]="justAddedId === r.item.id"
+      [class.busy]="busy.has(r.item.id)"
+    >
+      <div class="card-top">
+        <div class="name">{{ r.item.name }}</div>
+        <div class="saving" *ngIf="isTemp(r.item)">Guardando…</div>
+        <!-- En la fila del nombre (no debajo) para que las tarjetas midan lo mismo con o sin botón -->
+        <button
+          type="button"
+          class="done"
+          *ngIf="r.state.days <= 0 && doneOpenId !== r.item.id && confirmDeleteId !== r.item.id"
+          (click)="toggleDone(r.item)"
+          [disabled]="isTemp(r.item) || busy.has(r.item.id)"
+        >✓ Citada</button>
+        <button type="button" class="icon" (click)="openEdit(r.item)" [disabled]="isTemp(r.item)" aria-label="Editar" title="Editar">✎</button>
+        <button type="button" class="icon danger" (click)="askDelete(r.item)" [disabled]="isTemp(r.item)" aria-label="Quitar de la lista" title="Quitar de la lista">✕</button>
+      </div>
+
+      <div class="when">
+        <span class="badge">{{ r.whenText }}</span>
+        <span class="day">{{ fmt(r.item.due) }}</span>
+        <span class="note" *ngIf="r.item.note">· {{ r.item.note }}</span>
+      </div>
+
+      <!-- Tras citarle: ¿cuándo hay que volver a contactarle? -->
+      <div class="next" *ngIf="doneOpenId === r.item.id">
+        <div class="next-title">¿Cuándo hay que volver a contactarle?</div>
+        <div class="chips">
+          <button type="button" class="chip" *ngFor="let p of presets" (click)="reschedulePreset(r.item, p)">{{ p.label }}</button>
+        </div>
+        <div class="custom">
+          <input type="date" class="date" [(ngModel)]="customDue" [ngModelOptions]="{ standalone: true }" aria-label="Otra fecha" />
+          <button type="button" class="act" [disabled]="!customDue" (click)="rescheduleCustom(r.item)">Poner esa fecha</button>
+        </div>
+        <div class="next-foot">
+          <button type="button" class="link" (click)="askDelete(r.item)">Ya no hace falta contactarle</button>
+          <span class="spacer"></span>
+          <button type="button" class="link" (click)="toggleDone(r.item)">Cancelar</button>
+        </div>
+      </div>
+
+      <div class="confirm" *ngIf="confirmDeleteId === r.item.id">
+        <span>¿Quitar a {{ r.item.name }} de la lista?</span>
+        <span class="spacer"></span>
+        <button type="button" class="act" (click)="askDelete(r.item)">No</button>
+        <button type="button" class="act danger" (click)="confirmDelete(r.item)">Sí, quitar</button>
+      </div>
+    </article>
+  </div>
+</div>
+
+<div class="toast" *ngIf="toast" role="status">
+  <span>{{ toast }}</span>
+</div>

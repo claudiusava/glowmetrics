@@ -64,20 +64,34 @@ export class CleaningAlertService {
     if (changed) this.paint();
   }
 
+  private followups = 0;
+
   // ---------- pestaña del navegador ----------
 
+  /** Contactos pendientes (repasos, leads…) que tocan ya: comparten con la limpieza el título y el icono de la pestaña del navegador. */
+  setFollowups(n: number): void {
+    if (n === this.followups) return;
+    this.followups = n;
+    this.paint();
+  }
+
   private paint(): void {
-    const n = this.pending.length;
+    const clean = this.pending.length;
+    const calls = this.followups;
+    const n = clean + calls;
     if (this.blinkTimer) { clearInterval(this.blinkTimer); this.blinkTimer = null; }
     if (!n) { this.show(false, this.baseTitle); return; }
+    // Si solo hay un tipo de aviso se dice cuál; si hay los dos, uno genérico con la suma.
+    const [quiet, loud] = clean && calls ? [`(${n}) 🔔 Hay avisos`, '🔴 ¡Avisos pendientes!']
+      : calls ? [`(${n}) 📞 Toca contactar`, '🔴 ¡Hay gente a quien contactar!']
+      : [`(${n}) 🧹 Toca limpiar`, '🔴 ¡Limpieza pendiente!'];
     // Pestaña a la vista: aviso fijo. Pestaña escondida: parpadea para llamar la atención.
-    const quiet = `(${n}) 🧹 Toca limpiar`;
     if (!document.hidden) { this.show(true, quiet); return; }
     this.blinkOn = true;
     this.show(true, quiet);
     this.blinkTimer = setInterval(() => {
       this.blinkOn = !this.blinkOn;
-      this.show(this.blinkOn, this.blinkOn ? quiet : `🔴 ¡Limpieza pendiente!`);
+      this.show(this.blinkOn, this.blinkOn ? quiet : loud);
     }, BLINK_MS);
   }
 

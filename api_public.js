@@ -66,6 +66,32 @@ function cooldownOk_(key, ms) {
 }
 
 /** =========================
+ * CLAVE DE ACCESO
+ * =========================
+ * La clave vive en las Propiedades del script (APP_KEY), nunca en el código (el repositorio es
+ * público). Mientras no exista, la API queda abierta (así se puede publicar sin cortar a nadie);
+ * en cuanto se crea, TODAS las rutas piden `key` y sin ella responden { error: 'unauthorized' }.
+ * La web la pide una sola vez por dispositivo y la recuerda. */
+function authFailed_(key) {
+  const expected = PropertiesService.getScriptProperties().getProperty('APP_KEY');
+  if (!expected) return false;
+  const given = String(key == null ? '' : key);
+  if (given && safeEqual_(given, expected)) return false;
+  // Una clave equivocada tarda 1 s en rechazarse: probar claves a ciegas sale carísimo.
+  // (Sin clave —web recién abierta— se rechaza al momento.)
+  if (given) Utilities.sleep(1000);
+  return true;
+}
+
+/** Comparación que tarda lo mismo acierte donde acierte (no delata cuántas letras van bien). */
+function safeEqual_(a, b) {
+  let diff = a.length ^ b.length;
+  const n = Math.max(a.length, b.length);
+  for (let i = 0; i < n; i++) diff |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0);
+  return diff === 0;
+}
+
+/** =========================
  * WEB APP
  * ========================= */
 function doGet(e) {
@@ -81,13 +107,11 @@ function doGet(e) {
     return jsonRoute_(route, callback, e.parameter);
   }
 
-  const template = HtmlService.createTemplateFromFile('index');
-  template.__buildText = 'BUILD ' + new Date().toISOString(); // <-- ESTA LINEA
-
-  return template
-    .evaluate()
-    .setTitle('GlowMetrics')
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  // Ya no se sirve la antigua pantalla de Google (index.html): desde ella cualquiera podía llamar
+  // a las funciones del servidor (google.script.run) saltándose la clave. La app es la de GitHub Pages.
+  return ContentService
+    .createTextOutput('GlowMetrics API')
+    .setMimeType(ContentService.MimeType.TEXT);
 }
 
 /** =========================
@@ -115,11 +139,19 @@ function jsonRoute_(route, callback, params) {
     'waitlist-delete': () => deleteWaitItem_(params.id),
     'cleaning-list': getCleaning,
     'cleaning-add': () => addCleaningEntry_(params, params.clientId),
-    'cleaning-delete': () => deleteCleaningEntry_(params.id)
+    'cleaning-delete': () => deleteCleaningEntry_(params.id),
+    'followups-list': getFollowups,
+    'followups-add': () => addFollowup_(params, params.clientId),
+    'followups-update': () => updateFollowup_(params.id, params),
+    'followups-delete': () => deleteFollowup_(params.id),
+    // La web lo usa para comprobar la clave que se acaba de teclear (si se llega aquí, es correcta).
+    'auth-check': () => ({ ok: true })
   };
 
   const handler = handlers[route];
-  const body = handler ? handler() : { error: 'Ruta no encontrada: ' + route };
+  const body = authFailed_(params.key) ? { error: 'unauthorized' }
+    : handler ? handler()
+    : { error: 'Ruta no encontrada: ' + route };
   const json = JSON.stringify(body);
 
   // Apps Script no añade cabeceras CORS a las respuestas de ContentService,

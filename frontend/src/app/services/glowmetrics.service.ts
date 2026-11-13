@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
-import { Observable, catchError, finalize, of, shareReplay, timeout } from 'rxjs';
+import { Observable, catchError, finalize, map, of, shareReplay, timeout } from 'rxjs';
 import { hedgedRequest } from './hedged-request';
 import { jsonpRequest } from './jsonp-request';
+import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
-import { ReviewsResponse, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry, Note, AddNoteResult, BootstrapResponse, WaitItem, WaitlistResult, ReviewsRefresh, CleaningData, CleaningAddResult } from '../models/review.model';
+import { ReviewsResponse, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry, FollowupItem, FollowupResult, BootstrapResponse, WaitItem, WaitlistResult, ReviewsRefresh, CleaningData, CleaningAddResult } from '../models/review.model';
 
 // Apps Script (ContentService) no manda cabeceras CORS, así que consumimos
 // su API vía JSONP en vez de XHR/fetch normal.
@@ -35,6 +36,32 @@ export class GlowmetricsService {
   // inicial), comparte esa respuesta en vez de lanzar otra al servidor.
   private inflight = new Map<string, Observable<unknown>>();
 
+  constructor(private auth: AuthService) {}
+
+  // Toda petición lleva la clave de acceso de este dispositivo (si la tiene).
+  private withKey(url: string): string {
+    return this.auth.key ? `${url}&key=${encodeURIComponent(this.auth.key)}` : url;
+  }
+
+  // Si el servidor rechaza la petición por falta de clave, se enseña la pantalla de la clave y la
+  // petición cuenta como fallida (null): la pantalla conserva lo último que tenía.
+  private guard = <T>(res: T): T | null => {
+    if (res && typeof res === 'object' && (res as { error?: unknown }).error === 'unauthorized') {
+      this.auth.lock();
+      return null;
+    }
+    return res;
+  };
+
+  // Comprueba una clave recién tecleada (aún sin guardar). Devuelve la respuesta tal cual: `ok` si vale,
+  // `error: 'unauthorized'` si no, null si no hubo respuesta.
+  checkKey(key: string): Observable<{ ok?: boolean; error?: string } | null> {
+    return jsonpRequest<{ ok?: boolean; error?: string }>(`${this.api}?route=auth-check&key=${encodeURIComponent(key)}`).pipe(
+      timeout(WRITE_TIMEOUT_MS),
+      catchError(() => of(null))
+    );
+  }
+
   // `hedge`: si no hay respuesta a los 6 s (y de nuevo a los 14 s) se lanza
   // otra petición igual en paralelo y gana la primera que llegue. Apps Script
   // tiene picos de 8-70 s que no dependen del código; cada petición cae en uno
@@ -43,11 +70,12 @@ export class GlowmetricsService {
     const existing = this.inflight.get(route);
     if (existing) return existing as Observable<T | null>;
 
-    const url = `${this.api}?route=${route}`;
+    const url = this.withKey(`${this.api}?route=${route}`);
     const request$ = hedgedRequest<T>(() => jsonpRequest<T>(url), {
       hedgeAtMs: hedge ? HEDGE_AT_MS : [],
       timeoutMs: READ_TIMEOUT_MS,
     }).pipe(
+      map(res => this.guard(res)),
       // Solo se retira a sí misma: otra petición más nueva de la misma ruta
       // (p. ej. tras guardar una nota) puede haber ocupado ya su sitio.
       finalize(() => { if (this.inflight.get(route) === request$) this.inflight.delete(route); }),
@@ -58,8 +86,9 @@ export class GlowmetricsService {
   }
 
   private write<T>(url: string): Observable<T | null> {
-    return jsonpRequest<T>(url).pipe(
+    return jsonpRequest<T>(this.withKey(url)).pipe(
       timeout(WRITE_TIMEOUT_MS),
+      map(res => this.guard(res)),
       catchError(() => of(null))
     );
   }
@@ -107,34 +136,9 @@ export class GlowmetricsService {
     return this.read<MonthlyHistoryEntry[]>('monthly-history');
   }
 
-  // Cuaderno de notas compartido: sin autor (varias personas comparten el
-  // mismo ordenador en el centro, pedir nombre no tiene sentido aquí).
-  getNotes(): Observable<Note[] | null> {
-    return this.read<Note[]>('notes-list');
-  }
-
-  // Tras una escritura de notas, una lectura de notas que ya estuviera en
-  // el aire se pidió ANTES del cambio y podría traer la lista vieja: la
-  // soltamos para que la siguiente lectura sea una petición nueva.
-  private writeNote<T>(url: string): Observable<T | null> {
-    this.inflight.delete('notes-list');
-    return this.write<T>(url);
-  }
-
-  addNote(text: string, clientId: string): Observable<AddNoteResult | null> {
-    return this.writeNote<AddNoteResult>(
-      `${this.api}?route=notes-add&text=${encodeURIComponent(text)}&clientId=${encodeURIComponent(clientId)}`
-    );
-  }
-
-  deleteNote(id: string): Observable<AddNoteResult | null> {
-    return this.writeNote<AddNoteResult>(`${this.api}?route=notes-delete&id=${encodeURIComponent(id)}`);
-  }
-
   // ---- Lista de espera de clientas ----
-  // Mismas reglas que las notas: se lee con respaldo (carrera) y, tras
-  // escribir, se descarta la lectura compartida en curso (se pidió antes del
-  // cambio y podría traer la lista vieja).
+  // Se lee con respaldo (carrera) y, tras escribir, se descarta la lectura
+  // compartida en curso (se pidió antes del cambio y podría traer la lista vieja).
   getWaitlist(): Observable<WaitItem[] | null> {
     return this.read<WaitItem[]>('waitlist-list');
   }
@@ -184,9 +188,31 @@ export class GlowmetricsService {
     return this.writeWait<WaitlistResult>(`${this.api}?route=waitlist-delete&id=${encodeURIComponent(id)}`);
   }
 
-  editNote(id: string, text: string): Observable<AddNoteResult | null> {
-    return this.writeNote<AddNoteResult>(
-      `${this.api}?route=notes-edit&id=${encodeURIComponent(id)}&text=${encodeURIComponent(text)}`
+  // ---- Repasos de clientas (sin teléfono: solo nombre corto, día y nota) ----
+  getFollowups(): Observable<FollowupItem[] | null> {
+    return this.read<FollowupItem[]>('followups-list');
+  }
+
+  private writeFollowup<T>(url: string): Observable<T | null> {
+    this.inflight.delete('followups-list'); // una lectura en curso podría traer la lista de antes del cambio
+    return this.write<T>(url);
+  }
+
+  addFollowup(f: { name: string; due: string; note: string }, clientId: string): Observable<FollowupResult | null> {
+    const q = (k: string, v: string) => `&${k}=${encodeURIComponent(v)}`;
+    return this.writeFollowup<FollowupResult>(
+      `${this.api}?route=followups-add` + q('name', f.name) + q('due', f.due) + q('note', f.note) + q('clientId', clientId)
     );
+  }
+
+  // Solo se envían los campos que cambian.
+  updateFollowup(id: string, patch: Partial<Pick<FollowupItem, 'name' | 'due' | 'note'>>): Observable<FollowupResult | null> {
+    let url = `${this.api}?route=followups-update&id=${encodeURIComponent(id)}`;
+    for (const [k, v] of Object.entries(patch)) url += `&${k}=${encodeURIComponent(String(v ?? ''))}`;
+    return this.writeFollowup<FollowupResult>(url);
+  }
+
+  deleteFollowup(id: string): Observable<{ ok?: boolean } | null> {
+    return this.writeFollowup<{ ok?: boolean }>(`${this.api}?route=followups-delete&id=${encodeURIComponent(id)}`);
   }
 }

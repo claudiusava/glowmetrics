@@ -6,7 +6,7 @@ const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..');
 const FILES = ['cfg_config.js', 'api_public.js', 'svc_cache.js', 'svc_airtable.js', 'svc_sheets.js',
-  'logic_reviews.js', 'svc_notes.js', 'svc_waitlist.js', 'svc_cleaning.js', 'tools_backfill.js'];
+  'logic_reviews.js', 'svc_notes.js', 'svc_waitlist.js', 'svc_cleaning.js', 'svc_followups.js', 'tools_backfill.js'];
 
 const AHORA = Date.parse('2026-10-29T10:00:00Z'); // 11:00 en Madrid, 29 de octubre
 

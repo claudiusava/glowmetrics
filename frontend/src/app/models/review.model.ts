@@ -78,17 +78,19 @@ export interface MonthlyHistoryEntry {
   met: boolean | null;
 }
 
-export interface Note {
+// Repasos de clientas que ya terminaron el tratamiento (ver svc_followups.js).
+export interface FollowupItem {
   id: string;
-  author: string;
-  text: string;
+  name: string;
+  due: string; // "AAAA-MM-DD"
+  note: string;
   createdAt: string;
 }
 
-export interface AddNoteResult {
+export interface FollowupResult {
   ok?: boolean;
   error?: string;
-  notes: Note[];
+  item?: FollowupItem;
 }
 
 // Lista de espera de clientas (ver svc_waitlist.js).

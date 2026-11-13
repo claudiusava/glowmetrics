@@ -1,0 +1,423 @@
+// Mismo lenguaje visual que la lista de espera y Limpieza: rosa de la marca, grises azulados y
+// esquinas redondeadas. Pensado primero para tocar con el dedo (botones de 40 px).
+
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  position: relative;
+
+  // Monitores grandes: todo crece, igual que en las demás secciones.
+  @media (min-width: 1700px) { zoom: 1.25; }
+  @media (min-width: 2300px) { zoom: 1.6; }
+  @media (min-width: 3000px) { zoom: 2.1; }
+}
+
+.scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 20px 20px;
+}
+
+// ---- Barra fija ----
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0 12px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #eef1f5;
+}
+
+.count {
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+
+  strong { color: #0f172a; font-weight: 800; }
+  .count-due strong { color: #e11d48; }
+}
+
+.primary,
+.ghost {
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 12px;
+  border: none;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+
+  &:disabled { opacity: 0.4; cursor: default; }
+}
+
+.primary {
+  background: #f7307d;
+  color: #ffffff;
+
+  &:hover:not(:disabled) { transform: translateY(-1px); }
+}
+
+.ghost {
+  background: #f1f5f9;
+  color: #475569;
+
+  &:hover:not(:disabled) { background: #e2e8f0; }
+}
+
+// ---- Formulario ----
+.form {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 16px;
+  margin: 8px 0 16px;
+  display: grid;
+  gap: 14px;
+}
+
+.form-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+
+  > span {
+    font-size: 13px;
+    font-weight: 700;
+    color: #334155;
+
+    em { font-style: normal; font-weight: 500; color: #94a3b8; }
+  }
+
+  input:not(.date) {
+    min-height: 44px;
+    border: 1px solid #dbe2ea;
+    border-radius: 12px;
+    padding: 0 12px;
+    font: inherit;
+    font-size: 16px; // 16px evita el zoom automático de iPhone al enfocar
+    color: #111827;
+    background: #ffffff;
+
+    &:focus { outline: none; border-color: #f7307d; }
+  }
+}
+
+.hint {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.err {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ef4444;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.chip {
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid #dbe2ea;
+  background: #f8fafc;
+  color: #334155;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease, transform 0.08s ease;
+
+  &:hover:not(:disabled) { border-color: #f7307d; }
+  &:active:not(:disabled) { transform: scale(0.96); }
+
+  &.on {
+    background: #f7307d;
+    border-color: #f7307d;
+    color: #ffffff;
+  }
+}
+
+.date {
+  min-height: 40px;
+  border: 1px solid #dbe2ea;
+  border-radius: 12px;
+  padding: 0 10px;
+  font: inherit;
+  font-size: 16px;
+  color: #111827;
+  background: #ffffff;
+
+  &:focus { outline: none; border-color: #f7307d; }
+}
+
+// ---- Lista ----
+.list {
+  display: grid;
+  gap: 12px;
+}
+
+.empty {
+  color: #6b7280;
+  text-align: center;
+  padding: 36px 0;
+  line-height: 1.6;
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #cbd5e1; // lejano: gris
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: grid;
+  gap: 8px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  transition: opacity 0.2s ease, box-shadow 0.2s ease;
+
+  &.busy { opacity: 0.7; }
+  &.flash { animation: flash 2.4s ease; }
+
+  // Toca avisar (hoy o atrasado): rojo y con el fondo teñido; se acerca: ámbar.
+  &.lv-today, &.lv-late { border-left-color: #e11d48; background: #fff7f9; }
+  &.lv-soon { border-left-color: #f59e0b; }
+}
+
+@keyframes flash {
+  0%, 60% { box-shadow: 0 0 0 3px rgba(247, 48, 125, 0.45), 0 1px 2px rgba(15, 23, 42, 0.05); background: #fff1f7; }
+  100% { box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05); }
+}
+
+.card-top {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  .name { flex: 1; min-width: 0; margin-right: 6px; }
+  .saving { margin-right: 4px; }
+  // Los botones son grandes para tocarlos bien, pero no deben hacer más alta la tarjeta.
+  .icon { flex: none; margin: -6px 0; }
+  .done { flex: none; margin: -6px 4px -6px 0; }
+}
+
+.name {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+  overflow-wrap: anywhere;
+}
+
+.saving {
+  flex: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.when {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  font-size: 13px;
+  color: #475569;
+
+  .note { overflow-wrap: anywhere; }
+}
+
+.badge {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #475569;
+  font-weight: 700;
+
+  .lv-soon & { background: #fef3c7; color: #92400e; }
+  .lv-today &, .lv-late & { background: #ffe4e6; color: #be123c; }
+}
+
+// "Citada": verde suave (es lo que se quiere conseguir). Va en la fila del nombre, junto a ✎ y ✕.
+.done {
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1.5px solid #86efac;
+  background: #dcfce7;
+  color: #166534;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease, transform 0.08s ease, opacity 0.15s ease;
+
+  &:hover:not(:disabled) { background: #bbf7d0; border-color: #4ade80; }
+  &:active:not(:disabled) { transform: scale(0.97); }
+  &:disabled { opacity: 0.5; cursor: default; }
+}
+
+// Panel "¿cuándo es el siguiente repaso?"
+.next {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.next-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #334155;
+}
+
+.custom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.next-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.link {
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 8px 4px;
+}
+
+.confirm {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #7f1d1d;
+}
+
+.spacer { flex: 1; }
+
+.act {
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid #dbe2ea;
+  background: #f8fafc;
+  color: #334155;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s ease;
+
+  &:hover:not(:disabled) { background: #eef2f7; }
+  &:disabled { opacity: 0.5; cursor: default; }
+
+  &.danger { background: #fee2e2; border-color: #fecaca; color: #b91c1c; &:hover:not(:disabled) { background: #fecaca; } }
+}
+
+.icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 15px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background 0.12s ease, color 0.12s ease;
+
+  &:hover:not(:disabled) { background: #e0e7ff; color: #4f46e5; }
+  &.danger:hover:not(:disabled) { background: #fee2e2; color: #ef4444; }
+  &:disabled { opacity: 0.4; cursor: default; }
+}
+
+// ---- Aviso breve ----
+.toast {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  max-width: calc(100% - 32px);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.92);
+  color: #f1f5f9;
+  font-size: 14px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  animation: toast-in 0.2s ease;
+  z-index: 3;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translate(-50%, 6px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+// Pantalla ancha: las clientas en dos columnas, igual que en la lista de espera.
+@media (min-width: 901px) {
+  .list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+  .list .empty { grid-column: 1 / -1; }
+
+  .form { max-width: 760px; margin-left: auto; margin-right: auto; }
+}
+
+@media (max-width: 480px) {
+  .scroll { padding: 0 14px 18px; }
+  .form { padding: 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card.flash { animation: none; background: #fff1f7; }
+}

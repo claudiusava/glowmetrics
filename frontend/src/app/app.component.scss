@@ -322,6 +322,9 @@ app-reviews-feed {
 
   // Móvil: "Lista de espera" pasa a "Espera" para que quepan las cuatro secciones.
   .tab .long { display: none; }
+  // ...y como queda solo "espera", se escribe con mayúscula inicial ("Espera").
+  .tab .lbl { display: inline-block; }
+  .tab .lbl::first-letter { text-transform: uppercase; }
 
   @media (max-width: 380px) {
     .tab { padding: 0 6px; font-size: 12.5px; }
