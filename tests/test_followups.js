@@ -125,5 +125,20 @@ check('ruta followups-add', viaRuta.ok && viaRuta.item.name === 'Eva M.', viaRut
 check('ruta followups-update', ruta('followups-update', { id: viaRuta.item.id, due: '2027-08-08' }).item.due === '2027-08-08');
 check('ruta followups-delete', ruta('followups-delete', { id: viaRuta.item.id }).ok === true);
 
+// Si el candado agota el tiempo (waitLock lanza error), el reintento con el mismo clientId debe
+// escribir de verdad: antes la marca "ya hecho" se ponía antes de escribir y el reintento perdía la fila.
+{
+  const u = entorno();
+  u.run(`LockService.getScriptLock = () => ({ waitLock() { throw new Error('lock timeout'); }, releaseLock() {} })`);
+  let threw = false;
+  try { u.run(`addFollowup_({ name: 'Eva M.', due: '2027-02-02' }, 'k1')`); } catch (e) { threw = true; }
+  check('candado agotado: el alta falla (lanza error)', threw);
+  u.run(`LockService.getScriptLock = () => ({ waitLock() {}, releaseLock() {} })`);
+  const re = u.run(`addFollowup_({ name: 'Eva M.', due: '2027-02-02' }, 'k1')`);
+  check('el reintento tras un fallo SÍ escribe la fila', re.ok && u.run('getFollowups()').length === 1, re);
+  u.run(`addFollowup_({ name: 'Eva M.', due: '2027-02-02' }, 'k1')`);
+  check('y otro reintento ya no duplica', u.run('getFollowups()').length === 1);
+}
+
 console.log(failed ? `\n${failed} FALLOS` : '\nTodo bien');
 process.exit(failed ? 1 : 0);

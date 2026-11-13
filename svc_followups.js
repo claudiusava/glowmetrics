@@ -92,8 +92,6 @@ function addFollowup_(params, clientId) {
   if (!due) return { error: 'Fecha no válida.' };
   const note = cleanText_(params.note, FOLLOWUP_NOTE_MAX);
 
-  if (dedupeKey) cache.put(dedupeKey, '1', 600);
-
   const row = [Utilities.getUuid(), name, due, note, new Date().toISOString()];
   withLock_(() => {
     const sh = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(FOLLOWUP_SHEET_NAME);
@@ -102,6 +100,9 @@ function addFollowup_(params, clientId) {
     rg.setNumberFormat('@');
     rg.setValues([row]);
   });
+  // La marca de "ya hecho" va DESPUÉS de escribir: si el candado agota el tiempo (waitLock lanza
+  // error) y la web reintenta, el reintento tiene que escribir de verdad, no contestar "ok" en vacío.
+  if (dedupeKey) cache.put(dedupeKey, '1', 600);
   return { ok: true, item: rowToFollowup_(row) };
 }
 
