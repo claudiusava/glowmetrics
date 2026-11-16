@@ -40,7 +40,10 @@ function currentMonthKey(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
-const POLL_MS = 60_000;
+// Las reseñas nuevas solo entran una vez al día (disparador del servidor) o al forzar un refresco, así que
+// preguntar cada minuto no aportaba nada y llenaba de cola el candado del servidor. Al volver a la pestaña
+// se refresca todo igualmente (onVisibilityChange), y una pantalla fija se entera como mucho en una hora.
+const POLL_MS = 60 * 60_000;
 const MONTHLY_GOAL_POLL_MS = 60 * 60 * 1_000; // cada hora
 const MONTHLY_HISTORY_POLL_MS = 60 * 60 * 1_000; // cada hora
 // El porcentaje de Airtable se lee de la copia guardada en la hoja (no llama a Airtable, no gasta cuota):
@@ -477,7 +480,7 @@ export class AppComponent implements OnInit, OnDestroy {
     );
   }
 
-  // Sondeo de reseñas cada minuto. El servidor responde siempre
+  // Sondeo de reseñas (cada hora, ver POLL_MS). El servidor responde siempre
   // `updated: true`, así que antes cada sondeo disparaba además una petición
   // del objetivo mensual (2 peticiones por minuto y cliente). Ahora el
   // objetivo solo se vuelve a pedir si el total de reseñas cambió.

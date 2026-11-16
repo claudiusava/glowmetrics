@@ -167,5 +167,41 @@ check('ruta followups-delete', ruta('followups-delete', { id: viaRuta.item.id })
   check('copia que llega tras otra con el mismo id: contesta ok sin escribir de nuevo', r2.ok === true && !r2.item && u.run('getFollowups()').length === 1, r2);
 }
 
+// Reseñas: varias pantallas llegan a la vez cuando caduca la copia y esperan el candado. La que entra
+// después de la primera debe encontrar la copia ya renovada y responder SIN leer las hojas.
+{
+  const u = entorno();
+  const payload = JSON.stringify({ ready: true, totalCount: 5, reviews: [{ reviewId: 'a' }], newReviewsCount: 1 });
+  const montar = (nombreFuncion) => u.run(`
+    var __orig = CacheService.getScriptCache();
+    var __n = 0;
+    CacheService.getScriptCache = function () { return {
+      get: function (k) { if (k === 'rc_reviews') { __n++; return __n === 1 ? null : '${payload}'; } return __orig.get(k); },
+      put: function (k, v, s) { return __orig.put(k, v, s); },
+      remove: function (k) { return __orig.remove(k); },
+      removeAll: function (ks) { return __orig.removeAll(ks); }
+    }; };
+    getMeta_ = function () { throw new Error('no debía leer la hoja'); };
+    readWindow_ = function () { throw new Error('no debía leer la hoja'); };
+    ${nombreFuncion}();
+  `);
+  const cu = montar('checkForUpdates');
+  check('checkForUpdates: tras esperar el candado usa la copia renovada (no lee hojas)', cu.totalCount === 5 && cu.reviews.length === 1, cu);
+  const u2 = entorno();
+  const ini = u2.run(`
+    var __orig = CacheService.getScriptCache();
+    var __n = 0;
+    CacheService.getScriptCache = function () { return {
+      get: function (k) { if (k === 'rc_reviews') { __n++; return __n === 1 ? null : '${payload}'; } return __orig.get(k); },
+      put: function (k, v, s) { return __orig.put(k, v, s); },
+      remove: function (k) { return __orig.remove(k); },
+      removeAll: function (ks) { return __orig.removeAll(ks); }
+    }; };
+    getMeta_ = function () { throw new Error('no debía leer la hoja'); };
+    initialize();
+  `);
+  check('initialize: tras esperar el candado usa la copia renovada (no lee hojas)', ini.totalCount === 5 && ini.reviews.length === 1, ini);
+}
+
 console.log(failed ? `\n${failed} FALLOS` : '\nTodo bien');
 process.exit(failed ? 1 : 0);

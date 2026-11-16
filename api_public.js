@@ -186,6 +186,16 @@ function initialize() {
   }
 
   return withLock_(() => {
+    // Igual que en checkForUpdates: quien esperaba el candado mira otra vez si ya se renovó la copia.
+    const renewed = readCacheGet_('reviews');
+    if (renewed && renewed.ready) {
+      return {
+        totalCount: renewed.totalCount,
+        reviews: renewed.reviews,
+        newReviewsCount: renewed.newReviewsCount
+      };
+    }
+
     ensureSheets_();
 
     try {
@@ -242,6 +252,19 @@ function checkForUpdates() {
   }
 
   return withLock_(() => {
+    // Varias pantallas llegan a la vez cuando caduca la copia y hacen cola por el candado. La primera la
+    // renueva; las demás, al conseguir el candado, vuelven a mirarla y responden al instante en vez de
+    // leer las hojas cada una (antes la cola se alargaba y las últimas se rendían a los 8 s).
+    const renewed = readCacheGet_('reviews');
+    if (renewed && renewed.ready) {
+      return {
+        updated: true,
+        totalCount: renewed.totalCount,
+        reviews: renewed.reviews,
+        newReviewsCount: renewed.newReviewsCount
+      };
+    }
+
     ensureSheets_();
 
     // Evita martilleo si el front refresca de más (no bloquea: solo reutiliza last-good).

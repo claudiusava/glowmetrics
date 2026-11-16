@@ -18,6 +18,7 @@ const FOLLOWUP_SHEET_NAME = 'Repasos';
 const FOLLOWUP_HEADERS = ['id', 'name', 'due', 'note', 'createdAt'];
 const FOLLOWUP_COLS = FOLLOWUP_HEADERS.length;
 const FOLLOWUP_MAX_ROWS = 2000;
+const FOLLOWUP_PREFORMATTED_ROWS = 900; // la hoja nueva trae 1000 filas, todas ya con formato de texto
 const FOLLOWUP_MIN_DATE = '2025-01-01';
 const FOLLOWUP_MAX_DATE = '2045-12-31';
 const FOLLOWUP_NAME_MAX = 60;
@@ -101,9 +102,12 @@ function addFollowup_(params, clientId) {
     // el tiempo (waitLock lanza error), el reintento tiene que escribir de verdad, no contestar "ok" en vacío.
     if (dedupeKey && cache.get(dedupeKey)) return;
     const sh = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(FOLLOWUP_SHEET_NAME);
-    // Fila nueva como TEXTO PLANO (con appendRow, Sheets convertiría la fecha).
-    const rg = sh.getRange(sh.getLastRow() + 1, 1, 1, FOLLOWUP_COLS);
-    rg.setNumberFormat('@');
+    // Fila nueva como TEXTO PLANO (con appendRow, Sheets convertiría la fecha). Al crear la hoja ya se
+    // dio formato de texto a sus primeras filas: solo se repite el formato si la fila cae más allá
+    // (cada llamada a Sheets alarga el tiempo con el candado cogido, que comparte todo el servidor).
+    const nextRow = sh.getLastRow() + 1;
+    const rg = sh.getRange(nextRow, 1, 1, FOLLOWUP_COLS);
+    if (nextRow > FOLLOWUP_PREFORMATTED_ROWS) rg.setNumberFormat('@');
     rg.setValues([row]);
     if (dedupeKey) cache.put(dedupeKey, '1', 600);
     saved = true;
