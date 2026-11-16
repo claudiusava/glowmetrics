@@ -11,7 +11,7 @@
 const AIRTABLE = Object.freeze({
   BASE_ID: 'appkC8oRh7XtpKEVN',
   TABLE_ID: 'tblVS5CHe2Vjb5HRv',
-  VIEW_ID: 'viwzqHTMsQhRwftYc', // vista "NO TOCAR - MARKETING": nadie la filtra (la API respeta los filtros de la vista)
+  VIEW_ID: 'viw43MlTmyROPwIXD', // vista "Grid view" (la de siempre). La API respeta los filtros de la vista: si las chicas ponen uno, la red de seguridad de svc_airtable.js descarta lecturas con >10 % menos leads
   FIELD_NAME: 'Field 5',        // campo que contiene "CITADA"
   CACHE_SECS: 900
 });
