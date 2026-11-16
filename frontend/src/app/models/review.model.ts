@@ -87,6 +87,15 @@ export interface FollowupItem {
   createdAt: string;
 }
 
+// Respuesta de la ruta `alerts`: lo que necesitan los números rojos de las pestañas, en una sola
+// petición. Cada parte llega null si falló en el servidor.
+export interface AlertsResponse {
+  cleaning: CleaningData | null;
+  waitlist: WaitItem[] | null;
+  followups: FollowupItem[] | null;
+  error?: string;
+}
+
 export interface FollowupResult {
   ok?: boolean;
   error?: string;

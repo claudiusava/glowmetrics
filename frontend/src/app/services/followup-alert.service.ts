@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { interval } from 'rxjs';
-import { GlowmetricsService } from './glowmetrics.service';
 import { CleaningAlertService } from './cleaning-alert.service';
 import { FollowupItem } from '../models/review.model';
 import { dueNow } from '../components/followup-board/followup-logic';
@@ -12,8 +11,8 @@ const TEMP_PREFIX = 'tmp_';
 /**
  * Cuántos repasos de clientas tocan ya (hoy o atrasados), para el número de la pestaña de la app y
  * para el título y el favicon del navegador (que comparten con la limpieza). Se apaga solo cuando se
- * marcan como avisados. Mientras la pantalla de Repasos está abierta, ella publica sus datos; si no,
- * se leen cada minuto (con la pestaña del navegador a la vista).
+ * marcan como avisados. Mientras la pantalla de Contactar está abierta, ella publica sus datos; si no,
+ * llegan de AlertsFeedService (una sola petición para los tres avisos, cada pocos minutos).
  */
 @Injectable({ providedIn: 'root' })
 export class FollowupAlertService {
@@ -23,13 +22,10 @@ export class FollowupAlertService {
   private items: FollowupItem[] = [];
   private viewing = false;
 
-  constructor(private svc: GlowmetricsService, private tabAlert: CleaningAlertService) {
-    this.load();
-    interval(POLL_MS).subscribe(() => {
-      this.recalc(); // pasa la medianoche con la pantalla abierta: el repaso de mañana empieza a tocar
-      if (!this.viewing && !document.hidden) this.load();
-    });
-    document.addEventListener('visibilitychange', () => { if (!document.hidden && !this.viewing) this.load(); });
+  constructor(private tabAlert: CleaningAlertService) {
+    // Los datos llegan de AlertsFeedService (una sola petición para los tres avisos). Aquí solo se
+    // recalcula con la fecha de hoy, sin red: pasa la medianoche y el contacto de mañana empieza a tocar.
+    interval(POLL_MS).subscribe(() => this.recalc());
   }
 
   /** La pantalla de Repasos se abre o se cierra (mientras está abierta, ella manda sobre los datos). */
@@ -41,11 +37,10 @@ export class FollowupAlertService {
     this.recalc();
   }
 
-  private load(): void {
-    this.svc.getFollowups().subscribe(res => {
-      if (!res || this.viewing || !Array.isArray(res)) return;
-      this.publish(res);
-    });
+  /** Lista traída por AlertsFeedService (se ignora si la pantalla de Contactar está abierta). */
+  feed(items: FollowupItem[] | null): void {
+    if (this.viewing || !Array.isArray(items)) return;
+    this.publish(items);
   }
 
   private recalc(): void {

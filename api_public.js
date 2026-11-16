@@ -129,6 +129,7 @@ function jsonRoute_(route, callback, params) {
     'refresh-reviews': manualRefreshReviews,
     'monthly-history': getMonthlyHistory,
     'bootstrap': getBootstrap,
+    'alerts': getAlerts,
     'notes-list': getNotes,
     'notes-add': () => addNote_(params.author, params.text, params.clientId),
     'notes-edit': () => editNote_(params.id, params.text),

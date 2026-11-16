@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { interval } from 'rxjs';
-import { GlowmetricsService } from './glowmetrics.service';
 import { CleaningEntry, CleaningTask, activeEntries, normalizeDate, taskState, todayIso, todoNow } from '../components/cleaning-board/cleaning-logic';
 
 const POLL_MS = 60_000;
@@ -11,7 +10,7 @@ const STAR = 'M32 13 L36.7 25.8 L50.5 27.3 L39.9 36.1 L43.3 49.6 L32 42 L20.7 49
  * Avisa de las limpiezas que tocan, aunque no se esté en la sección Limpieza: el número se pinta en
  * la pestaña de la app y en la pestaña del navegador (título y favicon). No se quita hasta que se
  * apunta la limpieza. Los datos los publica la propia pantalla de Limpieza cuando está abierta;
- * si no, se leen cada minuto.
+ * si no, llegan de AlertsFeedService (cada pocos minutos).
  */
 @Injectable({ providedIn: 'root' })
 export class CleaningAlertService {
@@ -27,16 +26,11 @@ export class CleaningAlertService {
   private readonly iconLink = document.querySelector<HTMLLinkElement>('link[rel~="icon"]');
   private readonly baseIcon = this.iconLink?.getAttribute('href') ?? '';
 
-  constructor(private svc: GlowmetricsService) {
-    this.load();
-    interval(POLL_MS).subscribe(() => {
-      this.recalc(); // pasa la medianoche con la pantalla abierta
-      if (!this.boardOpen && !document.hidden) this.load();
-    });
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && !this.boardOpen) this.load();
-      this.paint();
-    });
+  constructor() {
+    // Los datos llegan de AlertsFeedService (una sola petición para los tres avisos). Aquí solo se
+    // recalcula con la fecha de hoy, sin red: pasa la medianoche con la pantalla abierta.
+    interval(POLL_MS).subscribe(() => this.recalc());
+    document.addEventListener('visibilitychange', () => this.paint());
   }
 
   /** La pantalla de Limpieza dice que está abierta (ella manda sobre los datos). */
@@ -49,11 +43,10 @@ export class CleaningAlertService {
     this.recalc();
   }
 
-  private load(): void {
-    this.svc.getCleaning().subscribe(res => {
-      if (this.boardOpen || !res || !Array.isArray(res.tasks)) return;
-      this.publish(res.tasks, res.entries.map(e => ({ ...e, date: normalizeDate(e.date) })).filter(e => e.date));
-    });
+  /** Datos de limpieza traídos por AlertsFeedService (se ignoran si la pantalla de Limpieza está abierta). */
+  feed(res: { tasks: CleaningTask[]; entries: CleaningEntry[] } | null): void {
+    if (this.boardOpen || !res || !Array.isArray(res.tasks) || !Array.isArray(res.entries)) return;
+    this.publish(res.tasks, res.entries.map(e => ({ ...e, date: normalizeDate(e.date) })).filter(e => e.date));
   }
 
   private recalc(): void {

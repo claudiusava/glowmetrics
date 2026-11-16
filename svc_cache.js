@@ -116,6 +116,26 @@ function getBootstrap() {
   return out;
 }
 
+/** Todo lo que necesitan los números rojos de las pestañas (limpieza que toca, gente en la lista de
+ * espera, contactos que tocan) en UNA petición, en vez de tres cada minuto por pantalla. Solo lectura.
+ * Cada parte es independiente: si una falla llega null y las demás se aplican. */
+function getAlerts() {
+  const out = { cleaning: null, waitlist: null, followups: null };
+  const parts = [
+    ['cleaning', getCleaning],
+    ['waitlist', getWaitlist],
+    ['followups', getFollowups]
+  ];
+  parts.forEach(function (p) {
+    try {
+      out[p[0]] = p[1]();
+    } catch (e) {
+      console.error('getAlerts ' + p[0] + ' ERROR:', e);
+    }
+  });
+  return out;
+}
+
 /** Refresco manual de reseñas (palabra secreta "reseñas" en la web): hace ya el
  * mismo sync que el trigger diario (1 llamada a SerpApi) en vez de esperar a
  * la hora programada. Cooldown de 5 minutos compartido, para que nadie pueda

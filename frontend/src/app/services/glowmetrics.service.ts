@@ -4,7 +4,7 @@ import { hedgedRequest } from './hedged-request';
 import { jsonpRequest } from './jsonp-request';
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
-import { ReviewsResponse, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry, FollowupItem, FollowupResult, BootstrapResponse, WaitItem, WaitlistResult, ReviewsRefresh, CleaningData, CleaningAddResult } from '../models/review.model';
+import { AlertsResponse, ReviewsResponse, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry, FollowupItem, FollowupResult, BootstrapResponse, WaitItem, WaitlistResult, ReviewsRefresh, CleaningData, CleaningAddResult } from '../models/review.model';
 
 // Apps Script (ContentService) no manda cabeceras CORS, así que consumimos
 // su API vía JSONP en vez de XHR/fetch normal.
@@ -162,6 +162,12 @@ export class GlowmetricsService {
     let url = `${this.api}?route=waitlist-update&id=${encodeURIComponent(id)}`;
     for (const [k, v] of Object.entries(patch)) url += `&${k}=${encodeURIComponent(String(v ?? ''))}`;
     return this.writeWait<WaitlistResult>(url);
+  }
+
+  // Limpieza, lista de espera y contactos en UNA petición (para los números rojos de las pestañas).
+  // Sin copias de reintento: es un sondeo secundario y cada copia más es tráfico justo cuando Apps Script va lento.
+  getAlerts(): Observable<AlertsResponse | null> {
+    return this.read<AlertsResponse>('alerts', false);
   }
 
   // ---- Registro de limpieza ----

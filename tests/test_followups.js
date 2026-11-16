@@ -125,6 +125,13 @@ check('ruta followups-add', viaRuta.ok && viaRuta.item.name === 'Eva M.', viaRut
 check('ruta followups-update', ruta('followups-update', { id: viaRuta.item.id, due: '2027-08-08' }).item.due === '2027-08-08');
 check('ruta followups-delete', ruta('followups-delete', { id: viaRuta.item.id }).ok === true);
 
+// Avisos de las pestañas en UNA petición: limpieza, lista de espera y contactos.
+const av = ruta('alerts');
+check('ruta alerts: trae limpieza, lista de espera y contactos', av.cleaning && Array.isArray(av.cleaning.tasks) && Array.isArray(av.waitlist) && Array.isArray(av.followups), av);
+t.run(`getWaitlist = function () { throw new Error('hoja rota'); }`);
+const av2 = ruta('alerts');
+check('ruta alerts: si una parte falla, llega null y las demás siguen', av2.waitlist === null && Array.isArray(av2.followups) && av2.cleaning && Array.isArray(av2.cleaning.tasks), av2);
+
 // Si el candado agota el tiempo (waitLock lanza error), el reintento con el mismo clientId debe
 // escribir de verdad: antes la marca "ya hecho" se ponía antes de escribir y el reintento perdía la fila.
 {

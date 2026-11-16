@@ -43,7 +43,7 @@ const check = (n, c, x = '') => { console.log((c ? 'OK   ' : 'FALLA') + ' ' + n 
 
 const ROUTES = ['bootstrap', 'initialize', 'updates', 'monthly-goal', 'monthly-history', 'sales-tips', 'airtable-kpi', 'refresh-airtable-kpi',
   'refresh-reviews', 'notes-list', 'notes-add', 'notes-edit', 'notes-delete', 'waitlist-list', 'waitlist-add', 'waitlist-update', 'waitlist-delete',
-  'cleaning-list', 'cleaning-add', 'cleaning-delete', 'followups-list', 'followups-add', 'followups-update', 'followups-delete', 'auth-check'];
+  'cleaning-list', 'cleaning-add', 'cleaning-delete', 'followups-list', 'followups-add', 'followups-update', 'followups-delete', 'auth-check', 'alerts'];
 
 const t = entorno();
 const ruta = (route, params = {}) => JSON.parse(t.run(`jsonRoute_(${JSON.stringify(route)}, null, ${JSON.stringify(params)})`).text);

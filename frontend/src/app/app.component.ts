@@ -21,6 +21,7 @@ import { AuthService } from './services/auth.service';
 import { KeyGateComponent } from './components/key-gate/key-gate.component';
 import { WaitlistAlertService } from './services/waitlist-alert.service';
 import { UpdateService } from './services/update.service';
+import { AlertsFeedService } from './services/alerts-feed.service';
 import { ReviewsFeedComponent } from './components/reviews-feed/reviews-feed.component';
 import { Review, ReviewsResponse, BootstrapResponse, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry } from './models/review.model';
 
@@ -119,6 +120,7 @@ export class AppComponent implements OnInit, OnDestroy {
     public followupAlert: FollowupAlertService,
     public auth: AuthService,
     private updates: UpdateService, // solo hay que crearlo: se ocupa él de recargar si hay versión nueva
+    private alertsFeed: AlertsFeedService, // solo hay que crearlo: trae los avisos de las pestañas en una petición
   ) {}
 
   ngOnInit(): void {
