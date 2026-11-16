@@ -26,6 +26,7 @@ import { ReviewsResponse, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry, Followu
 const READ_TIMEOUT_MS = 60_000;
 const WRITE_TIMEOUT_MS = 45_000;
 const HEDGE_AT_MS = [6_000, 14_000];
+const FOLLOWUP_WRITE_HEDGE_AT_MS = [8_000, 16_000];
 
 @Injectable({ providedIn: 'root' })
 export class GlowmetricsService {
@@ -193,9 +194,16 @@ export class GlowmetricsService {
     return this.read<FollowupItem[]>('followups-list');
   }
 
+  // Las escrituras de Contactar sí se pueden repetir sin riesgo: el alta lleva un identificador y el servidor
+  // no guarda dos veces el mismo; cambiar una fecha o quitar a alguien da el mismo resultado la segunda vez.
+  // Así, un atasco de Apps Script (un minuto, a veces) no tira el guardado: a los 8 s y a los 16 s sin
+  // respuesta se lanza otra copia y gana la primera que conteste.
   private writeFollowup<T>(url: string): Observable<T | null> {
     this.inflight.delete('followups-list'); // una lectura en curso podría traer la lista de antes del cambio
-    return this.write<T>(url);
+    return hedgedRequest<T>(() => jsonpRequest<T>(this.withKey(url)), {
+      hedgeAtMs: FOLLOWUP_WRITE_HEDGE_AT_MS,
+      timeoutMs: WRITE_TIMEOUT_MS,
+    }).pipe(map(res => this.guard(res)));
   }
 
   addFollowup(f: { name: string; due: string; note: string }, clientId: string): Observable<FollowupResult | null> {

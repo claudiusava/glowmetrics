@@ -10,7 +10,7 @@ import { todayIso } from '../cleaning-board/cleaning-logic';
 
 // Mientras la pantalla está abierta se refresca sola (la usan varias personas). Tras escribir se espera
 // un poco antes de volver a leer, para que una lectura "vieja" no pise el cambio recién hecho.
-const POLL_MS = 30_000;
+const POLL_MS = 60_000; // con Apps Script cargado, menos peticiones es mejor; el alta ya se ve al instante
 const QUIET_AFTER_WRITE_MS = 5_000;
 const TEMP_PREFIX = 'tmp_'; // repaso recién añadido cuyo guardado aún no ha vuelto
 const DEFAULT_MONTHS = 12;

@@ -93,17 +93,22 @@ function addFollowup_(params, clientId) {
   const note = cleanText_(params.note, FOLLOWUP_NOTE_MAX);
 
   const row = [Utilities.getUuid(), name, due, note, new Date().toISOString()];
+  let saved = false;
   withLock_(() => {
+    // La web lanza copias de la misma alta si la primera tarda (Apps Script tiene atascos de un minuto).
+    // La comprobación y la marca de "ya hecho" van DENTRO del candado: la copia que llega después espera
+    // su turno, ve la marca y no escribe otra fila. Y la marca va DESPUÉS de escribir: si el candado agota
+    // el tiempo (waitLock lanza error), el reintento tiene que escribir de verdad, no contestar "ok" en vacío.
+    if (dedupeKey && cache.get(dedupeKey)) return;
     const sh = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(FOLLOWUP_SHEET_NAME);
     // Fila nueva como TEXTO PLANO (con appendRow, Sheets convertiría la fecha).
     const rg = sh.getRange(sh.getLastRow() + 1, 1, 1, FOLLOWUP_COLS);
     rg.setNumberFormat('@');
     rg.setValues([row]);
+    if (dedupeKey) cache.put(dedupeKey, '1', 600);
+    saved = true;
   });
-  // La marca de "ya hecho" va DESPUÉS de escribir: si el candado agota el tiempo (waitLock lanza
-  // error) y la web reintenta, el reintento tiene que escribir de verdad, no contestar "ok" en vacío.
-  if (dedupeKey) cache.put(dedupeKey, '1', 600);
-  return { ok: true, item: rowToFollowup_(row) };
+  return saved ? { ok: true, item: rowToFollowup_(row) } : { ok: true };
 }
 
 /** Cambia solo los campos que vengan en `patch` (nombre, fecha, nota). */

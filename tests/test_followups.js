@@ -140,5 +140,32 @@ check('ruta followups-delete', ruta('followups-delete', { id: viaRuta.item.id })
   check('y otro reintento ya no duplica', u.run('getFollowups()').length === 1);
 }
 
+// Dos copias de la misma alta a la vez (la web lanza otra si la primera tarda): las dos pasan la primera
+// comprobación; mientras la segunda espera el candado, la primera escribe y pone la marca. La segunda no
+// debe escribir otra fila.
+{
+  const u = entorno();
+  u.run('getFollowups()'); // crea la hoja
+  // La primera lectura de la marca devuelve "vacío" (así pasa la comprobación rápida) pero, para cuando la
+  // segunda copia consigue el candado, la otra ya ha escrito la fila y la marca.
+  u.run(`
+    var __orig = CacheService.getScriptCache();
+    var __seen = 0;
+    CacheService.getScriptCache = function () { return {
+      get: function (k) {
+        if (k === 'followup_add_dup1') { __seen++; if (__seen === 1) return null; return '1'; }
+        return __orig.get(k);
+      },
+      put: function (k, v, s) { return __orig.put(k, v, s); },
+      remove: function (k) { return __orig.remove(k); },
+      removeAll: function (ks) { return __orig.removeAll(ks); }
+    }; };
+  `);
+  // Simulamos que "la otra copia" ya escribió su fila:
+  u.run(`addFollowup_({ name: 'Eva M.', due: '2027-02-02' }, 'otra')`);
+  const r2 = u.run(`addFollowup_({ name: 'Eva M.', due: '2027-02-02' }, 'dup1')`);
+  check('copia que llega tras otra con el mismo id: contesta ok sin escribir de nuevo', r2.ok === true && !r2.item && u.run('getFollowups()').length === 1, r2);
+}
+
 console.log(failed ? `\n${failed} FALLOS` : '\nTodo bien');
 process.exit(failed ? 1 : 0);
