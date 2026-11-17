@@ -1,7 +1,18 @@
 // Lógica del registro de limpieza: cuánto falta para cada tarea, cuánto "se ha ensuciado" y a quién le toca.
 // Funciones puras (no tocan la pantalla), para poder probarlas con datos reales.
 
-export interface CleaningTask { id: string; name: string; icon: string; everyDays: number; }
+export interface CleaningTask { id: string; name: string; icon: string; everyDays: number; owner?: string; }
+
+/** La responsable fija de una tarea, si tiene y sigue en el equipo (si no, la tarea se reparte como siempre). */
+export function ownerOf(task: CleaningTask, staff: string[]): string | null {
+  return task.owner && staff.includes(task.owner) ? task.owner : null;
+}
+
+/** Las personas del equipo con la responsable de la tarea (si la hay) la primera. */
+export function peopleFor(task: CleaningTask, staff: string[]): string[] {
+  const o = ownerOf(task, staff);
+  return o ? [o, ...staff.filter(p => p !== o)] : staff;
+}
 export interface CleaningEntry { id: string; task: string; who: string; date: string; note: string; createdAt: string; }
 
 /** none: sin registros · ok: de sobra · soon: se acerca · due: toca hoy · late: atrasada */

@@ -27,13 +27,14 @@ const AD_SPEND = Object.freeze({
 
 // Limpieza del local (ver svc_cleaning.js). Cada tarea "toca" cuando pasan `everyDays` días desde
 // la última vez, y se marca atrasada si se pasa de ahí. `shares` son las horas semanales de cada
-// persona: de ahí sale su parte justa del reparto.
+// persona: de ahí sale su parte justa del reparto. `owner` (opcional) es la responsable fija de la
+// tarea: la pantalla la muestra siempre y le sugiere a ella; cualquiera puede apuntarla igualmente.
 const CLEANING_STAFF = Object.freeze(['Elena', 'Laura']);
 const CLEANING_SHARES = Object.freeze({ Elena: 40, Laura: 25 });
 const CLEANING_TASKS = Object.freeze([
   { id: 'recepcion', name: 'Polvo recepción', icon: '🛋️', everyDays: 5 },
-  { id: 'cabina1', name: 'Polvo cabina 1', icon: '🚪', everyDays: 3 },
-  { id: 'cabina2', name: 'Polvo cabina 2', icon: '🚪', everyDays: 3 },
+  { id: 'cabina1', name: 'Polvo cabina 1', icon: '🚪', everyDays: 3, owner: 'Laura' },
+  { id: 'cabina2', name: 'Polvo cabina 2', icon: '🚪', everyDays: 3, owner: 'Elena' },
   { id: 'bano', name: 'Baño', icon: '🚽', everyDays: 10 },
   { id: 'cristales', name: 'Cristales', icon: '🪟', everyDays: 60 }
 ]);

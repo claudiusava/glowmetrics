@@ -7,7 +7,7 @@ const path = require('path');
 const src = fs.readFileSync(path.resolve(__dirname, '../frontend/src/app/components/cleaning-board/cleaning-logic.ts'), 'utf8');
 const m = { exports: {} };
 new Function('module', 'exports', ts.transpileModule(src, { compilerOptions: { module: 'commonjs', target: 'es2019' } }).outputText)(m, m.exports);
-const { todayIso, daysBetween, lastEntry, agoText, soonDays, statusText, taskState, dirtColor, todoNow, suggestWho, normalizeDate, shareStats, activeEntries, START_WHO, isRotating, ROTATING_TASKS } = m.exports;
+const { todayIso, daysBetween, lastEntry, agoText, soonDays, statusText, taskState, dirtColor, todoNow, suggestWho, normalizeDate, shareStats, activeEntries, START_WHO, isRotating, ROTATING_TASKS, ownerOf, peopleFor } = m.exports;
 
 let failed = 0;
 const check = (n, c, x = '') => { console.log((c ? 'OK   ' : 'FALLA') + ' ' + n + (c ? '' : '  ' + JSON.stringify(x))); if (!c) failed++; };
@@ -168,6 +168,18 @@ check('el apunte de "Inicio" no cuenta como turno de nadie', suggestWho([E('cris
 const conCristales = [...diarios('Elena', 3), E('cristales', 'Laura', '2026-12-10')];
 check('los cristales no suman en el reparto del día a día', shareStats(conCristales, STAFF, POR_HORAS, hoyT).total === 3 && shareStats(conCristales, STAFF, POR_HORAS, hoyT).rows[1].count === 0, shareStats(conCristales, STAFF, POR_HORAS, hoyT));
 check('y hacerlos no cambia a quién le toca el polvo', suggestWho(conCristales, STAFF, POR_HORAS, 'recepcion', hoyT) === suggestWho(diarios('Elena', 3), STAFF, POR_HORAS, 'recepcion', hoyT));
+
+// Responsable fija por tarea (cabinas)
+const c1 = { ...TAREAS.cabina1, owner: 'Laura' };
+const c2 = { ...TAREAS.cabina2, owner: 'Elena' };
+check('responsable: la de la tarea, si está en el equipo', ownerOf(c1, STAFF) === 'Laura' && ownerOf(c2, STAFF) === 'Elena');
+check('responsable: sin dueña (recepción) no hay responsable', ownerOf(TAREAS.recepcion, STAFF) === null);
+check('responsable: si ya no está en el equipo, se reparte como siempre', ownerOf({ ...c1, owner: 'Paco' }, STAFF) === null);
+check('quién puede apuntar: la responsable primero, la otra también', JSON.stringify(peopleFor(c1, STAFF)) === '["Laura","Elena"]' && JSON.stringify(peopleFor(c2, STAFF)) === '["Elena","Laura"]');
+check('sin responsable el orden del equipo no cambia', JSON.stringify(peopleFor(TAREAS.bano, STAFF)) === '["Elena","Laura"]');
+check('la cabina de Laura la puede apuntar Elena: cuenta como hecha (la fecha manda, no quién)', taskState(c1, [E('cabina1', 'Elena', hoy)], hoy).level === 'ok');
+const soloCabinas = [...[1, 4, 7, 10].map(i => E('cabina1', 'Laura', haceDias(i))), ...[2, 5, 8, 11].map(i => E('cabina2', 'Elena', haceDias(i)))];
+check('las cabinas siguen contando en el reparto: la compartida va a quien menos lleva por horas (Elena)', suggestWho(soloCabinas, STAFF, porHoras, 'bano', hoy) === 'Elena');
 
 console.log(failed ? '\n' + failed + ' comprobaciones FALLAN' : '\nLógica de limpieza OK');
 process.exit(failed ? 1 : 0);

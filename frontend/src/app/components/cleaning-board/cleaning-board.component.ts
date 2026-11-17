@@ -5,7 +5,7 @@ import { GlowmetricsService } from '../../services/glowmetrics.service';
 import { CleaningAlertService } from '../../services/cleaning-alert.service';
 import {
   CleaningEntry, CleaningTask, ShareRow, TaskState, activeEntries, agoText, daysBetween, dirtColor, normalizeDate,
-  shareStats, suggestWho, taskState, todayIso, todoNow, START_WHO, isRotating,
+  ownerOf, peopleFor, shareStats, suggestWho, taskState, todayIso, todoNow, START_WHO, isRotating,
 } from './cleaning-logic';
 
 // El registro lo usan dos personas en el mismo ordenador: se refresca solo mientras está abierto.
@@ -23,6 +23,8 @@ export interface TaskCard {
   state: TaskState;
   color: string;           // color de la barra de suciedad
   who: string | null;      // "le toca a…" (solo si la tarea ya se acerca o toca)
+  owner: string | null;    // responsable fija de la tarea (se muestra siempre)
+  people: string[];        // a quién se puede apuntar, la responsable primero
 }
 
 @Component({
@@ -122,8 +124,9 @@ export class CleaningBoardComponent implements OnInit, OnDestroy {
     const entries = activeEntries(this.entries, this.today); // sin los apuntes programados para más adelante
     const cardOf = (task: CleaningTask): TaskCard => {
       const state = taskState(task, entries, this.today);
-      const who = state.level === 'ok' ? null : suggestWho(entries, this.staff, this.shares, task.id, this.today);
-      return { task, state, color: dirtColor(state), who };
+      const owner = ownerOf(task, this.staff);
+      const who = state.level === 'ok' ? null : (owner ?? suggestWho(entries, this.staff, this.shares, task.id, this.today));
+      return { task, state, color: dirtColor(state), who, owner, people: peopleFor(task, this.staff) };
     };
     this.cards = this.tasks.map(cardOf);
     const urgent = new Set(todoNow(this.tasks, entries, this.today).map(x => x.task.id));
