@@ -148,7 +148,7 @@ export interface RankingCapture {
 }
 
 // Ofertas de campaña con unidades limitadas por centro (ver svc_promos.js y PROMO_OFFERS en cfg_config.js).
-export type PromoSection = 'mujer' | 'hombre' | 'minis';
+export type PromoSection = 'mujer' | 'hombre' | 'minis-mujer' | 'minis-hombre';
 
 export interface PromoOffer {
   id: string;

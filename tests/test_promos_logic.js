@@ -33,11 +33,12 @@ check('una oferta de pocas unidades (límite 3) es "low" desde el principio, no 
 // Agrupación como en el cartel
 const sin = () => 0;
 const secs = buildSections(OFFERS, sin);
-check('3 secciones en orden: Mujer, Hombre y las de 3 €, 2 € y 1 €', secs.map(s => s.section).join() === 'mujer,hombre,minis' && secs.map(s => s.title).join('|') === 'Mujer|Hombre|Ofertas de 3 €, 2 € y 1 €', secs.map(s => s.title));
+check('4 secciones en orden (mujeres a la izquierda, hombres a la derecha, en las dos filas): mujer, hombre, y las de 3 €, 2 € y 1 € de mujer y de hombre', secs.map(s => s.section).join() === 'mujer,hombre,minis-mujer,minis-hombre' && secs.map(s => s.title).join('|') === 'Mujer|Hombre|Mujer · ofertas de 3 €, 2 € y 1 €|Hombre · ofertas de 3 €, 2 € y 1 €', secs.map(s => s.title));
 check('mujer: 3 tratamientos de 3 variantes (3, 2 y 1 sesiones)', secs[0].groups.length === 3 && secs[0].groups.every(g => g.cards.length === 3) && secs[0].groups[0].cards.map(c => c.offer.label).join() === '3 sesiones,2 sesiones,1 sesión');
 check('hombre: cuerpo completo, piernas completas y espalda + tórax + hombros', secs[1].groups.map(g => g.name).join('|') === 'Cuerpo completo|Piernas completas|Espalda completa + tórax + hombros');
-check('las de 3 €, 2 € y 1 €: 3 tratamientos (ingles mujer, axilas mujer, axilas hombre) con 3 precios', secs[2].groups.length === 3 && secs[2].groups.every(g => g.cards.map(c => c.offer.label).join() === 'a 3 €,a 2 €,a 1 €'));
-check('límite total: mujer 385, hombre 390, las de 3 €, 2 € y 1 € 225', secs.map(s => s.limit).join() === '385,390,225', secs.map(s => s.limit));
+check('las de 3 €, 2 € y 1 € de mujer: ingles normales y axilas, cada una con 3 precios', secs[2].groups.map(g => g.name).join('|') === 'Ingles normales|Axilas' && secs[2].groups.every(g => g.cards.map(c => c.offer.label).join() === 'a 3 €,a 2 €,a 1 €'));
+check('las de 3 €, 2 € y 1 € de hombre: solo axilas, con 3 precios', secs[3].groups.map(g => g.name).join('|') === 'Axilas' && secs[3].groups[0].cards.map(c => c.offer.label).join() === 'a 3 €,a 2 €,a 1 €');
+check('límite total: mujer 385, hombre 390, 3 €/2 €/1 € de mujer 150 y de hombre 75', secs.map(s => s.limit).join() === '385,390,150,75', secs.map(s => s.limit));
 
 // Con ventas
 const vendidas = { 'mujer-cuerpo-3': 12, 'mini-mujer-axilas-3': 25, 'hombre-cuerpo-2': 5, 'mujer-piernas-1': 99 };

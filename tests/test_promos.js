@@ -59,11 +59,11 @@ const set = (id, n, cid) => t.run(`changePromo_('set', ${JSON.stringify(id)}, ${
 // ---- Configuración: lo que dicen los carteles de la franquicia ----
 check('hay 27 ofertas con id distinto', ofertas.length === 27 && new Set(ofertas.map(o => o.id)).size === 27, ofertas.length);
 const porSeccion = s => ofertas.filter(o => o.section === s);
-check('9 de mujer, 9 de hombre y 9 de 3 €, 2 € y 1 €', porSeccion('mujer').length === 9 && porSeccion('hombre').length === 9 && porSeccion('minis').length === 9);
+check('9 de mujer, 9 de hombre, y las de 3 €, 2 € y 1 €: 6 de mujer y 3 de hombre', porSeccion('mujer').length === 9 && porSeccion('hombre').length === 9 && porSeccion('minis-mujer').length === 6 && porSeccion('minis-hombre').length === 3);
 check('cuerpo completo mujer: 15, 20 y 50 unidades (3, 2 y 1 sesiones)', [lim('mujer-cuerpo-3'), lim('mujer-cuerpo-2'), lim('mujer-cuerpo-1')].join() === '15,20,50');
 check('cuerpo completo hombre: 15, 25 y 50 unidades', [lim('hombre-cuerpo-3'), lim('hombre-cuerpo-2'), lim('hombre-cuerpo-1')].join() === '15,25,50');
-check('el resto de packs de mujer y hombre: 50 unidades', ofertas.filter(o => o.section !== 'minis' && !o.id.includes('cuerpo')).every(o => o.limit === 50));
-check('las de 3 €, 2 € y 1 €: 25 unidades de CADA precio', porSeccion('minis').every(o => o.limit === 25));
+check('el resto de packs de mujer y hombre: 50 unidades', ofertas.filter(o => !o.section.startsWith('minis') && !o.id.includes('cuerpo')).every(o => o.limit === 50));
+check('las de 3 €, 2 € y 1 €: 25 unidades de CADA precio', ofertas.filter(o => o.section.startsWith('minis')).every(o => o.limit === 25));
 check('precio de algunas de la tabla: cuerpo mujer 3 sesiones 195 €, piernas hombre 1 sesión 24,90 €', ofertas.find(o => o.id === 'mujer-cuerpo-3').price === '195 €' && ofertas.find(o => o.id === 'hombre-piernas-1').price === '24,90 €');
 
 // ---- Hoja ----

@@ -25,7 +25,8 @@ export function promoLevel(limit: number, sold: number): PromoLevel {
 export const SECTION_TITLES: Record<PromoSection, string> = {
   mujer: 'Mujer',
   hombre: 'Hombre',
-  minis: 'Ofertas de 3 €, 2 € y 1 €',
+  'minis-mujer': 'Mujer · ofertas de 3 €, 2 € y 1 €',
+  'minis-hombre': 'Hombre · ofertas de 3 €, 2 € y 1 €',
 };
 
 export interface PromoCard { offer: PromoOffer; sold: number; left: number; level: PromoLevel; pct: number; }
@@ -81,7 +82,10 @@ export function campaignText(from: string, to: string): string {
 
 /** Nombre completo de una oferta para los avisos: "Mujer · Cuerpo completo · 3 sesiones". */
 export function offerName(o: PromoOffer): string {
-  return o.section === 'minis' ? `${o.group} ${o.label}` : `${SECTION_TITLES[o.section] ?? o.section} · ${o.group} · ${o.label}`;
+  // Las de 3 €, 2 € y 1 €: "Mujer · Axilas a 3 €"; el resto: "Mujer · Cuerpo completo · 3 sesiones".
+  if (o.section === 'minis-mujer') return `Mujer · ${o.group} ${o.label}`;
+  if (o.section === 'minis-hombre') return `Hombre · ${o.group} ${o.label}`;
+  return `${SECTION_TITLES[o.section] ?? o.section} · ${o.group} · ${o.label}`;
 }
 
 /** Identificador de una escritura: si se repite, el servidor sabe que es la misma y no la cuenta dos veces. */
