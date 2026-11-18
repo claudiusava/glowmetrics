@@ -49,13 +49,12 @@
 
                 <!-- Corregir a mano el número de vendidas (si algo no cuadra) -->
                 <div class="adjust" *ngIf="adjustId === c.offer.id">
-                  <label>
-                    <span>Vendidas en total</span>
+                  <span class="adjust-title">Vendidas en total</span>
+                  <!-- Campo estrecho (como mucho tres cifras) y, a su lado, los botones; si no caben, bajan de línea -->
+                  <div class="adjust-row">
                     <input type="number" inputmode="numeric" min="0" [max]="c.offer.limit" step="1"
                            [(ngModel)]="adjustValue" [ngModelOptions]="{ standalone: true }"
                            (keydown.enter)="saveAdjust(c)" aria-label="Unidades vendidas en total" />
-                  </label>
-                  <div class="adjust-actions">
                     <button type="button" class="act" (click)="saveAdjust(c)" [disabled]="!canAdjust(c)">Guardar</button>
                     <button type="button" class="link" (click)="adjustId = null">Cancelar</button>
                   </div>

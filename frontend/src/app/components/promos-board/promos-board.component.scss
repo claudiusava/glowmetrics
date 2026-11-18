@@ -245,35 +245,41 @@
 // ---- Ajustar a mano ----
 .adjust {
   display: grid;
+  grid-template-columns: minmax(0, 1fr); // nada de dentro puede ensanchar el recuadro
   gap: 0.5em;
   padding: 0.7em;
   border-radius: 0.8em;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
+  min-width: 0;
+}
 
-  label { display: grid; gap: 0.3em; }
-  label > span { font-size: 0.86em; font-weight: 700; color: #334155; }
+.adjust-title { font-size: 0.86em; font-weight: 700; color: #334155; }
+
+.adjust-row {
+  display: flex;
+  flex-wrap: wrap; // en tarjetas estrechas (móvil) los botones bajan de línea en vez de salirse
+  align-items: center;
+  gap: 0.4em 0.6em;
+  min-width: 0;
 
   input {
-    min-height: 2.9em;
+    flex: none;
+    width: 4.2em; // el número tiene como mucho tres cifras (el límite más alto es 50)
+    max-width: 100%;
+    min-height: 2.6em;
     border: 1px solid #dbe2ea;
     border-radius: 0.8em;
-    padding: 0 0.8em;
+    padding: 0 0.4em;
     font: inherit;
     font-size: 16px; // 16px evita el zoom automático de iPhone al enfocar
+    text-align: center;
     color: #111827;
     background: #ffffff;
-    width: 100%;
     box-sizing: border-box;
 
     &:focus { outline: none; border-color: #f7307d; }
   }
-}
-
-.adjust-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.6em;
 }
 
 .act {
