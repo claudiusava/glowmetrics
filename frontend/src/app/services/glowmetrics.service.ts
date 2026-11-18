@@ -4,7 +4,7 @@ import { hedgedRequest } from './hedged-request';
 import { jsonpRequest } from './jsonp-request';
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
-import { AlertsResponse, ReviewsResponse, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry, FollowupItem, FollowupResult, BootstrapResponse, WaitItem, WaitlistResult, ReviewsRefresh, CleaningData, CleaningAddResult } from '../models/review.model';
+import { AlertsResponse, PromoResult, PromosData, ReviewsResponse, MonthlyGoal, AirtableKpi, MonthlyHistoryEntry, FollowupItem, FollowupResult, BootstrapResponse, WaitItem, WaitlistResult, ReviewsRefresh, CleaningData, CleaningAddResult } from '../models/review.model';
 
 // Apps Script (ContentService) no manda cabeceras CORS, así que consumimos
 // su API vía JSONP en vez de XHR/fetch normal.
@@ -205,7 +205,12 @@ export class GlowmetricsService {
   // Así, un atasco de Apps Script (un minuto, a veces) no tira el guardado: a los 8 s y a los 16 s sin
   // respuesta se lanza otra copia y gana la primera que conteste.
   private writeFollowup<T>(url: string): Observable<T | null> {
-    this.inflight.delete('followups-list'); // una lectura en curso podría traer la lista de antes del cambio
+    return this.writeRepeatable<T>(url, 'followups-list');
+  }
+
+  // Escritura con copias de reintento (ver arriba) para las que el servidor sabe ignorar repeticiones.
+  private writeRepeatable<T>(url: string, listRoute: string): Observable<T | null> {
+    this.inflight.delete(listRoute); // una lectura en curso podría traer la lista de antes del cambio
     return hedgedRequest<T>(() => jsonpRequest<T>(this.withKey(url)), {
       hedgeAtMs: FOLLOWUP_WRITE_HEDGE_AT_MS,
       timeoutMs: WRITE_TIMEOUT_MS,
@@ -228,5 +233,25 @@ export class GlowmetricsService {
 
   deleteFollowup(id: string): Observable<{ ok?: boolean } | null> {
     return this.writeFollowup<{ ok?: boolean }>(`${this.api}?route=followups-delete&id=${encodeURIComponent(id)}`);
+  }
+
+  // ---- Ofertas con unidades limitadas (Black Friday) ----
+  getPromos(): Observable<PromosData | null> {
+    return this.read<PromosData>('promos-list');
+  }
+
+  // Vender y deshacer llevan un clientId: si Apps Script se atasca y la petición se repite, el servidor no
+  // cuenta la venta dos veces. Todas devuelven en `counts` los números reales de todas las ofertas.
+  promoSell(offer: string, clientId: string): Observable<PromoResult | null> {
+    return this.writeRepeatable<PromoResult>(`${this.api}?route=promos-sell&offer=${encodeURIComponent(offer)}&clientId=${encodeURIComponent(clientId)}`, 'promos-list');
+  }
+
+  promoUndo(offer: string, clientId: string): Observable<PromoResult | null> {
+    return this.writeRepeatable<PromoResult>(`${this.api}?route=promos-undo&offer=${encodeURIComponent(offer)}&clientId=${encodeURIComponent(clientId)}`, 'promos-list');
+  }
+
+  // Corrige el número de vendidas (por si algo no cuadra).
+  promoSet(offer: string, sold: number, clientId: string): Observable<PromoResult | null> {
+    return this.writeRepeatable<PromoResult>(`${this.api}?route=promos-set&offer=${encodeURIComponent(offer)}&sold=${sold}&clientId=${encodeURIComponent(clientId)}`, 'promos-list');
   }
 }

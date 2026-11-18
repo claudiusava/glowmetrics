@@ -1,0 +1,347 @@
+// Mismo lenguaje visual que Limpieza y Contactar: rosa de la marca, grises azulados, esquinas redondeadas
+// y botones grandes para tocar con el dedo. Todo va en "em" a partir de un tamaño base que crece en monitores
+// grandes (--s). Colores de las tarjetas: verde = quedan de sobra, ámbar = quedan pocas, rojo = agotada.
+
+:host {
+  --s: 1;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  font-size: calc(14px * var(--s));
+
+  @media (min-width: 1700px) { --s: 1.25; }
+  @media (min-width: 2300px) { --s: 1.6; }
+  @media (min-width: 3000px) { --s: 2.1; }
+}
+
+.scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 1.4em 1.4em;
+}
+
+.empty {
+  padding: 3.4em 0.6em;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 1.07em;
+}
+
+// ---- Barra fija ----
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #ffffff;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4em 1em;
+  padding: 0.7em 0 0.8em;
+  margin-bottom: 0.4em;
+  border-bottom: 1px solid #eef1f5;
+}
+
+.camp {
+  font-size: 1.07em;
+  color: #64748b;
+  font-weight: 600;
+
+  strong { color: #f7307d; font-weight: 800; letter-spacing: 0.01em; }
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4em 0.7em;
+}
+
+.sum {
+  font-size: 1.07em;
+  font-weight: 600;
+  color: #64748b;
+
+  strong { color: #0f172a; font-weight: 800; }
+}
+
+.pill {
+  padding: 0.2em 0.8em;
+  border-radius: 999px;
+  font-size: 0.93em;
+  font-weight: 800;
+
+  &.out { background: #ffe4e6; color: #be123c; }
+  &.low { background: #fef3c7; color: #92400e; }
+}
+
+// ---- Secciones ----
+.sections {
+  display: grid;
+  gap: 1.4em;
+  align-items: start;
+
+  // Pantalla ancha: Mujer y Hombre una al lado de otra; las de 3 €, 2 € y 1 € debajo, a todo el ancho.
+  @media (min-width: 1100px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    .sec-minis { grid-column: 1 / -1; }
+  }
+}
+
+.sec-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.8em;
+  margin: 0 0 0.6em;
+  padding-bottom: 0.4em;
+  border-bottom: 2px solid #f7307d;
+  font-size: 1.3em;
+  font-weight: 800;
+  color: #0f172a;
+
+  .sec-count { font-size: 0.65em; font-weight: 700; color: #94a3b8; white-space: nowrap; }
+}
+
+.sec-hombre .sec-title { border-bottom-color: #3b3b98; }
+
+.groups {
+  display: grid;
+  gap: 1.1em;
+}
+
+// Las de 3 €, 2 € y 1 €: tres tratamientos, uno al lado de otro si cabe.
+// Cada tarjeta necesita sitio para "Vendida" y sus dos botones: los tres tratamientos no caben en fila
+// con comodidad, así que se reparten en las columnas que quepan (dos en un monitor normal).
+.sec-minis .groups {
+  @media (min-width: 1100px) { grid-template-columns: repeat(auto-fit, minmax(36em, 1fr)); gap: 1.4em; }
+}
+
+.group-title {
+  margin: 0 0 0.5em;
+  font-size: 1.02em;
+  font-weight: 800;
+  color: #334155;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7em;
+
+  @media (max-width: 640px) { grid-template-columns: repeat(auto-fit, minmax(9.5em, 1fr)); }
+}
+
+// ---- Tarjeta de oferta ----
+.card {
+  --accent: #34d399;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45em;
+  padding: 0.8em 0.9em 0.9em;
+  border-radius: 1em;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-top: 0.32em solid var(--accent);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+  min-width: 0;
+
+  &.lvl-low { --accent: #f59e0b; background: #fffbeb; border-color: #fcd34d; }
+  &.lvl-out { --accent: #e11d48; background: #fff1f2; border-color: #fecdd3; }
+}
+
+.card-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5em;
+  flex-wrap: wrap;
+
+  .label { font-weight: 800; color: #0f172a; font-size: 1.02em; }
+  .price { font-weight: 700; color: #be185d; font-size: 0.95em; }
+}
+
+.left {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4em;
+  flex-wrap: wrap;
+
+  .num {
+    font-size: 2.5em;
+    line-height: 1;
+    font-weight: 900;
+    color: #0f172a;
+    font-variant-numeric: tabular-nums;
+  }
+  .of { font-size: 0.86em; font-weight: 600; color: #64748b; }
+  .tag-out { color: #be123c; font-weight: 900; letter-spacing: 0.06em; }
+}
+
+.card.lvl-low .left .num { color: #b45309; }
+.card.lvl-out .left .num { color: #be123c; }
+
+.bar {
+  height: 0.5em;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+
+  .fill {
+    height: 100%;
+    border-radius: 999px;
+    background: var(--accent);
+    transition: width 0.3s ease;
+  }
+}
+
+.sold-line { font-size: 0.82em; font-weight: 600; color: #94a3b8; }
+
+// ---- Botones ----
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  margin-top: 0.15em;
+}
+
+.sell {
+  flex: 1;
+  min-width: 0; // si la tarjeta es estrecha, el botón se encoge en vez de empujar a los demás fuera
+  padding: 0 0.4em;
+  min-height: 2.9em;
+  border: none;
+  border-radius: 0.8em;
+  background: #f7307d;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+
+  &:hover:not(:disabled) { transform: translateY(-1px); }
+  &:active:not(:disabled) { transform: scale(0.97); }
+  &:disabled { opacity: 0.35; cursor: default; background: #94a3b8; }
+}
+
+.icon {
+  flex: none;
+  width: 2.6em;
+  height: 2.9em;
+  border-radius: 0.8em;
+  border: 1px solid #dbe2ea;
+  background: #f8fafc;
+  color: #475569;
+  font: inherit;
+  font-size: 1.05em;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background 0.12s ease;
+
+  &:hover:not(:disabled) { background: #eef2f7; }
+  &:disabled { opacity: 0.35; cursor: default; }
+}
+
+// ---- Ajustar a mano ----
+.adjust {
+  display: grid;
+  gap: 0.5em;
+  padding: 0.7em;
+  border-radius: 0.8em;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+
+  label { display: grid; gap: 0.3em; }
+  label > span { font-size: 0.86em; font-weight: 700; color: #334155; }
+
+  input {
+    min-height: 2.9em;
+    border: 1px solid #dbe2ea;
+    border-radius: 0.8em;
+    padding: 0 0.8em;
+    font: inherit;
+    font-size: 16px; // 16px evita el zoom automático de iPhone al enfocar
+    color: #111827;
+    background: #ffffff;
+    width: 100%;
+    box-sizing: border-box;
+
+    &:focus { outline: none; border-color: #f7307d; }
+  }
+}
+
+.adjust-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+}
+
+.act {
+  min-height: 2.6em;
+  padding: 0 1em;
+  border-radius: 0.7em;
+  border: 1px solid #dbe2ea;
+  background: #ffffff;
+  color: #334155;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:hover:not(:disabled) { background: #eef2f7; }
+  &:disabled { opacity: 0.5; cursor: default; }
+}
+
+.link {
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font: inherit;
+  font-size: 0.93em;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0.5em 0.3em;
+}
+
+// ---- Aviso breve ----
+.toast {
+  position: absolute;
+  left: 50%;
+  bottom: 1em;
+  transform: translateX(-50%);
+  max-width: calc(100% - 2em);
+  padding: 0.7em 1em;
+  border-radius: 0.9em;
+  background: rgba(15, 23, 42, 0.92);
+  color: #f1f5f9;
+  font-size: 1em;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  animation: toast-in 0.2s ease;
+  z-index: 3;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translate(-50%, 6px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@media (max-width: 480px) {
+  .scroll { padding: 0 0.9em 1.2em; }
+}
+
+// Móvil: tarjetas de dos en dos, así que "Vendida" ocupa su propia fila y los dos botones pequeños van debajo.
+@media (max-width: 640px) {
+  .actions { flex-wrap: wrap; }
+  .sell { flex: 1 1 100%; }
+  .icon { flex: 1 1 0; width: auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar .fill { transition: none; }
+}

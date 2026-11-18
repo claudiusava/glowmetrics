@@ -39,6 +39,43 @@ const CLEANING_TASKS = Object.freeze([
   { id: 'cristales', name: 'Cristales', icon: '🪟', everyDays: 60 }
 ]);
 
+// Ofertas de campaña con unidades limitadas por centro (ver svc_promos.js). El límite de cada una es lo que
+// permite vender la franquicia en este centro; la web enseña cuántas quedan y deja apuntar cada venta.
+// `section` agrupa las tarjetas en pantalla, `group` es el tratamiento y `label` la variante (sesiones o precio).
+const PROMO_CAMPAIGN = Object.freeze({ name: 'Black Friday', from: '2026-11-18', to: '2026-11-30' });
+const PROMO_OFFERS = Object.freeze([
+  // Mujer
+  { id: 'mujer-cuerpo-3', section: 'mujer', group: 'Cuerpo completo', label: '3 sesiones', price: '195 €', limit: 15 },
+  { id: 'mujer-cuerpo-2', section: 'mujer', group: 'Cuerpo completo', label: '2 sesiones', price: '135 €', limit: 20 },
+  { id: 'mujer-cuerpo-1', section: 'mujer', group: 'Cuerpo completo', label: '1 sesión', price: '70 €', limit: 50 },
+  { id: 'mujer-piernas-3', section: 'mujer', group: 'Piernas completas', label: '3 sesiones', price: '87 €', limit: 50 },
+  { id: 'mujer-piernas-2', section: 'mujer', group: 'Piernas completas', label: '2 sesiones', price: '55 €', limit: 50 },
+  { id: 'mujer-piernas-1', section: 'mujer', group: 'Piernas completas', label: '1 sesión', price: '19 €', limit: 50 },
+  { id: 'mujer-ipa-3', section: 'mujer', group: 'Ingles + piernas + axilas', label: '3 sesiones', price: '125 €', limit: 50 },
+  { id: 'mujer-ipa-2', section: 'mujer', group: 'Ingles + piernas + axilas', label: '2 sesiones', price: '86 €', limit: 50 },
+  { id: 'mujer-ipa-1', section: 'mujer', group: 'Ingles + piernas + axilas', label: '1 sesión', price: '25 €', limit: 50 },
+  // Hombre
+  { id: 'hombre-cuerpo-3', section: 'hombre', group: 'Cuerpo completo', label: '3 sesiones', price: '240 €', limit: 15 },
+  { id: 'hombre-cuerpo-2', section: 'hombre', group: 'Cuerpo completo', label: '2 sesiones', price: '165 €', limit: 25 },
+  { id: 'hombre-cuerpo-1', section: 'hombre', group: 'Cuerpo completo', label: '1 sesión', price: '90 €', limit: 50 },
+  { id: 'hombre-piernas-3', section: 'hombre', group: 'Piernas completas', label: '3 sesiones', price: '110 €', limit: 50 },
+  { id: 'hombre-piernas-2', section: 'hombre', group: 'Piernas completas', label: '2 sesiones', price: '76 €', limit: 50 },
+  { id: 'hombre-piernas-1', section: 'hombre', group: 'Piernas completas', label: '1 sesión', price: '24,90 €', limit: 50 },
+  { id: 'hombre-espalda-3', section: 'hombre', group: 'Espalda completa + tórax + hombros', label: '3 sesiones', price: '136 €', limit: 50 },
+  { id: 'hombre-espalda-2', section: 'hombre', group: 'Espalda completa + tórax + hombros', label: '2 sesiones', price: '96 €', limit: 50 },
+  { id: 'hombre-espalda-1', section: 'hombre', group: 'Espalda completa + tórax + hombros', label: '1 sesión', price: '40 €', limit: 50 },
+  // Ofertas de 3 €, 2 € y 1 € (25 unidades de cada precio)
+  { id: 'mini-mujer-ingles-3', section: 'minis', group: 'Mujer · Ingles normales', label: 'a 3 €', price: '', limit: 25 },
+  { id: 'mini-mujer-ingles-2', section: 'minis', group: 'Mujer · Ingles normales', label: 'a 2 €', price: '', limit: 25 },
+  { id: 'mini-mujer-ingles-1', section: 'minis', group: 'Mujer · Ingles normales', label: 'a 1 €', price: '', limit: 25 },
+  { id: 'mini-mujer-axilas-3', section: 'minis', group: 'Mujer · Axilas', label: 'a 3 €', price: '', limit: 25 },
+  { id: 'mini-mujer-axilas-2', section: 'minis', group: 'Mujer · Axilas', label: 'a 2 €', price: '', limit: 25 },
+  { id: 'mini-mujer-axilas-1', section: 'minis', group: 'Mujer · Axilas', label: 'a 1 €', price: '', limit: 25 },
+  { id: 'mini-hombre-axilas-3', section: 'minis', group: 'Hombre · Axilas', label: 'a 3 €', price: '', limit: 25 },
+  { id: 'mini-hombre-axilas-2', section: 'minis', group: 'Hombre · Axilas', label: 'a 2 €', price: '', limit: 25 },
+  { id: 'mini-hombre-axilas-1', section: 'minis', group: 'Hombre · Axilas', label: 'a 1 €', price: '', limit: 25 }
+]);
+
 // Google Sheets / negocio
 const SPREADSHEET_ID = '1o-z4-0XLKpmV_houX06G4DgAeImNWHkgoHPJBXxFZbQ';
 const PLACE_URL = 'https://www.google.com/maps/place/SinVello!+Alcorc%C3%B3n+%7C+Depilaci%C3%B3n+L%C3%A1ser+Diodo/@40.35219,-3.8246795,15z/data=!4m6!3m5!1s0xd4189bcbbfacd33:0x4a3bdccdbd719687!8m2!3d40.35219!4d-3.8246795!16s%2Fg%2F11vlpq89hn?entry=ttu&g_ep=EgoyMDI1MTAxNC4wIKXMDSoASAFQAw%3D%3D';

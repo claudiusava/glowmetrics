@@ -15,6 +15,7 @@ import { RankingModalComponent } from './components/ranking-modal/ranking-modal.
 import { WaitlistBoardComponent } from './components/waitlist-board/waitlist-board.component';
 import { CleaningBoardComponent } from './components/cleaning-board/cleaning-board.component';
 import { FollowupBoardComponent } from './components/followup-board/followup-board.component';
+import { PromosBoardComponent } from './components/promos-board/promos-board.component';
 import { CleaningAlertService } from './services/cleaning-alert.service';
 import { FollowupAlertService } from './services/followup-alert.service';
 import { AuthService } from './services/auth.service';
@@ -52,8 +53,8 @@ const MONTHLY_HISTORY_POLL_MS = 60 * 60 * 1_000; // cada hora
 const KPI_POLL_MS = 10 * 60_000;
 const TIP_ROTATE_MS = 60_000;
 
-type View = 'inicio' | 'espera' | 'contactar' | 'limpieza';
-const VIEWS: View[] = ['inicio', 'espera', 'contactar', 'limpieza'];
+type View = 'inicio' | 'espera' | 'contactar' | 'limpieza' | 'ofertas';
+const VIEWS: View[] = ['inicio', 'espera', 'contactar', 'limpieza', 'ofertas'];
 
 // Palabras secretas: se teclean en cualquier momento (con el foco fuera de
 // cualquier campo de texto, para que no salten al escribir el nombre de una
@@ -73,7 +74,7 @@ const SECRET_BUFFER_LEN = Math.max(...Object.keys(SECRET_CODES).map(k => k.lengt
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, KpiCardComponent, MonthlyGoalComponent, MonthlyHistoryComponent, RankingModalComponent, WaitlistBoardComponent, CleaningBoardComponent, FollowupBoardComponent, ReviewsFeedComponent, KeyGateComponent],
+  imports: [CommonModule, KpiCardComponent, MonthlyGoalComponent, MonthlyHistoryComponent, RankingModalComponent, WaitlistBoardComponent, CleaningBoardComponent, FollowupBoardComponent, PromosBoardComponent, ReviewsFeedComponent, KeyGateComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
@@ -97,6 +98,7 @@ export class AppComponent implements OnInit, OnDestroy {
     { id: 'espera', icon: '⏳', label: 'espera', long: 'Lista de ' },
     { id: 'contactar', icon: '📞', label: 'Contactar' },
     { id: 'limpieza', icon: '🧹', label: 'Limpieza' },
+    { id: 'ofertas', icon: '🏷️', label: 'Ofertas' }, // unidades que quedan de las ofertas de campaña (Black Friday)
   ];
 
   private tips: string[] = [];

@@ -147,6 +147,31 @@ export interface RankingCapture {
   ranking: RankingRow[];
 }
 
+// Ofertas de campaña con unidades limitadas por centro (ver svc_promos.js y PROMO_OFFERS en cfg_config.js).
+export type PromoSection = 'mujer' | 'hombre' | 'minis';
+
+export interface PromoOffer {
+  id: string;
+  section: PromoSection;
+  group: string;  // tratamiento: "Cuerpo completo", "Mujer · Axilas"…
+  label: string;  // variante: "3 sesiones", "a 3 €"
+  price: string;  // "195 €" (vacío en las de 3 €, 2 € y 1 €)
+  limit: number;  // unidades que se pueden vender en este centro
+}
+
+export interface PromosData {
+  campaign: { name: string; from: string; to: string };
+  offers: PromoOffer[];
+  sold: Record<string, number>; // unidades vendidas de cada oferta
+  error?: string;
+}
+
+export interface PromoResult {
+  ok?: boolean;
+  error?: string; // 'sold-out' | 'nothing-to-undo' | 'invalid-number' | 'unknown-offer'
+  counts?: Record<string, number>; // los números reales de todas las ofertas tras el cambio
+}
+
 // Registro de limpieza del local (ver svc_cleaning.js).
 export interface CleaningData {
   tasks: { id: string; name: string; icon: string; everyDays: number }[];

@@ -1,0 +1,74 @@
+<div class="scroll">
+  <div class="empty" *ngIf="loading && !loadFailed">Cargando…</div>
+  <div class="empty" *ngIf="loading && loadFailed">No se pudo cargar. Reintentando…</div>
+
+  <ng-container *ngIf="!loading">
+    <!-- Barra fija: la campaña y cuánto llevamos vendido en total -->
+    <div class="topbar">
+      <div class="camp">
+        <strong>{{ campaignName }}</strong><span *ngIf="campaignText"> · {{ campaignText }}</span>
+      </div>
+      <div class="summary" aria-live="polite">
+        <span class="sum"><strong>{{ totals.sold }}</strong> {{ totals.sold === 1 ? 'vendida' : 'vendidas' }} de {{ totals.limit }}</span>
+        <span class="pill out" *ngIf="totals.soldOut">{{ totals.soldOut }} {{ totals.soldOut === 1 ? 'agotada' : 'agotadas' }}</span>
+        <span class="pill low" *ngIf="totals.low">{{ totals.low }} {{ totals.low === 1 ? 'casi agotada' : 'casi agotadas' }}</span>
+      </div>
+    </div>
+
+    <div class="sections">
+      <section class="sec" *ngFor="let s of sections; trackBy: trackSection" [ngClass]="'sec-' + s.section">
+        <h2 class="sec-title">{{ s.title }}<span class="sec-count">{{ s.sold }} de {{ s.limit }}</span></h2>
+
+        <div class="groups">
+          <div class="group" *ngFor="let g of s.groups; trackBy: trackGroup">
+            <h3 class="group-title">{{ g.name }}</h3>
+
+            <div class="cards">
+              <article class="card" *ngFor="let c of g.cards; trackBy: trackCard" [ngClass]="'lvl-' + c.level">
+                <header class="card-top">
+                  <span class="label">{{ c.offer.label }}</span>
+                  <span class="price" *ngIf="c.offer.price">{{ c.offer.price }}</span>
+                </header>
+
+                <div class="left">
+                  <span class="num">{{ c.left }}</span>
+                  <span class="of" *ngIf="c.level !== 'out'">quedan de {{ c.offer.limit }}</span>
+                  <span class="of tag-out" *ngIf="c.level === 'out'">AGOTADA</span>
+                </div>
+
+                <div class="bar" role="img" [attr.aria-label]="c.sold + ' vendidas de ' + c.offer.limit">
+                  <div class="fill" [style.width.%]="c.pct"></div>
+                </div>
+                <div class="sold-line">{{ c.sold }} {{ c.sold === 1 ? 'vendida' : 'vendidas' }}</div>
+
+                <div class="actions">
+                  <button type="button" class="sell" (click)="sell(c)" [disabled]="c.level === 'out'" [attr.aria-label]="'Vendida: ' + name(c.offer)">Vendida</button>
+                  <button type="button" class="icon" (click)="undo(c)" [disabled]="c.sold <= 0" title="Deshacer una venta" [attr.aria-label]="'Deshacer una venta: ' + name(c.offer)">↶</button>
+                  <button type="button" class="icon" (click)="openAdjust(c)" title="Ajustar el número de vendidas" [attr.aria-label]="'Ajustar vendidas: ' + name(c.offer)">✎</button>
+                </div>
+
+                <!-- Corregir a mano el número de vendidas (si algo no cuadra) -->
+                <div class="adjust" *ngIf="adjustId === c.offer.id">
+                  <label>
+                    <span>Vendidas en total</span>
+                    <input type="number" inputmode="numeric" min="0" [max]="c.offer.limit" step="1"
+                           [(ngModel)]="adjustValue" [ngModelOptions]="{ standalone: true }"
+                           (keydown.enter)="saveAdjust(c)" aria-label="Unidades vendidas en total" />
+                  </label>
+                  <div class="adjust-actions">
+                    <button type="button" class="act" (click)="saveAdjust(c)" [disabled]="!canAdjust(c)">Guardar</button>
+                    <button type="button" class="link" (click)="adjustId = null">Cancelar</button>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </ng-container>
+</div>
+
+<div class="toast" *ngIf="toast" role="status">
+  <span>{{ toast }}</span>
+</div>

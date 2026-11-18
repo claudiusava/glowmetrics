@@ -326,7 +326,10 @@ app-reviews-feed {
   .tab .lbl { display: inline-block; }
   .tab .lbl::first-letter { text-transform: uppercase; }
 
-  @media (max-width: 380px) {
-    .tab { padding: 0 6px; font-size: 12.5px; }
+  // Con cinco secciones (la de Ofertas incluida) en un móvil de 375-430 px, las pestañas van más apretadas
+  // para que quepan todas sin deslizar la barra.
+  @media (max-width: 480px) {
+    .tabbar { padding: 6px 4px; gap: 0; }
+    .tab { padding: 0 4px; font-size: 12px; }
   }
 }

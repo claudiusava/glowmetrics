@@ -145,6 +145,10 @@ function jsonRoute_(route, callback, params) {
     'followups-add': () => addFollowup_(params, params.clientId),
     'followups-update': () => updateFollowup_(params.id, params),
     'followups-delete': () => deleteFollowup_(params.id),
+    'promos-list': getPromos,
+    'promos-sell': () => changePromo_('sell', params.offer, params.clientId),
+    'promos-undo': () => changePromo_('undo', params.offer, params.clientId),
+    'promos-set': () => changePromo_('set', params.offer, params.clientId, params.sold),
     // La web lo usa para comprobar la clave que se acaba de teclear (si se llega aquí, es correcta).
     'auth-check': () => ({ ok: true })
   };
