@@ -64,14 +64,27 @@ function cleanTech_(v) {
   return s === 'L' || s === 'E' ? s : '';
 }
 
+const WAIT_WEEKDAYS = ['', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
+
+// Un texto como "Martes 24/11" que Sheets convirtió en fecha (cuando la celda no era de texto plano) llega
+// aquí como un Date y ya no se puede recuperar tal cual: se enseña como "martes 24/11", que es lo más cercano.
+function waitText_(v) {
+  if (v instanceof Date) {
+    if (isNaN(v.getTime())) return '';
+    const parts = Utilities.formatDate(v, 'Europe/Madrid', 'u|d/M').split('|');
+    return (WAIT_WEEKDAYS[Number(parts[0])] || '') + ' ' + parts[1];
+  }
+  return String(v == null ? '' : v);
+}
+
 function rowToWaitItem_(r) {
   return {
     id: String(r[0]),
-    name: String(r[1] || ''),
-    zones: String(r[2] || ''),
+    name: waitText_(r[1]),
+    zones: waitText_(r[2]),
     days: String(r[3] || ''),
     parts: String(r[4] || ''),
-    detail: String(r[5] || ''),
+    detail: waitText_(r[5]).trim(),
     tech: cleanTech_(r[10]),
     createdAt: String(r[8] || ''),
     updatedAt: String(r[9] || '')
@@ -119,15 +132,26 @@ function addWaitItem_(params, clientId) {
   const name = cleanText_(params.name, 80);
   if (!name) return { error: 'Falta el nombre.', items: getWaitlist() };
 
-  if (dedupeKey) cache.put(dedupeKey, '1', 600);
-
-  const sh = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(WAITLIST_SHEET_NAME);
   const now = new Date().toISOString();
   const row = [
     Utilities.getUuid(), name, cleanText_(params.zones, 200), cleanDays_(params.days), cleanParts_(params.parts),
     cleanText_(params.detail, 120), 'pending', 0, now, now, cleanTech_(params.tech)
   ];
-  sh.appendRow(row);
+  let saved = false;
+  withLock_(() => {
+    // La web repite el alta si la primera tarda: la marca de "ya hecho" va dentro del candado y DESPUÉS de escribir.
+    if (dedupeKey && cache.get(dedupeKey)) return;
+    const sh = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(WAITLIST_SHEET_NAME);
+    // Fila nueva como TEXTO PLANO. Con appendRow, Sheets ignora el formato de texto y convierte lo que parezca
+    // una fecha ("Martes 24/11" en el detalle) en una fecha de verdad.
+    const nextRow = sh.getLastRow() + 1;
+    const rg = sh.getRange(nextRow, 1, 1, WAITLIST_COLS);
+    rg.setNumberFormat('@');
+    rg.setValues([row]);
+    if (dedupeKey) cache.put(dedupeKey, '1', 600);
+    saved = true;
+  });
+  if (!saved) return { ok: true, items: getWaitlist() };
 
   const item = rowToWaitItem_(row);
   return { ok: true, id: item.id, item: item };
@@ -169,7 +193,10 @@ function updateWaitItemLocked_(id, patch) {
   item.updatedAt = new Date().toISOString();
 
   // Las columnas heredadas 'status' y 'attempts' se reescriben tal cual estaban.
-  sh.getRange(idx + 2, 1, 1, WAITLIST_COLS).setValues([[
+  // Siempre como texto plano (si no, "Martes 24/11" se volvería fecha al guardar).
+  const rg = sh.getRange(idx + 2, 1, 1, WAITLIST_COLS);
+  rg.setNumberFormat('@');
+  rg.setValues([[
     item.id, item.name, item.zones, item.days, item.parts, item.detail,
     cur[6], cur[7], item.createdAt, item.updatedAt, item.tech
   ]]);
