@@ -29,7 +29,7 @@ export const SECTION_TITLES: Record<PromoSection, string> = {
   'minis-hombre': 'Hombre · ofertas de 3 €, 2 € y 1 €',
 };
 
-export interface PromoCard { offer: PromoOffer; sold: number; left: number; level: PromoLevel; pct: number; }
+export interface PromoCard { offer: PromoOffer; sold: number; left: number; level: PromoLevel; pct: number; closed: boolean; }
 export interface PromoGroup { name: string; cards: PromoCard[]; }
 export interface PromoSectionView { section: PromoSection; title: string; groups: PromoGroup[]; sold: number; limit: number; }
 
@@ -48,6 +48,7 @@ export function buildSections(offers: PromoOffer[], sold: (id: string) => number
       left: remaining(offer.limit, s),
       level: promoLevel(offer.limit, s),
       pct: offer.limit ? Math.min(100, Math.round((s / offer.limit) * 100)) : 0,
+      closed: !!offer.closed,
     });
     sec.sold += Math.min(s, offer.limit);
     sec.limit += offer.limit;
@@ -96,6 +97,7 @@ export function newRequestId(): string {
 /** Qué se le dice a la persona cuando el servidor rechaza un cambio. */
 export function promoErrorText(error: string | undefined, o: PromoOffer): string {
   switch (error) {
+    case 'closed': return `«${offerName(o)}» está cerrada: ya no se puede cambiar.`;
     case 'sold-out': return `Se acaba de agotar «${offerName(o)}»: ya no quedan.`;
     case 'nothing-to-undo': return `«${offerName(o)}» no tiene ventas que deshacer.`;
     case 'invalid-number': return 'Ese número no vale: pon un entero entre 0 y el límite.';

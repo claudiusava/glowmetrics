@@ -77,6 +77,8 @@ function changePromo_(kind, offerId, clientId, target) {
   ensurePromosSheet_();
   const offer = PROMO_OFFERS.find(o => o.id === String(offerId || ''));
   if (!offer) return { error: 'unknown-offer' };
+  // Oferta cerrada (la franquicia ya la ha agotado): se sigue viendo lo vendido, pero ya no se cambia nada.
+  if (offer.closed) return { error: 'closed', counts: promoCounts_(readPromoRows_(SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(PROMO_SHEET_NAME))) };
 
   let wanted = 0;
   if (kind === 'set') {

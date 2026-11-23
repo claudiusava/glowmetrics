@@ -149,6 +149,27 @@
   &.lvl-out { --accent: #e11d48; background: #fff1f2; border-color: #fecdd3; }
 }
 
+// Oferta cerrada: gris apagado, con lo vendido bien visible pero sin nada que pulsar.
+.card.closed {
+  --accent: #94a3b8;
+  background: #f1f5f9;
+  border-color: #dbe2ea;
+  box-shadow: none;
+
+  .left .num { color: #475569; }
+  .left .of { color: #64748b; }
+}
+
+.badge-closed {
+  padding: 0.1em 0.6em;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #475569;
+  font-size: 0.78em;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
 .card-top {
   display: flex;
   align-items: baseline;

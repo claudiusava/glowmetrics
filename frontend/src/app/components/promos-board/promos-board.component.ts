@@ -123,19 +123,20 @@ export class PromosBoardComponent implements OnInit, OnDestroy {
 
   sell(c: PromoCard): void {
     const o = c.offer;
-    if (this.cooling.has(o.id) || this.shown(o.id) >= o.limit) return;
+    if (o.closed || this.cooling.has(o.id) || this.shown(o.id) >= o.limit) return;
     this.cooldown(o.id);
     this.change(o, +1, this.svc.promoSell(o.id, newRequestId()), `✓ ${offerName(o)}: quedan ${Math.max(0, o.limit - this.shown(o.id) - 1)}`);
   }
 
   undo(c: PromoCard): void {
     const o = c.offer;
-    if (this.cooling.has(o.id) || this.shown(o.id) <= 0) return;
+    if (o.closed || this.cooling.has(o.id) || this.shown(o.id) <= 0) return;
     this.cooldown(o.id);
     this.change(o, -1, this.svc.promoUndo(o.id, newRequestId()), `↶ ${offerName(o)}: venta deshecha, quedan ${o.limit - this.shown(o.id) + 1}`);
   }
 
   openAdjust(c: PromoCard): void {
+    if (c.closed) return;
     this.adjustId = this.adjustId === c.offer.id ? null : c.offer.id;
     this.adjustValue = c.sold;
   }

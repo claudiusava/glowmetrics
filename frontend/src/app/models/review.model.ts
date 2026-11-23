@@ -157,6 +157,7 @@ export interface PromoOffer {
   label: string;  // variante: "3 sesiones", "a 3 €"
   price: string;  // "195 €" (vacío en las de 3 €, 2 € y 1 €)
   limit: number;  // unidades que se pueden vender en este centro
+  closed?: boolean; // oferta cerrada (agotada por la franquicia): se ve lo vendido pero no se puede cambiar
 }
 
 export interface PromosData {

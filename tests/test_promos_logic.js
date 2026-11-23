@@ -53,6 +53,15 @@ check('total vendidas = 12 + 25 + 5 + 50 (lo de más no cuenta) = 92 de 1000', t
 check('contadores de agotadas (2: axilas 3 € y piernas 1 sesión) y casi agotadas (1)', tot.soldOut === 2 && tot.low === 1, tot);
 check('ventas negativas (dato roto) cuentan como 0', buildSections(OFFERS, () => -5).every(s => s.groups.every(g => g.cards.every(c => c.sold === 0))));
 
+// Ofertas cerradas: ingles y axilas a 1 € (mujer) y axilas a 1 € (hombre)
+const todas = conVentas.flatMap(s => s.groups.flatMap(g => g.cards));
+check('3 tarjetas cerradas: ingles 1 € mujer, axilas 1 € mujer y axilas 1 € hombre', todas.filter(c => c.closed).map(c => c.offer.id).sort().join() === 'mini-hombre-axilas-1,mini-mujer-axilas-1,mini-mujer-ingles-1');
+check('el resto de tarjetas no está cerrada', todas.filter(c => !c.closed).length === 24);
+const conCerrada = buildSections(OFFERS, id => id === 'mini-mujer-ingles-1' ? 7 : 0);
+const cerrada = conCerrada.flatMap(s => s.groups.flatMap(g => g.cards)).find(c => c.offer.id === 'mini-mujer-ingles-1');
+check('una cerrada conserva lo vendido (7) y sigue sumando al total', cerrada.closed && cerrada.sold === 7 && promoTotals(conCerrada).sold === 7);
+check('mensaje de error "closed" en español', /cerrada/.test(promoErrorText('closed', OFFERS[0])));
+
 // Textos
 check('campaña: "Del 18 al 30 de noviembre"', campaignText(CAMPAIGN.from, CAMPAIGN.to) === 'Del 18 al 30 de noviembre', campaignText(CAMPAIGN.from, CAMPAIGN.to));
 check('campaña que cruza de mes', campaignText('2026-11-28', '2026-12-03') === 'Del 28 de noviembre al 3 de diciembre');

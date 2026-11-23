@@ -24,27 +24,36 @@
             <h3 class="group-title">{{ g.name }}</h3>
 
             <div class="cards">
-              <article class="card" *ngFor="let c of g.cards; trackBy: trackCard" [ngClass]="'lvl-' + c.level">
+              <article class="card" *ngFor="let c of g.cards; trackBy: trackCard" [ngClass]="c.closed ? 'closed' : 'lvl-' + c.level">
                 <header class="card-top">
                   <span class="label">{{ c.offer.label }}</span>
                   <span class="price" *ngIf="c.offer.price">{{ c.offer.price }}</span>
+                  <span class="badge-closed" *ngIf="c.closed">CERRADA</span>
                 </header>
 
-                <div class="left">
+                <!-- Oferta cerrada (agotada por la franquicia): se enseña lo vendido, sin "quedan", y todo deshabilitado -->
+                <div class="left" *ngIf="c.closed">
+                  <span class="num">{{ c.sold }}</span>
+                  <span class="of">{{ c.sold === 1 ? 'vendida' : 'vendidas' }}</span>
+                </div>
+
+                <div class="left" *ngIf="!c.closed">
                   <span class="num">{{ c.left }}</span>
                   <span class="of" *ngIf="c.level !== 'out'">quedan de {{ c.offer.limit }}</span>
                   <span class="of tag-out" *ngIf="c.level === 'out'">AGOTADA</span>
                 </div>
 
-                <div class="bar" role="img" [attr.aria-label]="c.sold + ' vendidas de ' + c.offer.limit">
-                  <div class="fill" [style.width.%]="c.pct"></div>
-                </div>
-                <div class="sold-line">{{ c.sold }} {{ c.sold === 1 ? 'vendida' : 'vendidas' }}</div>
+                <ng-container *ngIf="!c.closed">
+                  <div class="bar" role="img" [attr.aria-label]="c.sold + ' vendidas de ' + c.offer.limit">
+                    <div class="fill" [style.width.%]="c.pct"></div>
+                  </div>
+                  <div class="sold-line">{{ c.sold }} {{ c.sold === 1 ? 'vendida' : 'vendidas' }}</div>
+                </ng-container>
 
                 <div class="actions">
-                  <button type="button" class="sell" (click)="sell(c)" [disabled]="c.level === 'out'" [attr.aria-label]="'Vendida: ' + name(c.offer)">Vendida</button>
-                  <button type="button" class="icon" (click)="undo(c)" [disabled]="c.sold <= 0" title="Deshacer una venta" [attr.aria-label]="'Deshacer una venta: ' + name(c.offer)">↶</button>
-                  <button type="button" class="icon" (click)="openAdjust(c)" title="Ajustar el número de vendidas" [attr.aria-label]="'Ajustar vendidas: ' + name(c.offer)">✎</button>
+                  <button type="button" class="sell" (click)="sell(c)" [disabled]="c.closed || c.level === 'out'" [attr.aria-label]="'Vendida: ' + name(c.offer)">Vendida</button>
+                  <button type="button" class="icon" (click)="undo(c)" [disabled]="c.closed || c.sold <= 0" title="Deshacer una venta" [attr.aria-label]="'Deshacer una venta: ' + name(c.offer)">↶</button>
+                  <button type="button" class="icon" (click)="openAdjust(c)" [disabled]="c.closed" title="Ajustar el número de vendidas" [attr.aria-label]="'Ajustar vendidas: ' + name(c.offer)">✎</button>
                 </div>
 
                 <!-- Corregir a mano el número de vendidas (si algo no cuadra) -->

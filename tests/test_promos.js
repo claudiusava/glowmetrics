@@ -66,6 +66,10 @@ check('el resto de packs de mujer y hombre: 50 unidades', ofertas.filter(o => !o
 check('las de 3 €, 2 € y 1 €: 25 unidades de CADA precio', ofertas.filter(o => o.section.startsWith('minis')).every(o => o.limit === 25));
 check('precio de algunas de la tabla: cuerpo mujer 3 sesiones 195 €, piernas hombre 1 sesión 24,90 €', ofertas.find(o => o.id === 'mujer-cuerpo-3').price === '195 €' && ofertas.find(o => o.id === 'hombre-piernas-1').price === '24,90 €');
 
+// ---- Ofertas cerradas (agotadas por la franquicia): las de axilas e ingles a 1 € ----
+const cerradas = ofertas.filter(o => o.closed).map(o => o.id).sort();
+check('cerradas: ingles 1 € mujer, axilas 1 € mujer y axilas 1 € hombre (y ninguna más)', cerradas.join() === 'mini-hombre-axilas-1,mini-mujer-axilas-1,mini-mujer-ingles-1', cerradas);
+
 // ---- Hoja ----
 const lista = t.run('getPromos()');
 check('la hoja Ofertas se crea sola con una fila por oferta, todas a 0', t.log.inserted.includes('Ofertas') && t.sheets.Ofertas.rows.length === 28 && t.sheets.Ofertas.rows[0].join() === 'offer,sold,updatedAt');
@@ -109,9 +113,23 @@ check('ajustar a negativo, decimal o texto se rechaza', ['-1', '2.5', 'abc', '']
 check('ajustar a 0 vale', set('hombre-cuerpo-3', 0, 's5').counts['hombre-cuerpo-3'] === 0);
 check('oferta desconocida', sell('no-existe', 'z1').error === 'unknown-offer' && set('no-existe', 1, 'z2').error === 'unknown-offer');
 
+const rutaTemprana = (route, params) => JSON.parse(t.run(`jsonRoute_(${JSON.stringify(route)}, null, ${JSON.stringify(params || {})})`).text);
+// ---- Cerradas: se ve lo vendido, pero no se puede cambiar nada ----
+// (se prepara con 7 vendidas escritas directamente en la hoja, como si se hubieran vendido antes de cerrarla)
+t.sheets.Ofertas.rows.find(x => x[0] === 'mini-mujer-ingles-1')[1] = '7';
+check('una cerrada sigue contando lo que se vendió', t.run('getPromos()').sold['mini-mujer-ingles-1'] === 7 && t.run('getPromos()').offers.find(o => o.id === 'mini-mujer-ingles-1').closed === true);
+r = sell('mini-mujer-ingles-1', 'cl1');
+check('vender una cerrada se rechaza (closed) y devuelve los números', r.error === 'closed' && r.counts['mini-mujer-ingles-1'] === 7, r);
+r = undo('mini-mujer-ingles-1', 'cl2');
+check('deshacer una cerrada se rechaza', r.error === 'closed' && t.run('getPromos()').sold['mini-mujer-ingles-1'] === 7, r);
+r = set('mini-mujer-ingles-1', 3, 'cl3');
+check('ajustar una cerrada se rechaza', r.error === 'closed' && t.run('getPromos()').sold['mini-mujer-ingles-1'] === 7, r);
+check('las demás siguen funcionando (la de 2 € de al lado)', sell('mini-mujer-ingles-2', 'cl4').ok === true);
+check('ruta promos-sell sobre una cerrada también rechaza', rutaTemprana('promos-sell', { offer: 'mini-hombre-axilas-1', clientId: 'cl5' }).error === 'closed');
+
 // ---- Hoja con una oferta nueva en la configuración (sin fila todavía) y con datos estropeados ----
-t.sheets.Ofertas.rows.splice(t.sheets.Ofertas.rows.findIndex(x => x[0] === 'mini-hombre-axilas-1'), 1);
-check('una oferta sin fila cuenta como 0 y se puede vender (se crea su fila)', t.run('getPromos()').sold['mini-hombre-axilas-1'] === 0 && sell('mini-hombre-axilas-1', 'n1').counts['mini-hombre-axilas-1'] === 1);
+t.sheets.Ofertas.rows.splice(t.sheets.Ofertas.rows.findIndex(x => x[0] === 'mini-hombre-axilas-3'), 1);
+check('una oferta sin fila cuenta como 0 y se puede vender (se crea su fila)', t.run('getPromos()').sold['mini-hombre-axilas-3'] === 0 && sell('mini-hombre-axilas-3', 'n1').counts['mini-hombre-axilas-3'] === 1);
 t.sheets.Ofertas.rows.find(x => x[0] === 'mini-hombre-axilas-2')[1] = 'basura';
 check('un número roto en la hoja se lee como 0', t.run('getPromos()').sold['mini-hombre-axilas-2'] === 0);
 

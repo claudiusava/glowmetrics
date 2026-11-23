@@ -42,6 +42,8 @@ const CLEANING_TASKS = Object.freeze([
 // Ofertas de campaña con unidades limitadas por centro (ver svc_promos.js). El límite de cada una es lo que
 // permite vender la franquicia en este centro; la web enseña cuántas quedan y deja apuntar cada venta.
 // `section` agrupa las tarjetas en pantalla, `group` es el tratamiento y `label` la variante (sesiones o precio).
+// `closed: true` = oferta cerrada (la franquicia la ha agotado): sigue visible con lo vendido, pero deshabilitada.
+// Para reabrirla basta con quitar esa marca.
 const PROMO_CAMPAIGN = Object.freeze({ name: 'Black Friday', from: '2026-11-18', to: '2026-11-30' });
 const PROMO_OFFERS = Object.freeze([
   // Mujer
@@ -67,13 +69,13 @@ const PROMO_OFFERS = Object.freeze([
   // Ofertas de 3 €, 2 € y 1 € (25 unidades de cada precio), debajo y con las mujeres a la izquierda y los hombres a la derecha
   { id: 'mini-mujer-ingles-3', section: 'minis-mujer', group: 'Ingles normales', label: 'a 3 €', price: '', limit: 25 },
   { id: 'mini-mujer-ingles-2', section: 'minis-mujer', group: 'Ingles normales', label: 'a 2 €', price: '', limit: 25 },
-  { id: 'mini-mujer-ingles-1', section: 'minis-mujer', group: 'Ingles normales', label: 'a 1 €', price: '', limit: 25 },
+  { id: 'mini-mujer-ingles-1', section: 'minis-mujer', group: 'Ingles normales', label: 'a 1 €', price: '', limit: 25, closed: true },
   { id: 'mini-mujer-axilas-3', section: 'minis-mujer', group: 'Axilas', label: 'a 3 €', price: '', limit: 25 },
   { id: 'mini-mujer-axilas-2', section: 'minis-mujer', group: 'Axilas', label: 'a 2 €', price: '', limit: 25 },
-  { id: 'mini-mujer-axilas-1', section: 'minis-mujer', group: 'Axilas', label: 'a 1 €', price: '', limit: 25 },
+  { id: 'mini-mujer-axilas-1', section: 'minis-mujer', group: 'Axilas', label: 'a 1 €', price: '', limit: 25, closed: true },
   { id: 'mini-hombre-axilas-3', section: 'minis-hombre', group: 'Axilas', label: 'a 3 €', price: '', limit: 25 },
   { id: 'mini-hombre-axilas-2', section: 'minis-hombre', group: 'Axilas', label: 'a 2 €', price: '', limit: 25 },
-  { id: 'mini-hombre-axilas-1', section: 'minis-hombre', group: 'Axilas', label: 'a 1 €', price: '', limit: 25 }
+  { id: 'mini-hombre-axilas-1', section: 'minis-hombre', group: 'Axilas', label: 'a 1 €', price: '', limit: 25, closed: true }
 ]);
 
 // Google Sheets / negocio
