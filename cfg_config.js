@@ -68,13 +68,13 @@ const PROMO_OFFERS = Object.freeze([
   { id: 'hombre-espalda-1', section: 'hombre', group: 'Espalda completa + tórax + hombros', label: '1 sesión', price: '40 €', limit: 50 },
   // Ofertas de 3 €, 2 € y 1 € (25 unidades de cada precio), debajo y con las mujeres a la izquierda y los hombres a la derecha
   { id: 'mini-mujer-ingles-3', section: 'minis-mujer', group: 'Ingles normales', label: 'a 3 €', price: '', limit: 25 },
-  { id: 'mini-mujer-ingles-2', section: 'minis-mujer', group: 'Ingles normales', label: 'a 2 €', price: '', limit: 25 },
+  { id: 'mini-mujer-ingles-2', section: 'minis-mujer', group: 'Ingles normales', label: 'a 2 €', price: '', limit: 25, closed: true },
   { id: 'mini-mujer-ingles-1', section: 'minis-mujer', group: 'Ingles normales', label: 'a 1 €', price: '', limit: 25, closed: true },
   { id: 'mini-mujer-axilas-3', section: 'minis-mujer', group: 'Axilas', label: 'a 3 €', price: '', limit: 25 },
-  { id: 'mini-mujer-axilas-2', section: 'minis-mujer', group: 'Axilas', label: 'a 2 €', price: '', limit: 25 },
+  { id: 'mini-mujer-axilas-2', section: 'minis-mujer', group: 'Axilas', label: 'a 2 €', price: '', limit: 25, closed: true },
   { id: 'mini-mujer-axilas-1', section: 'minis-mujer', group: 'Axilas', label: 'a 1 €', price: '', limit: 25, closed: true },
   { id: 'mini-hombre-axilas-3', section: 'minis-hombre', group: 'Axilas', label: 'a 3 €', price: '', limit: 25 },
-  { id: 'mini-hombre-axilas-2', section: 'minis-hombre', group: 'Axilas', label: 'a 2 €', price: '', limit: 25 },
+  { id: 'mini-hombre-axilas-2', section: 'minis-hombre', group: 'Axilas', label: 'a 2 €', price: '', limit: 25, closed: true },
   { id: 'mini-hombre-axilas-1', section: 'minis-hombre', group: 'Axilas', label: 'a 1 €', price: '', limit: 25, closed: true }
 ]);
 

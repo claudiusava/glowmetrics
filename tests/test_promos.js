@@ -68,7 +68,7 @@ check('precio de algunas de la tabla: cuerpo mujer 3 sesiones 195 €, piernas h
 
 // ---- Ofertas cerradas (agotadas por la franquicia): las de axilas e ingles a 1 € ----
 const cerradas = ofertas.filter(o => o.closed).map(o => o.id).sort();
-check('cerradas: ingles 1 € mujer, axilas 1 € mujer y axilas 1 € hombre (y ninguna más)', cerradas.join() === 'mini-hombre-axilas-1,mini-mujer-axilas-1,mini-mujer-ingles-1', cerradas);
+check('cerradas: ingles, axilas de mujer y axilas de hombre a 1 € y a 2 € (y ninguna más)', cerradas.join() === 'mini-hombre-axilas-1,mini-hombre-axilas-2,mini-mujer-axilas-1,mini-mujer-axilas-2,mini-mujer-ingles-1,mini-mujer-ingles-2', cerradas);
 
 // ---- Hoja ----
 const lista = t.run('getPromos()');
@@ -82,7 +82,7 @@ r = sell('mini-mujer-axilas-3', 'a2');
 check('vender otra: 2', r.counts['mini-mujer-axilas-3'] === 2);
 r = sell('mini-mujer-axilas-3', 'a2');
 check('el mismo clientId no cuenta dos veces (reintento tras un atasco)', r.ok && r.counts['mini-mujer-axilas-3'] === 2 && t.run('getPromos()').sold['mini-mujer-axilas-3'] === 2, r);
-check('cada oferta lleva su propia cuenta', sell('mini-mujer-axilas-2', 'a3').counts['mini-mujer-axilas-2'] === 1 && t.run('getPromos()').sold['mini-mujer-axilas-3'] === 2);
+check('cada oferta lleva su propia cuenta', sell('mini-mujer-ingles-3', 'a3').counts['mini-mujer-ingles-3'] === 1 && t.run('getPromos()').sold['mini-mujer-axilas-3'] === 2);
 check('lo vendido se guarda en una sola fila por oferta (no crece la hoja)', t.sheets.Ofertas.rows.length === 28);
 
 // ---- Límite ----
@@ -124,14 +124,14 @@ r = undo('mini-mujer-ingles-1', 'cl2');
 check('deshacer una cerrada se rechaza', r.error === 'closed' && t.run('getPromos()').sold['mini-mujer-ingles-1'] === 7, r);
 r = set('mini-mujer-ingles-1', 3, 'cl3');
 check('ajustar una cerrada se rechaza', r.error === 'closed' && t.run('getPromos()').sold['mini-mujer-ingles-1'] === 7, r);
-check('las demás siguen funcionando (la de 2 € de al lado)', sell('mini-mujer-ingles-2', 'cl4').ok === true);
+check('las demás siguen funcionando (la de 3 € de al lado)', sell('mini-mujer-ingles-3', 'cl4').ok === true);
 check('ruta promos-sell sobre una cerrada también rechaza', rutaTemprana('promos-sell', { offer: 'mini-hombre-axilas-1', clientId: 'cl5' }).error === 'closed');
 
 // ---- Hoja con una oferta nueva en la configuración (sin fila todavía) y con datos estropeados ----
 t.sheets.Ofertas.rows.splice(t.sheets.Ofertas.rows.findIndex(x => x[0] === 'mini-hombre-axilas-3'), 1);
 check('una oferta sin fila cuenta como 0 y se puede vender (se crea su fila)', t.run('getPromos()').sold['mini-hombre-axilas-3'] === 0 && sell('mini-hombre-axilas-3', 'n1').counts['mini-hombre-axilas-3'] === 1);
-t.sheets.Ofertas.rows.find(x => x[0] === 'mini-hombre-axilas-2')[1] = 'basura';
-check('un número roto en la hoja se lee como 0', t.run('getPromos()').sold['mini-hombre-axilas-2'] === 0);
+t.sheets.Ofertas.rows.find(x => x[0] === 'mini-mujer-axilas-3')[1] = 'basura';
+check('un número roto en la hoja se lee como 0', t.run('getPromos()').sold['mini-mujer-axilas-3'] === 0);
 
 // ---- Rutas ----
 const ruta = (route, params) => JSON.parse(t.run(`jsonRoute_(${JSON.stringify(route)}, null, ${JSON.stringify(params || {})})`).text);

@@ -55,8 +55,8 @@ check('ventas negativas (dato roto) cuentan como 0', buildSections(OFFERS, () =>
 
 // Ofertas cerradas: ingles y axilas a 1 € (mujer) y axilas a 1 € (hombre)
 const todas = conVentas.flatMap(s => s.groups.flatMap(g => g.cards));
-check('3 tarjetas cerradas: ingles 1 € mujer, axilas 1 € mujer y axilas 1 € hombre', todas.filter(c => c.closed).map(c => c.offer.id).sort().join() === 'mini-hombre-axilas-1,mini-mujer-axilas-1,mini-mujer-ingles-1');
-check('el resto de tarjetas no está cerrada', todas.filter(c => !c.closed).length === 24);
+check('6 tarjetas cerradas: ingles, axilas de mujer y axilas de hombre a 1 € y a 2 €', todas.filter(c => c.closed).map(c => c.offer.id).sort().join() === 'mini-hombre-axilas-1,mini-hombre-axilas-2,mini-mujer-axilas-1,mini-mujer-axilas-2,mini-mujer-ingles-1,mini-mujer-ingles-2');
+check('el resto de tarjetas no está cerrada', todas.filter(c => !c.closed).length === 21);
 const conCerrada = buildSections(OFFERS, id => id === 'mini-mujer-ingles-1' ? 7 : 0);
 const cerrada = conCerrada.flatMap(s => s.groups.flatMap(g => g.cards)).find(c => c.offer.id === 'mini-mujer-ingles-1');
 check('una cerrada conserva lo vendido (7) y sigue sumando al total', cerrada.closed && cerrada.sold === 7 && promoTotals(conCerrada).sold === 7);
